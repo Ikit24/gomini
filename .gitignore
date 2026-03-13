@@ -1,0 +1,22 @@
+Session.vim
+*.swp
+*.swo
+*.un~
+*.log
+*.tmp
+.env
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+t binary, built with `go test -c`
+*.test
+*.out
+coverage.*
+*.coverprofile
+profile.cov
+vendor/
+go.work
+go.work.sum
+.env
