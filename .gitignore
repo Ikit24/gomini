@@ -10,7 +10,6 @@ Session.vim
 *.dll
 *.so
 *.dylib
-t binary, built with `go test -c`
 *.test
 *.out
 coverage.*
