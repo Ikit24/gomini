@@ -12,6 +12,10 @@ type DB struct {
 	path string
 }
 
+func (d *DB) Close() error {
+	return d.db.Close()
+}
+
 func Open(path string) (*DB, error) {
 	dsn := path + "?_foreign_keys=on"
 	conn, err := sql.Open("sqlite3", dsn)
