@@ -13,4 +13,12 @@ func main() {
 		log.Fatal(err)
 	}
 	defer db.Close()
+
+	u := &databse.User{Name: "Ati"}
+	err = db.CreateUser(u)
+	if err != nil {
+		fmt.Println("couldn't create user:", err)
+		return
+	}
+	fmt.Printf("Created user with ID: %d/n", u.ID)
 }
