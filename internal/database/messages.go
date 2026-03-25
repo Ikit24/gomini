@@ -1,19 +1,17 @@
 package database
 
 import (
-	"database/sql"
-	"errors"
 	"time"
 
 	"github.com/google/uuid"
 )
 
 type Message struct {
-	SessionID uuid.UUID `json:"id"`
-	SessionID uuid.UUID `json:"session_id"`
-	Role RoleType       `json:"role" db:"role_column"`
-	Content string      `json:"content"`
-	CreatedAt time.Time `json:"created_at"`
+	ID        uuid.UUID `json:"id"         db:"id"`
+	SessionID uuid.UUID `json:"session_id" db:"session_id"`
+	Role      RoleType  `json:"role"       db:"role"`
+	Content   string    `json:"content"    db:"content"`
+	CreatedAt time.Time `json:"created_at" db:"created_at"`
 }
 
 type RoleType string

@@ -20,15 +20,39 @@ func Open(path string) (*DB, error) {
 	dsn := path + "?_foreign_keys=on"
 	conn, err := sql.Open("sqlite3", dsn)
 		if err != nil{
-		fmt.Println("couldn't connect to db:", err)
 		return nil, err
 	}
 	conn.SetMaxOpenConns(1)
 
-	 err = conn.Ping()
-	if err != nil{
-		fmt.Println("couldn't connect to db:", err)
+	if err = conn.Ping(); err != nil {
 		return nil, err
 	}
-	return &DB{db : conn, path: path}, nil
+
+	d := &DB{db: conn, path: path}
+
+	if err := d.createTables(); err != nil {
+		return nil, fmt.Errorf("failed to create tables: %w", err)
+	}
+
+	return d, nil
+}
+
+func (d *DB) createTables() error {
+	query := `
+	CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name TEXT NOT NULL,
+        created_at DATETIME
+    );
+
+    CREATE TABLE IF NOT EXISTS messages (
+        id TEXT PRIMARY KEY,
+        session_id TEXT,
+        role TEXT,
+        content TEXT,
+        created_at DATETIME
+    );`
+
+	_, err := d.db.Exec(query)
+	return err
 }
