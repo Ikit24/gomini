@@ -22,3 +22,5 @@ func (d *DB) CreateUser(u *User) error {
 
 	return nil
 }
+
+func GetUserByNAme(name string) (*User, error) {}
