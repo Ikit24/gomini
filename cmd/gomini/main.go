@@ -22,4 +22,15 @@ func main() {
 		return
 	}
 	fmt.Printf("Created user with ID: %d\n", u.ID)
+
+	foundUser, err := db.GetUserByName("Ati")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if foundUser != nil {
+		fmt.Printf("Found user in DB: %s (ID: %d)\n", foundUser.Name, foundUser.ID)
+	} else {
+		fmt.Println("User not found!")
+	}
 }
