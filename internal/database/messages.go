@@ -20,3 +20,18 @@ const (
 	UserRole  RoleType = "user"
 	ModelRole RoleType = "model"
 )
+
+func SaveMessage(m *Message) error {
+	if m.ID == uuid.Nil {
+		m.uuid.New()
+	}
+
+	if m.CreatedAt.IsZero() {
+		m.CreatedAt = time.Now()
+	}
+
+	query := `INSERT INTO messages (id, session_id, role, content, created_at) VALUES (?, ?, ?, ?, ?)`
+
+	_, err := d.db.Exec(query, m.ID, m.SessionID, m.Role, m.Content, m.CreatedAt)
+	return err
+}
