@@ -21,9 +21,9 @@ const (
 	ModelRole RoleType = "model"
 )
 
-func SaveMessage(m *Message) error {
+func (d *DB) SaveMessage(m *Message) error {
 	if m.ID == uuid.Nil {
-		m.uuid.New()
+		m.ID == uuid.New()
 	}
 
 	if m.CreatedAt.IsZero() {
