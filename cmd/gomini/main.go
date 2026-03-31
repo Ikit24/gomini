@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/Ikit24/gomini/internal/database"
+	"github.com/google/uuid"
 )
 
 func main() {
@@ -33,4 +34,18 @@ func main() {
 	} else {
 		fmt.Println("User not found!")
 	}
+
+	sessionID := uuid.New()
+
+	msg := &database.Message{
+		SessionID: sessionID,
+		Role:      "user",
+		Content:   "Hello! Is this message being saved?",
+	}
+
+	if err := db.SaveMessage(msg); err != nil {
+		log.Fatal("Couldn't save message:", err)
+	}
+
+	fmt.Printf("Successfully save message! (ID: %s)\n", msg.ID)
 }

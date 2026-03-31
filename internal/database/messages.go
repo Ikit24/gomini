@@ -23,7 +23,7 @@ const (
 
 func (d *DB) SaveMessage(m *Message) error {
 	if m.ID == uuid.Nil {
-		m.ID == uuid.New()
+		m.ID = uuid.New()
 	}
 
 	if m.CreatedAt.IsZero() {
