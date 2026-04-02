@@ -35,3 +35,11 @@ func (d *DB) SaveMessage(m *Message) error {
 	_, err := d.db.Exec(query, m.ID, m.SessionID, m.Role, m.Content, m.CreatedAt)
 	return err
 }
+
+func (d *DB) GetMessagesBySessionID(m *Message) error {
+	rows, err := d.db.Query(query, sessionID)
+	if err != nil {
+		return  nil, err
+	}
+	defer rows.Close()
+}
