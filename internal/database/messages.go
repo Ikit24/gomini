@@ -42,4 +42,8 @@ func (d *DB) GetMessagesBySessionID(m *Message) error {
 		return  nil, err
 	}
 	defer rows.Close()
+
+	for rows.Next() {
+		var m Message
+	}
 }
