@@ -48,4 +48,12 @@ func main() {
 	}
 
 	fmt.Printf("Successfully save message! (ID: %s)\n", msg.ID)
+
+	history, err := db.GetMessagesBySessionID(sessionID)
+	if err == nil {
+		fmt.Printf("Thread history (%d messages):\n", len(history))
+		for _, m := range history {
+			fmt.Printf("[%s]: %s\n", m.Role, m.Content)
+		}
+	}
 }

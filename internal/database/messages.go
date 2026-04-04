@@ -36,7 +36,11 @@ func (d *DB) SaveMessage(m *Message) error {
 	return err
 }
 
-func (d *DB) GetMessagesBySessionID(m *Message) error {
+func (d *DB) GetMessagesBySessionID(sessionID uuid.UUID) ([]Message, error) {
+	messages := []Message{}
+	
+	query := `SELECT id, session_id, role, content, created_at FROM messages WHERE session_id = ? ORDER BY created_at ASC`
+
 	rows, err := d.db.Query(query, sessionID)
 	if err != nil {
 		return  nil, err
@@ -45,5 +49,15 @@ func (d *DB) GetMessagesBySessionID(m *Message) error {
 
 	for rows.Next() {
 		var m Message
+		err := rows.Scan(&m.ID, &m.SessionID, &m.Role, &m.Content, &m.CreatedAt)
+		if err != nil {
+			return nil, err
+		}
+		messages = append(messages, m)
 	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return messages, nil
 }
