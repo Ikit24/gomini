@@ -36,7 +36,6 @@ func main() {
 	}
 
 	sessionID := uuid.New()
-
 	msg := &database.Message{
 		SessionID: sessionID,
 		Role:      "user",
@@ -56,4 +55,13 @@ func main() {
 			fmt.Printf("[%s]: %s\n", m.Role, m.Content)
 		}
 	}
+
+	fmt.Printf("Cleaning up session...")
+	err = db.DeleteSession(sessionID)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	finalHistory, _ := db.GetMessagesBySessionID(sessionID)
+	fmt.Printf("History count after deletion: %d\n", len(finalHistory))
 }

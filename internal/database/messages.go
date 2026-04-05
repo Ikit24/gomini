@@ -38,7 +38,6 @@ func (d *DB) SaveMessage(m *Message) error {
 
 func (d *DB) GetMessagesBySessionID(sessionID uuid.UUID) ([]Message, error) {
 	messages := []Message{}
-	
 	query := `SELECT id, session_id, role, content, created_at FROM messages WHERE session_id = ? ORDER BY created_at ASC`
 
 	rows, err := d.db.Query(query, sessionID)
@@ -60,4 +59,11 @@ func (d *DB) GetMessagesBySessionID(sessionID uuid.UUID) ([]Message, error) {
 	}
 
 	return messages, nil
+}
+
+func (d *DB) DeleteSession(sessionID uuid.UUID) error {
+	query := `DELETE FROM messages WHERE session_id = ?`
+
+	_, err := d.db.Exec(query, sessionID)
+	return err
 }
