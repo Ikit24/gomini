@@ -4,33 +4,38 @@ import (
 	"time"
 	"database/sql"
 
+
+	"github.com/google/uuid"
 	_ "github.com/mattn/go-sqlite3"
 )
 
 func (d *DB) CreateUser(u *User) error {
-	u.CreatedAt = time.Now()
-	query := `INSERT INTO users (name, created_at) VALUES (?, ?)`
-	res, err :=  d.db.Exec(query, u.Name, u.CreatedAt)
+	id, err := uuid.NewRandom()
 	if err != nil {
 		return err
 	}
 
-	id, err := res.LastInsertId()
+	now := time.Now()
+	u.ID = id
+	u.CreatedAt = now
+	u.UpdatedAt = now
+
+	query := `INSERT INTO users (id, name, created_at, updated_at) VALUES (?, ?, ?, ?)`
+	_, err :=  d.db.Exec(query, u.ID, u.Name, u.CreatedAt, u.UpdatedAt)
 	if err != nil {
 		return err
 	}
-	u.ID = int(id)
 
 	return nil
 }
 
 func (d *DB) GetUserByName(name string) (*User, error) {
 	var u User
-	query := `SELECT id, name, created_at FROM users WHERE name = ?`
+	query := `SELECT id, name, created_at, updated_at FROM users WHERE name = ?`
 
 	row := d.db.QueryRow(query, name)
 
-	err := row.Scan(&u.ID, &u.Name, &u.CreatedAt)
+	err := row.Scan(&u.ID, &u.Name, &u.CreatedAt, &u.UpdatedAt)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, nil
