@@ -67,3 +67,22 @@ func (d *DB) DeleteSession(sessionID uuid.UUID) error {
 	_, err := d.db.Exec(query, sessionID)
 	return err
 }
+
+func (d *DB) CreateMessage(m *Message) error {
+	id, err := uuid.NewRandom()
+	if err != nil {
+		return err
+	}
+
+	now := time.Now()
+	m.ID = id
+	m.CreatedAt = now
+
+	query := `INSERT INTO messages (id, session_id, role, content, created_at) VALUES (?, ?, ?, ?, ?)`
+	_, err = d.db.Exec(query, m.ID, m.SessionID, m.Role, m.Content, m.CreatedAt)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

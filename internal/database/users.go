@@ -21,7 +21,7 @@ func (d *DB) CreateUser(u *User) error {
 	u.UpdatedAt = now
 
 	query := `INSERT INTO users (id, name, created_at, updated_at) VALUES (?, ?, ?, ?)`
-	_, err :=  d.db.Exec(query, u.ID, u.Name, u.CreatedAt, u.UpdatedAt)
+	_, err =  d.db.Exec(query, u.ID, u.Name, u.CreatedAt, u.UpdatedAt)
 	if err != nil {
 		return err
 	}
