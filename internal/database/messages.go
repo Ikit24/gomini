@@ -61,13 +61,6 @@ func (d *DB) GetMessagesBySessionID(sessionID uuid.UUID) ([]Message, error) {
 	return messages, nil
 }
 
-func (d *DB) DeleteSession(sessionID uuid.UUID) error {
-	query := `DELETE FROM messages WHERE session_id = ?`
-
-	_, err := d.db.Exec(query, sessionID)
-	return err
-}
-
 func (d *DB) CreateMessage(m *Message) error {
 	id, err := uuid.NewRandom()
 	if err != nil {

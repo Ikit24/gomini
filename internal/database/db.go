@@ -27,4 +27,6 @@ func Open(path string) (*DB, error) {
 	if err = conn.Ping(); err != nil {
 		return nil, err
 	}
+
+	return &DB{db: conn}
 }

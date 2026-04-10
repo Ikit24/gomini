@@ -33,3 +33,10 @@ func (d *DB) CreateSession(s *Session) error {
 
 	return nil
 }
+
+func (d *DB) DeleteSession(sessionID uuid.UUID) error {
+	query := `DELETE FROM sessions WHERE id = ?`
+
+	_, err := d.db.Exec(query, sessionID)
+	return err
+}
