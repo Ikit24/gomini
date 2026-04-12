@@ -2,6 +2,7 @@ package database
 
 import (
 	"time"
+	"errors"
 
 	"github.com/google/uuid"
 )
@@ -86,14 +87,41 @@ func (d *DB) CreateMessage(m *Message) error {
 }
 
 func (d *DB) UpdateSessionTitle(s *Session) error {
+	if s == nil {
+		return errors.New("session cannot be nil")
+	}
 	now := time.Now()
 	s.UpdatedAt = now
 
 	query := `UPDATE sessions SET title = ?, updated_at = ? WHERE id = ?`
-	_, err := d.db.Exec(query, s.Title, s.UpdatedAt, s.ID)
+	res, err := d.db.Exec(query, s.Title, s.UpdatedAt, s.ID)
+	if err != nil {
+		return fmt.Errorf("couldn't update session title: %w", err)
+	}
+
+	rowsAffected, err := res.rowsAffected()
 	if err != nil {
 		return err
 	}
 
+	if rowsAffected == 0 {
+		return errors.New("no session found with that ID")
+	}
+
 	return nil
+}
+
+func (d *DB) GetSessionByID(ID uuid.UUID) (*Session, error) {
+	var s Session
+	query := `SELECT id, user_id, title, created_at, updated_at FROM sessions WHERE id = ?`
+
+	err := d.db.QueryRow(query, ID).Scan(&s.ID, &s.UserID, &s.Title, &s.CreatedAt, &s.UpdatedAt)
+	if err != nil {
+		if err == sql.ErrNoRows{
+			return nil, fmt.Errorf("lookup failed: %w", sql.ErrNoRows)
+		}
+		return nil, err
+	}
+
+	return &s, nil
 }
