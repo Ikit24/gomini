@@ -67,25 +67,6 @@ func (d *DB) GetSessionsByUserID(userID uuid.UUID) ([]Session, error) {
 	return sessions, nil
 }
 
-func (d *DB) CreateMessage(m *Message) error {
-	id, err := uuid.NewRandom()
-	if err != nil {
-		return err
-	}
-
-	now := time.Now()
-	m.ID = id
-	m.CreatedAt = now
-
-	query := `INSERT INTO messages (id, session_id, role, content, created_at) VALUES (?, ?, ?, ?, ?)`
-	_, err = d.db.Exec(query, m.ID, m.SessionID, m.Role, m.Content, m.CreatedAt)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func (d *DB) UpdateSessionTitle(s *Session) error {
 	if s == nil {
 		return errors.New("session cannot be nil")
