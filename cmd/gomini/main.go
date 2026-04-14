@@ -22,7 +22,7 @@ func main() {
 		fmt.Println("couldn't create user:", err)
 		return
 	}
-	fmt.Printf("Created user with ID: %d\n", u.ID)
+	fmt.Printf("Created user with ID: %w\n", u.ID)
 
 	foundUser, err := db.GetUserByName("Ati")
 	if err != nil {
