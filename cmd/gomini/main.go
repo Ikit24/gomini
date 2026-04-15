@@ -6,9 +6,26 @@ import (
 
 	"github.com/Ikit24/gomini/internal/database"
 	"github.com/google/uuid"
+	"github.com/joho/godotenv"
 )
 
 func main() {
+	_ = godotenv.Load()
+
+	geminiKey := os.Getenv("GEMINI_API_KEY")
+		if sec == "" {
+			log.Fatal("GEMINI_API_KEY missing")
+		}
+
+	ctx := context.Background()
+	
+	aiClient, err := gemini.NewClient(ctx, "")
+
+
+
+
+
+
 	const dbPath = "gomini.db"
 	db, err := database.Open(dbPath)
 	if err != nil {
