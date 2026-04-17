@@ -1,10 +1,14 @@
 package main
 
 import (
+	"os"
 	"log"
 	"fmt"
+	"context"
 
 	"github.com/Ikit24/gomini/internal/database"
+	"github.com/Ikit24/gomini/internal/gemini"
+	"github.com/Ikit24/gomini/internal/handlers"
 	"github.com/google/uuid"
 	"github.com/joho/godotenv"
 )
@@ -13,14 +17,16 @@ func main() {
 	_ = godotenv.Load()
 
 	geminiKey := os.Getenv("GEMINI_API_KEY")
-		if sec == "" {
+		if geminiKey == "" {
 			log.Fatal("GEMINI_API_KEY missing")
 		}
 
 	ctx := context.Background()
 	
-	aiClient, err := gemini.NewClient(ctx, "")
-
+	aiClient, err := gemini.NewClient(ctx, geminiKey)
+	if err != nil {
+		log.Fatal("couldn't initialize gemini client", err)
+	}
 
 
 
