@@ -3,9 +3,7 @@ package main
 import (
 	"os"
 	"log"
-	"fmt"
 	"context"
-	"net/http"
 
 	"github.com/Ikit24/gomini/internal/database"
 	"github.com/Ikit24/gomini/internal/gemini"
@@ -36,5 +34,7 @@ func main() {
 	defer db.Close()
 
 	servr := handlers.NewServer(db, aiClient)
-	log.Fatal(servr.ListenAndServ())
+
+	log.Println("🚀 Server starting on http://localhost:8080")
+	log.Fatal(servr.ListenAndServe(":8080"))
 }

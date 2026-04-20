@@ -2,7 +2,6 @@ package database
 
 import (
 	"database/sql"
-	"fmt"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -28,5 +27,5 @@ func Open(path string) (*DB, error) {
 		return nil, err
 	}
 
-	return &DB{db: conn}
+	return &DB{db: conn}, nil
 }

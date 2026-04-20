@@ -1,8 +1,10 @@
 package database
 
 import (
+	"fmt"
 	"time"
 	"errors"
+	"database/sql"
 
 	"github.com/google/uuid"
 )
@@ -80,7 +82,7 @@ func (d *DB) UpdateSessionTitle(s *Session) error {
 		return fmt.Errorf("couldn't update session title: %w", err)
 	}
 
-	rowsAffected, err := res.rowsAffected()
+	rowsAffected, err := res.RowsAffected()
 	if err != nil {
 		return err
 	}

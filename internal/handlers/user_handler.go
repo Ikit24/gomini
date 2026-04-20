@@ -1,11 +1,11 @@
 package handlers
 
-import {
+import (
 	"net/http"
 
 	"github.com/Ikit24/gomini/internal/database"
 	"github.com/Ikit24/gomini/internal/gemini"
-}
+)
 
 type Server struct {
 	DB *database.DB
@@ -17,13 +17,6 @@ func NewServer(db *database.DB, ai *gemini.Client) *Server {
 		DB: db,
 		AI: ai,
 	}
-}
-
-func (http.ResponseWriter, *http.Request) {
-	//
-}
-func (db *database.DB, ai *gemini.Client) *Server() {
-	//to be filled
 }
 
 func (s *Server) ListenAndServe(addr string) error {
