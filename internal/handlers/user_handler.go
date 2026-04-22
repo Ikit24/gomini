@@ -30,7 +30,19 @@ func (s *Server) ListenAndServe(addr string) error {
 	return http.ListenAndServe(addr, mux)
 }
 
-func (s *Server) HandleCreateUser(w http.ResponseWriter, r *http.Request) {}
+func (s *Server) HandleCreateUser(w http.ResponseWriter, r *http.Request) {
+	type userParams struct {
+		Email string `json:"email"`
+	}
+
+	var params userParams
+	if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
+		respondWithError(w, http.StatusBadRequest, "invalid JSON")
+		return
+	}
+
+	respondWithJSON(w, http.StatusCreated, map[string]string{"status": "user created"})
+}
 
 func (s *Server) HandleCreateSession(w http.ResponseWriter, r *http.Request) {}
 
