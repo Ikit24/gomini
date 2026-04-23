@@ -15,13 +15,13 @@ func (d *DB) CreateUser(u *User) error {
 		return err
 	}
 
-	now := time.Now()
+	now := time.Now().UTC()
 	u.ID = id
 	u.CreatedAt = now
 	u.UpdatedAt = now
 
-	query := `INSERT INTO users (id, name, created_at, updated_at) VALUES (?, ?, ?, ?)`
-	_, err =  d.db.Exec(query, u.ID, u.Name, u.CreatedAt, u.UpdatedAt)
+	query := `INSERT INTO users (id, email, name, created_at, updated_at) VALUES (?, ?, ?, ?, ?)`
+	_, err =  d.db.Exec(query, u.ID, u.Email, u.Name, u.CreatedAt, u.UpdatedAt)
 	if err != nil {
 		return err
 	}
@@ -31,11 +31,11 @@ func (d *DB) CreateUser(u *User) error {
 
 func (d *DB) GetUserByName(name string) (*User, error) {
 	var u User
-	query := `SELECT id, name, created_at, updated_at FROM users WHERE name = ?`
+	query := `SELECT id, email, name, created_at, updated_at FROM users WHERE name = ?`
 
 	row := d.db.QueryRow(query, name)
 
-	err := row.Scan(&u.ID, &u.Name, &u.CreatedAt, &u.UpdatedAt)
+	err := row.Scan(&u.ID, &u.Email, &u.Name, &u.CreatedAt, &u.UpdatedAt)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, nil

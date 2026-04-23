@@ -1,9 +1,10 @@
 -- +goose Up
 CREATE TABLE users (
     id TEXT PRIMARY KEY,
-    name TEXT NOT NULL UNIQUE,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    email TEXT UNIQUE NOT NULL,
+    name TEXT UNIQUE NOT NULL,
+    created_at TIMESTAMP NOT NULL,
+    updated_at TIMESTAMP NOT NULL
 );
 
 -- +goose Down

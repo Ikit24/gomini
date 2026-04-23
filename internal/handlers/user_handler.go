@@ -33,6 +33,7 @@ func (s *Server) ListenAndServe(addr string) error {
 func (s *Server) HandleCreateUser(w http.ResponseWriter, r *http.Request) {
 	type userParams struct {
 		Email string `json:"email"`
+		Name  string `json:"name"`
 	}
 
 	var params userParams
@@ -41,7 +42,18 @@ func (s *Server) HandleCreateUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	respondWithJSON(w, http.StatusCreated, map[string]string{"status": "user created"})
+	userToCreate := database.User{
+		Email: params.Email,
+		Name: params.Name,
+	}
+
+	err := s.DB.CreateUser(&userToCreate)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "error couldn't create user")
+		return
+	}
+
+	respondWithJSON(w, http.StatusCreated, userToCreate)
 }
 
 func (s *Server) HandleCreateSession(w http.ResponseWriter, r *http.Request) {}
