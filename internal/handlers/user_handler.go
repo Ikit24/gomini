@@ -56,6 +56,36 @@ func (s *Server) HandleCreateUser(w http.ResponseWriter, r *http.Request) {
 	respondWithJSON(w, http.StatusCreated, userToCreate)
 }
 
-func (s *Server) HandleCreateSession(w http.ResponseWriter, r *http.Request) {}
+func (s *Server) HandleCreateSession(w http.ResponseWriter, r *http.Request) {
+	type sessionParams struct {
+		Name string `json:"name"`
+		UserID string `json:"user_id"`
+	}
+
+	var params sessionParams
+	if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
+		respondWithError(w, http.StatusBadRequest, "invalid JSON")
+		return
+	}
+
+	userID, err := uuid.Parse(params.UserID)
+	if err != nil {
+		respondWithError(w, http.StatusBadRequest, "invalid user_id format")
+		return
+	}
+
+	sessionToCreate := database.Session{
+		UserID: userID,
+		Title: params.Name,
+	}
+
+	err := s.DB.CreateSession(&sessionToCreate)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "error couldn't create session")
+		return
+	}
+
+	respondWithJSON(w, http.StatusCreated, sessionToCreate)
+}
 
 func (s *Server) HandleGetSessionByUserID(w http.ResponseWriter, r *http.Request) {}

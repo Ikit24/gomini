@@ -9,6 +9,14 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
+type User struct {
+	ID        uuid.UUID `db:"id"`
+	Email     string    `db:"email"`
+	Name      string    `db:"name"`
+	CreatedAt time.Time `db:"created_at"`
+	UpdatedAt time.Time `db:"updated_at"`
+}
+
 func (d *DB) CreateUser(u *User) error {
 	id, err := uuid.NewRandom()
 	if err != nil {
