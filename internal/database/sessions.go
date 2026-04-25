@@ -23,7 +23,7 @@ func (d *DB) CreateSession(s *Session) error {
 		return err
 	}
 
-	now := time.Now()
+	now := time.Now().UTC()
 	s.ID = id
 	s.CreatedAt = now
 	s.UpdatedAt = now
