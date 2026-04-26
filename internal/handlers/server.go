@@ -23,9 +23,11 @@ func (s *Server) ListenAndServe(addr string) error {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("POST /api/users", s.HandleCreateUser)
-	mux.HandleFunc("POST /api/sessions", s.HandleCreateSession)
-	mux.HandleFunc("POST /api/sessions/{id}/HandlerCreateMessage", s.HandleCreateSession)
-	mux.HandleFunc("GET /api/sessions/{user_id}", s.HandleGetSessionByUserID)
+	
+	mux.HandleFunc("GET /api/users/{user_id}/sessions", s.HandleGetSessionByUserID)
+	mux.HandleFunc("POST /api/users/{user_id}/sessions", s.HandleCreateSession)
+
+	mux.HandleFunc("POST /api/sessions/{id}/messages", s.HandleCreateMessage)
 
 	return http.ListenAndServe(addr, mux)
 }
