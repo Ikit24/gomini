@@ -7,9 +7,9 @@ import (
 	"github.com/Ikit24/gomini/internal/gemini"
 )
 
-func (s *Sever) HandlerCreateMessage(w http.ResponseWriter, r *http.Request) {
+func (s *Server) HandlerCreateMessage(w http.ResponseWriter, r *http.Request) {
 	type messageParams struct {
-		ID string `json:"id"`
+		Content string `json:"content"`
 	}
 
 	var params messageParams
@@ -23,6 +23,10 @@ func (s *Sever) HandlerCreateMessage(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		RespondWithError(w, http.StatusBadRequest, "invalid session id format")
 		return
+	}
+
+	userMessage := database.Message{
+		params.Role: RoleUser,
 	}
 
 	messageToCreate := s.AI
