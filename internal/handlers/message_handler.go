@@ -26,17 +26,14 @@ func (s *Server) HandlerCreateMessage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	userMessage := database.Message{
-		params.Role: RoleUser,
+		sessionID: SessionID,
+		Role:      database.RoleUser,
+		Content:   params.Content,
 	}
 
-	messageToCreate := s.AI
-	
-	// type Message struct {
-	// 	ID        uuid.UUID `json:"id"         db:"id"`
-	// 	SessionID uuid.UUID `json:"session_id" db:"session_id"`
-	// 	Role      RoleType  `json:"role"       db:"role"`
-	// 	Content   string    `json:"content"    db:"content"`
-	// 	CreatedAt time.Time `json:"created_at" db:"created_at"`
-	// }
-
+	err = s.DB.CreateMessage(&userMessage)
+	if err != nil {
+		RespondWithError(w, http.StatusBadRequest, "couldn't create message")
+		return
+	}
 }
