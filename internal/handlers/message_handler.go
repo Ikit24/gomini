@@ -26,14 +26,34 @@ func (s *Server) HandlerCreateMessage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	userMessage := database.Message{
-		sessionID: SessionID,
+		SessionID: sessionID,
 		Role:      database.RoleUser,
 		Content:   params.Content,
 	}
 
 	err = s.DB.CreateMessage(&userMessage)
 	if err != nil {
-		RespondWithError(w, http.StatusBadRequest, "couldn't create message")
+		RespondWithError(w, http.InternalServerError, "couldn't create message")
 		return
 	}
+
+	aiResponse, err := s.AI.GenerateContent(r.Context(), params.Content)
+	if err != nil {
+		RespondWithError(w, http.InternalServerError, "failed to get response from the AI")
+		return
+	}
+
+	aiMessage := database.Message{
+		SessionID: sessionID,
+		Role:      database.RoleAssistant,
+		Content:   aiResponse,
+	}
+
+	err = s.DB.CreateMessage(&aiMessage)
+	if err != nil {
+		RespondWithError(w, http.InternalServerError, "couldn't create message")
+		return
+	}
+
+	RespondWithJSON(w, http.StatusCreated, aiMessage)
 }
