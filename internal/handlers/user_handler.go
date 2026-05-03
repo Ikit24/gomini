@@ -1,16 +1,19 @@
 package handlers
 
 import (
+	"time"
+	"log"
 	"net/http"
+	"encoding/json"
 
+	"github.com/google/uuid"
 	"github.com/Ikit24/gomini/internal/database"
-	"github.com/Ikit24/gomini/internal/gemini"
 )
 
 func (s *Server) HandleCreateUser(w http.ResponseWriter, r *http.Request) {
 	type userParams struct {
-		Email string `json:"email"`
 		Name  string `json:"name"`
+		Email string `json:"email"`
 	}
 
 	var params userParams
@@ -20,12 +23,16 @@ func (s *Server) HandleCreateUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	userToCreate := database.User{
-		Email: params.Email,
-		Name: params.Name,
+		ID:        uuid.New(),
+		Name:      params.Name,
+		Email:     params.Email,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
 	}
 
 	err := s.DB.CreateUser(&userToCreate)
 	if err != nil {
+		log.Printf("Database error: %v", err)
 		RespondWithError(w, http.StatusInternalServerError, "error couldn't create user")
 		return
 	}

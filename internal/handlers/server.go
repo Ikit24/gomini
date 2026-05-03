@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"context"
 
 	"github.com/Ikit24/gomini/internal/database"
 	"github.com/Ikit24/gomini/internal/gemini"
@@ -10,6 +11,7 @@ import (
 type Server struct {
 	DB *database.DB
 	AI *gemini.Client
+	httpServer *http.Server
 }
 
 func NewServer(db *database.DB, ai *gemini.Client) *Server {
@@ -17,6 +19,10 @@ func NewServer(db *database.DB, ai *gemini.Client) *Server {
 		DB: db,
 		AI: ai,
 	}
+}
+
+func (s *Server) Shutdown(ctx context.Context) error {
+	return s.httpServer.Shutdown(ctx)
 }
 
 func (s *Server) ListenAndServe(addr string) error {
@@ -28,6 +34,12 @@ func (s *Server) ListenAndServe(addr string) error {
 	mux.HandleFunc("POST /api/users/{user_id}/sessions", s.HandleCreateSession)
 
 	mux.HandleFunc("POST /api/sessions/{id}/messages", s.HandleCreateMessage)
+	mux.HandleFunc("GET /api/sessions/{session_id}/messages", s.HandleListMessages)
 
-	return http.ListenAndServe(addr, mux)
+	s.httpServer = &http.Server{
+		Addr:    addr,
+		Handler: mux,
+	}
+
+	return s.httpServer.ListenAndServe()
 }

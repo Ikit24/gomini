@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"log"
 	"context"
+	"time"
 
 	"github.com/Ikit24/gomini/internal/database"
 	"github.com/Ikit24/gomini/internal/gemini"
@@ -54,7 +55,7 @@ func main() {
 	shutdownCtx, cancel := context.WithTimeout(ctx, 10 * time.Second)
 	defer cancel()
 
-	err := servr.Shutdown(shutdownCtx)
+	err = servr.Shutdown(shutdownCtx)
 	if err != nil {
 		log.Printf("HTTP server Shutdown: %v", err)
 	}

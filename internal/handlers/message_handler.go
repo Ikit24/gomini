@@ -2,12 +2,13 @@ package handlers
 
 import (
 	"net/http"
+	"encoding/json"
 
+	"github.com/google/uuid"
 	"github.com/Ikit24/gomini/internal/database"
-	"github.com/Ikit24/gomini/internal/gemini"
 )
 
-func (s *Server) HandlerCreateMessage(w http.ResponseWriter, r *http.Request) {
+func (s *Server) HandleCreateMessage(w http.ResponseWriter, r *http.Request) {
 	type messageParams struct {
 		Content string `json:"content"`
 	}
@@ -27,38 +28,38 @@ func (s *Server) HandlerCreateMessage(w http.ResponseWriter, r *http.Request) {
 
 	userMessage := database.Message{
 		SessionID: sessionID,
-		Role:      database.RoleUser,
+		Role:      database.UserRole,
 		Content:   params.Content,
 	}
 
 	err = s.DB.CreateMessage(&userMessage)
 	if err != nil {
-		RespondWithError(w, http.InternalServerError, "couldn't create message")
+		RespondWithError(w, http.StatusInternalServerError, "couldn't create message")
 		return
 	}
 
 	aiResponse, err := s.AI.GenerateContent(r.Context(), params.Content)
 	if err != nil {
-		RespondWithError(w, http.InternalServerError, "failed to get response from the AI")
+		RespondWithError(w, http.StatusInternalServerError, "failed to get response from the AI")
 		return
 	}
 
 	aiMessage := database.Message{
 		SessionID: sessionID,
-		Role:      database.RoleAssistant,
+		Role:      database.ModelRole,
 		Content:   aiResponse,
 	}
 
 	err = s.DB.CreateMessage(&aiMessage)
 	if err != nil {
-		RespondWithError(w, http.InternalServerError, "couldn't create message")
+		RespondWithError(w, http.StatusInternalServerError, "couldn't create message")
 		return
 	}
 
 	RespondWithJSON(w, http.StatusCreated, aiMessage)
 }
 
-func (s *Server) HandlerListMessages(w http.ResponseWriter, r *http.Request) {
+func (s *Server) HandleListMessages(w http.ResponseWriter, r *http.Request) {
 	sessionIDString := r.PathValue("session_id")
 	sessionID, err := uuid.Parse(sessionIDString)
 	if err != nil {
@@ -68,7 +69,7 @@ func (s *Server) HandlerListMessages(w http.ResponseWriter, r *http.Request) {
 
 	messages, err := s.DB.GetMessagesBySessionID(sessionID)
 	if err != nil {
-		RespondWithError(w, http.InternalServerError, "couldn't retrieve messages")
+		RespondWithError(w, http.StatusInternalServerError, "couldn't retrieve messages")
 		return
 	}
 

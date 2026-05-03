@@ -2,9 +2,10 @@ package handlers
 
 import (
 	"net/http"
+	"encoding/json"
 
+	"github.com/google/uuid"
 	"github.com/Ikit24/gomini/internal/database"
-	"github.com/Ikit24/gomini/internal/gemini"
 )
 
 func (s *Server) HandleCreateSession(w http.ResponseWriter, r *http.Request) {
