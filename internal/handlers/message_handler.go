@@ -57,3 +57,20 @@ func (s *Server) HandlerCreateMessage(w http.ResponseWriter, r *http.Request) {
 
 	RespondWithJSON(w, http.StatusCreated, aiMessage)
 }
+
+func (s *Server) HandlerListMessages(w http.ResponseWriter, r *http.Request) {
+	sessionIDString := r.PathValue("session_id")
+	sessionID, err := uuid.Parse(sessionIDString)
+	if err != nil {
+		RespondWithError(w, http.StatusBadRequest, "invalid session id format")
+		return
+	}
+
+	messages, err := s.DB.GetMessagesBySessionID(sessionID)
+	if err != nil {
+		RespondWithError(w, http.InternalServerError, "couldn't retrieve messages")
+		return
+	}
+
+	RespondWithJSON(w, http.StatusOK, messages)
+}
