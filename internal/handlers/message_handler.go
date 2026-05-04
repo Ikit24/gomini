@@ -27,9 +27,13 @@ func (s *Server) HandleCreateMessage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	userMessage := database.Message{
+		ID:        uuid.New(),
 		SessionID: sessionID,
+		UserID:    session.UserID,
 		Role:      database.UserRole,
 		Content:   params.Content,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
 	}
 
 	err = s.DB.CreateMessage(&userMessage)
@@ -45,9 +49,13 @@ func (s *Server) HandleCreateMessage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	aiMessage := database.Message{
+		ID:        uuid.New(),
 		SessionID: sessionID,
+		UserID:    session.UserID,
 		Role:      database.ModelRole,
 		Content:   aiResponse,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
 	}
 
 	err = s.DB.CreateMessage(&aiMessage)
