@@ -10,10 +10,12 @@ CREATE TABLE sessions(
 
 CREATE TABLE messages(
     id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL REFERENCES users(id),
     session_id TEXT NOT NULL,
     role TEXT NOT NULL,
     content TEXT NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (session_id) REFERENCES sessions(id) ON DELETE CASCADE
 );
 

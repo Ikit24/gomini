@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"time"
 	"net/http"
 	"encoding/json"
 
@@ -26,10 +27,17 @@ func (s *Server) HandleCreateMessage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	sessionUserIDString := r.PathValue("user_id")
+	sessionUserID, err := uuid.Parse(sessionUserIDString)
+	if err != nil {
+		RespondWithError(w, http.StatusBadRequest, "invalid session id format")
+		return
+	}
+
 	userMessage := database.Message{
 		ID:        uuid.New(),
 		SessionID: sessionID,
-		UserID:    session.UserID,
+		UserID:    sessionUserID,
 		Role:      database.UserRole,
 		Content:   params.Content,
 		CreatedAt: time.Now(),
@@ -51,7 +59,7 @@ func (s *Server) HandleCreateMessage(w http.ResponseWriter, r *http.Request) {
 	aiMessage := database.Message{
 		ID:        uuid.New(),
 		SessionID: sessionID,
-		UserID:    session.UserID,
+		UserID:    sessionUserID,
 		Role:      database.ModelRole,
 		Content:   aiResponse,
 		CreatedAt: time.Now(),
