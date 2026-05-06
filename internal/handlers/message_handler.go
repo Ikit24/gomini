@@ -23,21 +23,20 @@ func (s *Server) HandleCreateMessage(w http.ResponseWriter, r *http.Request) {
 	sessionIDString := r.PathValue("id")
 	sessionID, err := uuid.Parse(sessionIDString)
 	if err != nil {
-		RespondWithError(w, http.StatusBadRequest, "invalid session id format")
+		RespondWithError(w, http.StatusBadRequest, "invalid session_id format")
 		return
 	}
 
-	sessionUserIDString := r.PathValue("user_id")
-	sessionUserID, err := uuid.Parse(sessionUserIDString)
+	session, err := s.DB.GetSessionByID(sessionID)
 	if err != nil {
-		RespondWithError(w, http.StatusBadRequest, "invalid session id format")
+		RespondWithError(w, http.StatusBadRequest, "session not found")
 		return
 	}
 
 	userMessage := database.Message{
 		ID:        uuid.New(),
 		SessionID: sessionID,
-		UserID:    sessionUserID,
+		UserID:    session.UserID,
 		Role:      database.UserRole,
 		Content:   params.Content,
 		CreatedAt: time.Now(),
@@ -59,7 +58,7 @@ func (s *Server) HandleCreateMessage(w http.ResponseWriter, r *http.Request) {
 	aiMessage := database.Message{
 		ID:        uuid.New(),
 		SessionID: sessionID,
-		UserID:    sessionUserID,
+		UserID:    session.UserID,
 		Role:      database.ModelRole,
 		Content:   aiResponse,
 		CreatedAt: time.Now(),

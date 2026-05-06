@@ -64,17 +64,16 @@ func (d *DB) GetMessagesBySessionID(sessionID uuid.UUID) ([]Message, error) {
 }
 
 func (d *DB) CreateMessage(m *Message) error {
-	id, err := uuid.NewRandom()
-	if err != nil {
-		return err
+	if m.ID == uuid.Nil {
+		m.ID = uuid.New()
 	}
 
 	now := time.Now()
-	m.ID = id
 	m.CreatedAt = now
+	m.UpdatedAt = now
 
-	query := `INSERT INTO messages (id, session_id, role, content, created_at) VALUES (?, ?, ?, ?, ?)`
-	_, err = d.db.Exec(query, m.ID, m.SessionID, m.Role, m.Content, m.CreatedAt)
+	query := `INSERT INTO messages (id, session_id, user_id, role, content, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)`
+	_, err := d.db.Exec(query, m.ID, m.SessionID, m.UserID, m.Role, m.Content, m.CreatedAt, m.CreatedAt)
 	if err != nil {
 		return err
 	}
