@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"time"
 	"net/http"
 	"encoding/json"
@@ -51,6 +52,7 @@ func (s *Server) HandleCreateMessage(w http.ResponseWriter, r *http.Request) {
 
 	aiResponse, err := s.AI.GenerateContent(r.Context(), params.Content)
 	if err != nil {
+		fmt.Printf("AI Client error: %v\n", err)
 		RespondWithError(w, http.StatusInternalServerError, "failed to get response from the AI")
 		return
 	}

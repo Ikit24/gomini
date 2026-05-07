@@ -46,7 +46,7 @@ func NewClient(ctx context.Context, apiKey string) (*Client, error) {
 		return nil, err
 	}
 
-	m := c.GenerativeModel("gemini-1.5-flash")
+	m := c.GenerativeModel("gemini-2.5-flash")
 
 	return &Client{
 		genaiClient: c,
