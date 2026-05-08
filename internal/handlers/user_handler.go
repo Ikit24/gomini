@@ -39,5 +39,3 @@ func (s *Server) HandleCreateUser(w http.ResponseWriter, r *http.Request) {
 
 	RespondWithJSON(w, http.StatusCreated, userToCreate)
 }
-
-
