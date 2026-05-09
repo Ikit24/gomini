@@ -37,10 +37,20 @@ func (d *DB) CreateSession(s *Session) error {
 	return nil
 }
 
-func (d *DB) DeleteSession(sessionID uuid.UUID) error {
-	query := `DELETE FROM sessions WHERE id = ?`
+func (d *DB) DeleteSession(sessionID , userID uuid.UUID) error {
+	query := `DELETE FROM sessions WHERE id = ? AND user_id = ?`
 
-	_, err := d.db.Exec(query, sessionID)
+	res, err := d.db.Exec(query, sessionID, userID)
+	if  err != nil {
+		return err
+	}
+
+	rows, err := res.RowsAffected()
+	if rows == 0 {
+		fmt.Println("Unauthorized or session not found")
+		return
+	}
+
 	return err
 }
 

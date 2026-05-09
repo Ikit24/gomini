@@ -39,7 +39,7 @@ func (s *Server) ListenAndServe(addr string) error {
 
 	mux.HandleFunc("PATCH /api/sessions/{id}", s.HandleUpdateSession)
 
-	mux.HandlerFunc("DELETE /api/sessions/{id}", s.HandleDeleteSession)
+	mux.HandlerFunc("DELETE /api/users/{user_id}/sessions/{session_id}", s.HandleDeleteSession)
 
 	s.httpServer = &http.Server{
 		Addr:    addr,

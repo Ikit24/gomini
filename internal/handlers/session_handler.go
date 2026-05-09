@@ -82,7 +82,14 @@ func (s *Server) HandleDeleteSession(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = s.DB.DeleteSession(userID)
+	sessionIDString := r.PathValue("id")
+	sessionID, err := uuid.Parse(sessionIDString)
+	if err != nil {
+		RespondWithError(w, http.StatusBadRequest, "invalid session_id format")
+		return
+	}
+
+	_, err = s.DB.DeleteSession(sessionID)
 	if err != nil {
 		RespondWithError(w, http.StatusInternalServerError, "error couldn't find session to delete")
 		return
