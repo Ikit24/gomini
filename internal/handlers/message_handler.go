@@ -21,7 +21,7 @@ func (s *Server) HandleCreateMessage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	sessionIDString := r.PathValue("id")
+	sessionIDString := r.PathValue("session_id")
 	sessionID, err := uuid.Parse(sessionIDString)
 	if err != nil {
 		RespondWithError(w, http.StatusBadRequest, "invalid session_id format")

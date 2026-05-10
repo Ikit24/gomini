@@ -109,11 +109,11 @@ func (d *DB) UpdateSessionTitle(s *Session) error {
 	return nil
 }
 
-func (d *DB) GetSessionByID(ID uuid.UUID) (*Session, error) {
+func (d *DB) GetSessionByID(id uuid.UUID) (*Session, error) {
 	var s Session
 	query := `SELECT id, user_id, title, created_at, updated_at FROM sessions WHERE id = ?`
 
-	err := d.db.QueryRow(query, ID).Scan(&s.ID, &s.UserID, &s.Title, &s.CreatedAt, &s.UpdatedAt)
+	err := d.db.QueryRow(query, id).Scan(&s.ID, &s.UserID, &s.Title, &s.CreatedAt, &s.UpdatedAt)
 	if err != nil {
 		if err == sql.ErrNoRows{
 			return nil, fmt.Errorf("lookup failed: %w", sql.ErrNoRows)
@@ -122,4 +122,14 @@ func (d *DB) GetSessionByID(ID uuid.UUID) (*Session, error) {
 	}
 
 	return &s, nil
+}
+
+func (d *DB) UpdateSession(id uuid.UUID, title string) error {
+	query := `UPDATE sessions SET title = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?`
+	_, err := d.db.Exec(query, title, id)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

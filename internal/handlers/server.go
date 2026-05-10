@@ -21,6 +21,10 @@ func NewServer(db *database.DB, ai *gemini.Client) *Server {
 	}
 }
 
+func (s *Server) HandleHealthCheck(w http.ResponseWriter, r *http.Request) {
+	RespondWithJSON(w, http.StatusOK, map[string]string{"status":"available"})
+}
+
 func (s *Server) Shutdown(ctx context.Context) error {
 	return s.httpServer.Shutdown(ctx)
 }
@@ -33,14 +37,13 @@ func (s *Server) ListenAndServe(addr string) error {
 	mux.HandleFunc("POST /api/users/{user_id}/sessions", s.HandleCreateSession)
 	mux.HandleFunc("GET /api/users/{user_id}/sessions", s.HandleGetSessionByUserID)
 
+	mux.HandleFunc("GET /healthz", s.HandleHealthCheck)
 	mux.HandleFunc("GET /api/sessions/{id}", s.HandleGetSessionByID)
 	mux.HandleFunc("PATCH /api/sessions/{id}", s.HandleUpdateSession)
 	mux.HandleFunc("DELETE /api/users/{user_id}/sessions/{session_id}", s.HandleDeleteSession)
 
-	mux.HandleFunc("POST /api/sessions/{id}/messages", s.HandleCreateMessage)
+	mux.HandleFunc("POST /api/sessions/{session_id}/messages", s.HandleCreateMessage)
 	mux.HandleFunc("GET /api/sessions/{session_id}/messages", s.HandleListMessages)
-
-
 
 	s.httpServer = &http.Server{
 		Addr:    addr,

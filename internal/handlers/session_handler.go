@@ -100,5 +100,32 @@ func (s *Server) HandleDeleteSession(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	RespondWithJSON(w, http.StatusOK)
+	RespondWithJSON(w, http.StatusOK, nil)
+}
+
+func (s *Server) HandleUpdateSession(w http.ResponseWriter, r *http.Request) {
+	sessionIDString := r.PathValue("id")
+	sessionID, err := uuid.Parse(sessionIDString)
+	if err != nil {
+		RespondWithError(w, http.StatusBadRequest, "invalid session_id format")
+		return
+	}
+
+	type sessionParams struct {
+		Title string `json:"title"`
+	}
+
+	var params sessionParams
+	if err := json.NewDecoder(r.Body).Decode(&params); err != nil {
+		RespondWithError(w, http.StatusBadRequest, "invalid request body")
+		return
+	}
+
+	err = s.DB.UpdateSession(sessionID, params.Title)
+	if err != nil {
+		RespondWithError(w, http.StatusInternalServerError, "couldn't update session")
+		return
+	}
+
+	RespondWithJSON(w, http.StatusOK, map[string]string{"status":"updated"})
 }
