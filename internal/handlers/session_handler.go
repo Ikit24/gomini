@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"errors"
 	"net/http"
 	"encoding/json"
 
@@ -89,9 +90,13 @@ func (s *Server) HandleDeleteSession(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = s.DB.DeleteSession(sessionID)
+	err = s.DB.DeleteSession(sessionID, userID)
 	if err != nil {
-		RespondWithError(w, http.StatusInternalServerError, "error couldn't find session to delete")
+		if errors.Is(err, database.ErrNotFound) {
+			RespondWithError(w, http.StatusNotFound, "session no found")
+			return
+		}
+		RespondWithError(w, http.StatusInternalServerError, "database error")
 		return
 	}
 

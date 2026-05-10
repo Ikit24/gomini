@@ -17,6 +17,8 @@ type Session struct {
 	UpdatedAt time.Time `json:"updated_at" db:"updated_at"`
 }
 
+var ErrNotFound  = errors.New("resource not found or unauthorized")
+
 func (d *DB) CreateSession(s *Session) error {
 	id, err := uuid.NewRandom()
 	if err != nil {
@@ -46,12 +48,15 @@ func (d *DB) DeleteSession(sessionID , userID uuid.UUID) error {
 	}
 
 	rows, err := res.RowsAffected()
-	if rows == 0 {
-		fmt.Println("Unauthorized or session not found")
-		return
+	if err != nil {
+		return err
 	}
 
-	return err
+	if rows == 0 {
+		return ErrNotFound
+	}
+
+	return nil
 }
 
 func (d *DB) GetSessionsByUserID(userID uuid.UUID) ([]Session, error) {
