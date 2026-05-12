@@ -47,7 +47,7 @@ func (s *Server) ListenAndServe(addr string) error {
 
 	s.httpServer = &http.Server{
 		Addr:    addr,
-		Handler: mux,
+		Handler: handler,
 	}
 
 	return s.httpServer.ListenAndServe()
