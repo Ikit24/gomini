@@ -45,6 +45,8 @@ func (s *Server) ListenAndServe(addr string) error {
 	mux.HandleFunc("POST /api/sessions/{session_id}/messages", s.HandleCreateMessage)
 	mux.HandleFunc("GET /api/sessions/{session_id}/messages", s.HandleListMessages)
 
+	var handler http.Handler = mux
+	handler = s.middleware(handler)
 	s.httpServer = &http.Server{
 		Addr:    addr,
 		Handler: handler,
