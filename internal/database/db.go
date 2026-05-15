@@ -15,6 +15,10 @@ func (d *DB) Close() error {
 	return d.db.Close()
 }
 
+func (d *DB) Ping() error {
+	return d.db.Ping()
+}
+
 func Open(path string) (*DB, error) {
 	dsn := path + "?_foreign_keys=on"
 	conn, err := sql.Open("sqlite3", dsn)

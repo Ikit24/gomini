@@ -22,6 +22,12 @@ func NewServer(db *database.DB, ai *gemini.Client) *Server {
 }
 
 func (s *Server) HandleHealthCheck(w http.ResponseWriter, r *http.Request) {
+	err := s.DB.Ping()
+	if err != nil {
+		RespondWithError(w, http.StatusServiceUnavailable, "database unreachable")
+		return
+	}
+
 	RespondWithJSON(w, http.StatusOK, map[string]string{"status":"available"})
 }
 
@@ -47,6 +53,7 @@ func (s *Server) ListenAndServe(addr string) error {
 
 	var handler http.Handler = mux
 	handler = s.middleware(handler)
+
 	s.httpServer = &http.Server{
 		Addr:    addr,
 		Handler: handler,
