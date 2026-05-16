@@ -14,6 +14,11 @@ type Client struct {
 	model       *genai.GenerativeModel
 }
 
+type Message struct {
+	Role    string
+	Content string
+}
+
 func(c *Client) GenerateContent(ctx context.Context, prompt string) (string, error) {
 	resp, err := c.model.GenerateContent(ctx, genai.Text(prompt))
 	if err != nil {
@@ -56,4 +61,24 @@ func NewClient(ctx context.Context, apiKey string) (*Client, error) {
 
 func (c *Client) Close() error {
 	return c.genaiClient.Close()
+}
+
+func (c *Client) GenerateChatResponse(ctx context.Context, history[] Message, newPrompt string) (string, error) {
+	cs := c.model.StartChat()
+
+	sdkHistory := make([]*genai.Content, 0, len(history))
+	for _, msg := range history {
+		sdkMsg := &genai.Content{
+			Role: msg.Role,
+			Parts: []genai.Part{genai.Text(msg.Content)}
+		}
+		sdkHistory = append(sdkHistory, sdkMsg)
+	}
+
+	cs.History = sdkHistory
+	
+	resp, err := cs.SendMessage(ctx, genai.Text(newPrompt))
+	if err != nil {
+		return "", err
+	}
 }

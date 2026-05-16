@@ -50,7 +50,22 @@ func (s *Server) HandleCreateMessage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	aiResponse, err := s.AI.GenerateContent(r.Context(), params.Content)
+	dbMessages, err := s.DB.GetMessagesBySessionID(sessionID)
+	if err != nil {
+		RespondWithError(w, http.StatusInternalServerError, "couldn't retrieve message")
+		return
+	}
+
+	geminiMessages := make([]gemini.Message, 0, len(dbMessages))
+	for _, dbMsg := range dbMessages {
+		gMsg := gemini.Message{
+			Role: dbMsg.Role,
+			Content: dbMsg.Content,
+		}
+		geminiMessages = append(geminiMessages, gMsg)
+	}
+
+	aiResponse, err := s.AI.GenerateChatResponse(r.Context(), geminiMessages, params.Content)
 	if err != nil {
 		fmt.Printf("AI Client error: %v\n", err)
 		RespondWithError(w, http.StatusInternalServerError, "failed to get response from the AI")
