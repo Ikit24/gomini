@@ -59,20 +59,20 @@ func (s *Server) HandleGetSessionByUserID(w http.ResponseWriter, r *http.Request
 }
 
 func (s *Server) HandleGetSessionByID(w http.ResponseWriter, r *http.Request) {
-	userIDString := r.PathValue("user_id")
-	userID, err := uuid.Parse(userIDString)
+	sessionIDString := r.PathValue("id")
+	sessionID, err := uuid.Parse(sessionIDString)
 	if err != nil {
-		RespondWithError(w, http.StatusBadRequest, "invalid user_id format")
+		RespondWithError(w, http.StatusBadRequest, "invalid session_id format")
 		return
 	}
 
-	sessions, err := s.DB.GetSessionByID(userID)
+	session, err := s.DB.GetSessionByID(sessionID)
 	if err != nil {
 		RespondWithError(w, http.StatusInternalServerError, "error couldn't get session")
 		return
 	}
 
-	RespondWithJSON(w, http.StatusOK, sessions)
+	RespondWithJSON(w, http.StatusOK, session)
 }
 
 func (s *Server) HandleDeleteSession(w http.ResponseWriter, r *http.Request) {
@@ -83,7 +83,7 @@ func (s *Server) HandleDeleteSession(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	sessionIDString := r.PathValue("id")
+	sessionIDString := r.PathValue("session_id")
 	sessionID, err := uuid.Parse(sessionIDString)
 	if err != nil {
 		RespondWithError(w, http.StatusBadRequest, "invalid session_id format")
