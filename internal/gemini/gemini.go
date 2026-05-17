@@ -69,7 +69,7 @@ func (c *Client) GenerateChatResponse(ctx context.Context, history[] Message, ne
 	for _, msg := range history {
 		sdkMsg := &genai.Content{
 			Role: msg.Role,
-			Parts: []genai.Part{genai.Text(msg.Content)}
+			Parts: []genai.Part{genai.Text(msg.Content)},
 		}
 		sdkHistory = append(sdkHistory, sdkMsg)
 	}

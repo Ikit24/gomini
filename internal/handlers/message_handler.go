@@ -8,6 +8,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/Ikit24/gomini/internal/database"
+	"github.com/Ikit24/gomini/internal/gemini"
 )
 
 func (s *Server) HandleCreateMessage(w http.ResponseWriter, r *http.Request) {
@@ -59,7 +60,7 @@ func (s *Server) HandleCreateMessage(w http.ResponseWriter, r *http.Request) {
 	geminiMessages := make([]gemini.Message, 0, len(dbMessages))
 	for _, dbMsg := range dbMessages {
 		gMsg := gemini.Message{
-			Role: dbMsg.Role,
+			Role: string(dbMsg.Role),
 			Content: dbMsg.Content,
 		}
 		geminiMessages = append(geminiMessages, gMsg)
