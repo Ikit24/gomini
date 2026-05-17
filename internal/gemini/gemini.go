@@ -30,7 +30,6 @@ func(c *Client) GenerateContent(ctx context.Context, prompt string) (string, err
 	}
 
 	var builder strings.Builder
-
 	for _, part := range resp.Candidates[0].Content.Parts {
 		if text, ok := part.(genai.Text); ok {
 			builder.WriteString(string(text))
@@ -74,11 +73,19 @@ func (c *Client) GenerateChatResponse(ctx context.Context, history[] Message, ne
 		}
 		sdkHistory = append(sdkHistory, sdkMsg)
 	}
-
 	cs.History = sdkHistory
 	
 	resp, err := cs.SendMessage(ctx, genai.Text(newPrompt))
 	if err != nil {
 		return "", err
 	}
+
+	var builder strings.Builder
+	for _, part := range resp.Candidates[0].Content.Parts {
+		if text, ok := part.(genai.Text); ok {
+			builder.WriteString(string(text))
+		}
+	}
+
+	return builder.String(), nil
 }
