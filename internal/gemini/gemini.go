@@ -75,7 +75,7 @@ func (c *Client) GenerateChatResponse(ctx context.Context, history[] Message, ne
 	}
 	cs.History = sdkHistory
 	
-	resp, err := cs.SendMessage(ctx, genai.Text(newPrompt))
+	resp, err := cs.SendMessageStream(ctx, genai.Text(newPrompt))
 	if err != nil {
 		return "", err
 	}
@@ -84,6 +84,17 @@ func (c *Client) GenerateChatResponse(ctx context.Context, history[] Message, ne
 	for _, part := range resp.Candidates[0].Content.Parts {
 		if text, ok := part.(genai.Text); ok {
 			builder.WriteString(string(text))
+		}
+	}
+
+	for {
+		resp, err = iter.Recv()
+		if err == io.EOF {
+			//stream finished
+			break
+		}
+		if err != nil {
+			return "", err
 		}
 	}
 
