@@ -62,7 +62,7 @@ func (c *Client) Close() error {
 	return c.genaiClient.Close()
 }
 
-func (c *Client) GenerateChatResponse(ctx context.Context, history[] Message, newPrompt string) (string, error) {
+func (c *Client) GenerateChatResponse(ctx context.Context, history []Message, newPrompt string) (<-chan string, error) {
 	cs := c.model.StartChat()
 
 	sdkHistory := make([]*genai.Content, 0, len(history))
@@ -81,11 +81,6 @@ func (c *Client) GenerateChatResponse(ctx context.Context, history[] Message, ne
 	}
 
 	var builder strings.Builder
-	for _, part := range resp.Candidates[0].Content.Parts {
-		if text, ok := part.(genai.Text); ok {
-			builder.WriteString(string(text))
-		}
-	}
 
 	for {
 		resp, err = iter.Recv()
@@ -96,7 +91,11 @@ func (c *Client) GenerateChatResponse(ctx context.Context, history[] Message, ne
 		if err != nil {
 			return "", err
 		}
-	}
+		for _, part := range resp.Candidates[0].Content.Parts {
+			if text, ok := part.(genai.Text); ok {
+				builder.WriteString(string(text))
+			}
+		}
 
 	return builder.String(), nil
 }
