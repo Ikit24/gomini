@@ -75,27 +75,32 @@ func (c *Client) GenerateChatResponse(ctx context.Context, history []Message, ne
 	}
 	cs.History = sdkHistory
 	
-	resp, err := cs.SendMessageStream(ctx, genai.Text(newPrompt))
+	iter, err := cs.SendMessageStream(ctx, genai.Text(newPrompt))
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	var builder strings.Builder
+	ch := make(chan string)
 
-	for {
-		resp, err = iter.Recv()
-		if err == io.EOF {
-			//stream finished
-			break
-		}
-		if err != nil {
-			return "", err
-		}
-		for _, part := range resp.Candidates[0].Content.Parts {
-			if text, ok := part.(genai.Text); ok {
-				builder.WriteString(string(text))
+	go func() {
+		defer close(ch)
+		for {
+			resp, err := iter.Recv()
+			if err == io.EOF {
+				//stream finished
+				break
+			}
+			if err != nil {
+				fmt.Println("couldn't stream data")
+				return
+			}
+			for _, part := range resp.Candidates[0].Content.Parts {
+				if text, ok := part.(genai.Text); ok {
+					ch <- string(text)
+				}
 			}
 		}
+	}()
 
-	return builder.String(), nil
+	return ch, nil
 }
