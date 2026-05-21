@@ -66,6 +66,19 @@ func (s *Server) HandleCreateMessage(w http.ResponseWriter, r *http.Request) {
 		geminiMessages = append(geminiMessages, gMsg)
 	}
 
+	var builder strings.Builder
+
+	for text := range aiResponse {
+		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+		w.Header().Set("Transfer-Encoding", "chunked")
+
+		flusher, ok := w.(http.Flusher)
+		if != ok {
+			RespondWithError(w, http.StatusInternalServerError, "streaming not supported")
+			return
+		}
+	}
+
 	aiResponse, err := s.AI.GenerateChatResponse(r.Context(), geminiMessages, params.Content)
 	if err != nil {
 		fmt.Printf("AI Client error: %v\n", err)
