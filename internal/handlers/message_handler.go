@@ -66,19 +66,6 @@ func (s *Server) HandleCreateMessage(w http.ResponseWriter, r *http.Request) {
 		geminiMessages = append(geminiMessages, gMsg)
 	}
 
-	var builder strings.Builder
-
-	for text := range aiResponse {
-		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-		w.Header().Set("Transfer-Encoding", "chunked")
-
-		flusher, ok := w.(http.Flusher)
-		if != ok {
-			RespondWithError(w, http.StatusInternalServerError, "streaming not supported")
-			return
-		}
-	}
-
 	aiResponse, err := s.AI.GenerateChatResponse(r.Context(), geminiMessages, params.Content)
 	if err != nil {
 		fmt.Printf("AI Client error: %v\n", err)
@@ -86,23 +73,38 @@ func (s *Server) HandleCreateMessage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var builder strings.Builder
+
+	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+	w.Header().Set("Transfer-Encoding", "chunked")
+
+	flusher, ok := w.(http.Flusher)
+	if !ok {
+		RespondWithError(w, http.StatusInternalServerError, "streaming not supported")
+		return
+	}
+
+	for text := range aiResponse {
+		fmt.Fprint(w, text)
+		flusher.Flush()
+		builder.WriteString(text)
+	}
+
 	aiMessage := database.Message{
 		ID:        uuid.New(),
 		SessionID: sessionID,
 		UserID:    session.UserID,
 		Role:      database.ModelRole,
-		Content:   aiResponse,
+		Content:   builder.String(),
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}
 
 	err = s.DB.CreateMessage(&aiMessage)
 	if err != nil {
-		RespondWithError(w, http.StatusInternalServerError, "couldn't create message")
+		fmt.Printf("database error: couldn't save AI response: %v\n", err)
 		return
 	}
-
-	RespondWithJSON(w, http.StatusCreated, aiMessage)
 }
 
 func (s *Server) HandleListMessages(w http.ResponseWriter, r *http.Request) {
