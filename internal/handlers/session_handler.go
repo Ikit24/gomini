@@ -93,7 +93,7 @@ func (s *Server) HandleDeleteSession(w http.ResponseWriter, r *http.Request) {
 	err = s.DB.DeleteSession(sessionID, userID)
 	if err != nil {
 		if errors.Is(err, database.ErrNotFound) {
-			RespondWithError(w, http.StatusNotFound, "session no found")
+			RespondWithError(w, http.StatusNotFound, "session not found")
 			return
 		}
 		RespondWithError(w, http.StatusInternalServerError, "database error")
@@ -128,4 +128,42 @@ func (s *Server) HandleUpdateSession(w http.ResponseWriter, r *http.Request) {
 	}
 
 	RespondWithJSON(w, http.StatusOK, map[string]string{"status":"updated"})
+}
+
+func (s *Server) HandleListAllSessions(w http.ResponseWriter, r *http.Request) {
+	sessionIDString := r.PathValue("session_id")
+	sessionID, err := uuid.Parse(sessionIDString)
+	if err != nil {
+		RespondWithError(w, http.StatusBadRequest, "invalid session_id format")
+		return
+	}
+
+	sessions, err := s.DB.GetSessionsBySessionID(sessionID)
+	if err != nil {
+		RespondWithError(w, http.StatusInternalServerError, "couldn't retrieve session list")
+		return
+	}
+
+	RespondWithJSON(w, http.StatusOK, sessions)
+}
+
+func (s *Server) HandleDeleteSessionByID(w http.ResponseWriter, r *http.Request) {
+	sessionIDString := r.PathValue("session_id")
+	sessionID, err := uuid.Parse(userIDString)
+	if err != nil {
+		RespondWithError(w, http.StatusBadRequest, "invalid session_id format")
+		return
+	}
+
+	err = s.DB.DeleteSessionBySessionID(sessionID)
+	if err != nil {
+		if errors.Is(err, database.ErrNotFound) {
+			RespondWithError(w, http.StatusNotFound, "session_id not found")
+			return
+		}
+		RespondWithError(w, http.StatusInternalServerError, "database error")
+		return
+	}
+
+	RespondWithJSON(w, http.StatusOK, nil)
 }

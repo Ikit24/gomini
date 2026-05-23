@@ -133,3 +133,32 @@ func (d *DB) UpdateSession(id uuid.UUID, title string) error {
 
 	return nil
 }
+
+func (d *DB) GetSessionsBySessionID(id uuid.UUID) ([]Session, error) {
+	for rows.Next() {
+		var s Session
+	query := `SELECT id, user_id, title, created_at, updated_at FROM sessions WHERE id = ?`
+
+	err := d.db.QueryRow(query, id).Scan(&s.ID, &s.UserID, &s.Title, &s.CreatedAt, &s.UpdatedAt)
+	if err != nil {
+		if err == sql.ErrNoRows{
+			return nil, fmt.Errorf("lookup failed: %w", sql.ErrNoRows)
+		}
+		return nil, err
+	}
+	}
+	query := `SELECT id, user_id, title, created_at, updated_at FROM sessions WHERE session_id = ?`
+
+	err := d.db.Query(query)
+	if err != nil {
+		if err == sql.ErrNoRows{
+			return nil, fmt.Errorf("lookup failed: %w", sql.ErrNoRows)
+		}
+		return nil, err
+	}
+
+	//for loop here
+	defer rows.Close()
+
+	return &s, nil
+}

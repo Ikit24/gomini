@@ -39,7 +39,8 @@ func (s *Server) ListenAndServe(addr string) error {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("POST /api/users", s.HandleCreateUser)
-
+	mux.HandleFunc("GET /api/sessions/", s.HandleListAllSessions)
+	
 	mux.HandleFunc("POST /api/users/{user_id}/sessions", s.HandleCreateSession)
 	mux.HandleFunc("GET /api/users/{user_id}/sessions", s.HandleGetSessionByUserID)
 
@@ -47,6 +48,7 @@ func (s *Server) ListenAndServe(addr string) error {
 	mux.HandleFunc("GET /api/sessions/{id}", s.HandleGetSessionByID)
 	mux.HandleFunc("PATCH /api/sessions/{id}", s.HandleUpdateSession)
 	mux.HandleFunc("DELETE /api/users/{user_id}/sessions/{session_id}", s.HandleDeleteSession)
+	mux.HandleFunc("DELETE /api/sessions/{session_id}", s.HandleDeleteSessionByID)
 
 	mux.HandleFunc("POST /api/sessions/{session_id}/messages", s.HandleCreateMessage)
 	mux.HandleFunc("GET /api/sessions/{session_id}/messages", s.HandleListMessages)

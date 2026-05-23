@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 	"strings"
-	"io"
 
     "github.com/google/generative-ai-go/genai"
     "google.golang.org/api/option"
+    "google.golang.org/api/iterator"
 )
 
 type Client struct {
@@ -84,7 +84,7 @@ func (c *Client) GenerateChatResponse(ctx context.Context, history []Message, ne
 		defer close(ch)
 		for {
 			resp, err := iter.Next()
-			if err == io.EOF {
+			if err == iterator.Done {
 				//stream finished
 				break
 			}

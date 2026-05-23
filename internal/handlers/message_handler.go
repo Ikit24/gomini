@@ -91,6 +91,8 @@ func (s *Server) HandleCreateMessage(w http.ResponseWriter, r *http.Request) {
 		builder.WriteString(text)
 	}
 
+	fmt.Fprint(w, "\n")
+
 	aiMessage := database.Message{
 		ID:        uuid.New(),
 		SessionID: sessionID,
