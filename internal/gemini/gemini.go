@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"io"
 
     "github.com/google/generative-ai-go/genai"
     "google.golang.org/api/option"
@@ -75,17 +76,14 @@ func (c *Client) GenerateChatResponse(ctx context.Context, history []Message, ne
 	}
 	cs.History = sdkHistory
 	
-	iter, err := cs.SendMessageStream(ctx, genai.Text(newPrompt))
-	if err != nil {
-		return nil, err
-	}
+	iter := cs.SendMessageStream(ctx, genai.Text(newPrompt))
 
 	ch := make(chan string)
 
 	go func() {
 		defer close(ch)
 		for {
-			resp, err := iter.Recv()
+			resp, err := iter.Next()
 			if err == io.EOF {
 				//stream finished
 				break
