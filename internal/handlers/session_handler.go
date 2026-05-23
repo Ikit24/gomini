@@ -131,14 +131,7 @@ func (s *Server) HandleUpdateSession(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) HandleListAllSessions(w http.ResponseWriter, r *http.Request) {
-	sessionIDString := r.PathValue("session_id")
-	sessionID, err := uuid.Parse(sessionIDString)
-	if err != nil {
-		RespondWithError(w, http.StatusBadRequest, "invalid session_id format")
-		return
-	}
-
-	sessions, err := s.DB.GetSessionsBySessionID(sessionID)
+	sessions, err := s.DB.GetAllSessions()
 	if err != nil {
 		RespondWithError(w, http.StatusInternalServerError, "couldn't retrieve session list")
 		return

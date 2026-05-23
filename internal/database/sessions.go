@@ -134,31 +134,28 @@ func (d *DB) UpdateSession(id uuid.UUID, title string) error {
 	return nil
 }
 
-func (d *DB) GetSessionsBySessionID(id uuid.UUID) ([]Session, error) {
+func (d *DB) GetAllSessions() ([]Session, error) {
+	var s []Session
+
+	query := `SELECT id, user_id, title, created_at, updated_at FROM sessions`
+
+	rows, err := d.db.Query(query)
+		if err != nil {
+			return nil, err
+		}
+		defer rows.Close()
+
 	for rows.Next() {
-		var s Session
-	query := `SELECT id, user_id, title, created_at, updated_at FROM sessions WHERE id = ?`
-
-	err := d.db.QueryRow(query, id).Scan(&s.ID, &s.UserID, &s.Title, &s.CreatedAt, &s.UpdatedAt)
-	if err != nil {
-		if err == sql.ErrNoRows{
-			return nil, fmt.Errorf("lookup failed: %w", sql.ErrNoRows)
-		}
-		return nil, err
+		var currentSession Session
+		err = rows.Scan(&currentSession.ID, &currentSession.UserID, &currentSession.Title, &currentSession.CreatedAt, &currentSession.UpdatedAt)
+		if err != nil {
+			return nil, err
+			}
+		s = append(s, currentSession)
 	}
-	}
-	query := `SELECT id, user_id, title, created_at, updated_at FROM sessions WHERE session_id = ?`
-
-	err := d.db.Query(query)
-	if err != nil {
-		if err == sql.ErrNoRows{
-			return nil, fmt.Errorf("lookup failed: %w", sql.ErrNoRows)
-		}
+	if err = rows.Err(); err != nil {
 		return nil, err
 	}
 
-	//for loop here
-	defer rows.Close()
-
-	return &s, nil
+	return s, nil
 }
