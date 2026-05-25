@@ -75,11 +75,9 @@ func (c *Client) GenerateChatResponse(ctx context.Context, history []Message, ne
 		sdkHistory = append(sdkHistory, sdkMsg)
 	}
 	cs.History = sdkHistory
-	
+
 	iter := cs.SendMessageStream(ctx, genai.Text(newPrompt))
-
 	ch := make(chan string)
-
 	go func() {
 		defer close(ch)
 		for {

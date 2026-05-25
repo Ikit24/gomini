@@ -141,9 +141,9 @@ func (d *DB) GetAllSessions() ([]Session, error) {
 }
 
 func (d *DB) DeleteSessionBySessionID(sessionID uuid.UUID) error {
-	query := `DELETE FROM sessions WHERE id = ? AND user_id = ?`
+	query := `DELETE FROM sessions WHERE id = ?`
 
-	res, err := d.db.Exec(query, sessionID, userID)
+	res, err := d.db.Exec(query, sessionID)
 	if  err != nil {
 		return err
 	}
