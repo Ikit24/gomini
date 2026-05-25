@@ -75,34 +75,6 @@ func (s *Server) HandleGetSessionByID(w http.ResponseWriter, r *http.Request) {
 	RespondWithJSON(w, http.StatusOK, session)
 }
 
-func (s *Server) HandleDeleteSession(w http.ResponseWriter, r *http.Request) {
-	userIDString := r.PathValue("user_id")
-	userID, err := uuid.Parse(userIDString)
-	if err != nil {
-		RespondWithError(w, http.StatusBadRequest, "invalid user_id format")
-		return
-	}
-
-	sessionIDString := r.PathValue("session_id")
-	sessionID, err := uuid.Parse(sessionIDString)
-	if err != nil {
-		RespondWithError(w, http.StatusBadRequest, "invalid session_id format")
-		return
-	}
-
-	err = s.DB.DeleteSession(sessionID, userID)
-	if err != nil {
-		if errors.Is(err, database.ErrNotFound) {
-			RespondWithError(w, http.StatusNotFound, "session not found")
-			return
-		}
-		RespondWithError(w, http.StatusInternalServerError, "database error")
-		return
-	}
-
-	RespondWithJSON(w, http.StatusOK, nil)
-}
-
 func (s *Server) HandleUpdateSession(w http.ResponseWriter, r *http.Request) {
 	sessionIDString := r.PathValue("id")
 	sessionID, err := uuid.Parse(sessionIDString)
@@ -142,7 +114,7 @@ func (s *Server) HandleListAllSessions(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) HandleDeleteSessionByID(w http.ResponseWriter, r *http.Request) {
 	sessionIDString := r.PathValue("session_id")
-	sessionID, err := uuid.Parse(userIDString)
+	sessionID, err := uuid.Parse(sessionIDString)
 	if err != nil {
 		RespondWithError(w, http.StatusBadRequest, "invalid session_id format")
 		return

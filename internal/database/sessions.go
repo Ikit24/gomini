@@ -39,26 +39,6 @@ func (d *DB) CreateSession(s *Session) error {
 	return nil
 }
 
-func (d *DB) DeleteSession(sessionID , userID uuid.UUID) error {
-	query := `DELETE FROM sessions WHERE id = ? AND user_id = ?`
-
-	res, err := d.db.Exec(query, sessionID, userID)
-	if  err != nil {
-		return err
-	}
-
-	rows, err := res.RowsAffected()
-	if err != nil {
-		return err
-	}
-
-	if rows == 0 {
-		return ErrNotFound
-	}
-
-	return nil
-}
-
 func (d *DB) GetSessionsByUserID(userID uuid.UUID) ([]Session, error) {
 	sessions := []Session{}
 	query := `SELECT id, user_id, title, created_at, updated_at FROM sessions WHERE user_id = ? ORDER BY created_at DESC`
@@ -158,4 +138,24 @@ func (d *DB) GetAllSessions() ([]Session, error) {
 	}
 
 	return s, nil
+}
+
+func (d *DB) DeleteSessionBySessionID(sessionID uuid.UUID) error {
+	query := `DELETE FROM sessions WHERE id = ? AND user_id = ?`
+
+	res, err := d.db.Exec(query, sessionID, userID)
+	if  err != nil {
+		return err
+	}
+
+	rows, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rows == 0 {
+		return ErrNotFound
+	}
+
+	return nil
 }
