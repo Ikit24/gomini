@@ -12,6 +12,7 @@ type Model struct {
 	Messages        []database.Message
 	SelectedSession uuid.UUID
 	MessageInput    textinput.Model
+	LastMessage     string
 }
 
 func InitialModel() Model {
