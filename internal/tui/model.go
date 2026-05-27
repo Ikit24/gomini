@@ -2,7 +2,7 @@ package tui
 
 import (
 	"github.com/charmbracelet/bubbles/textinput"
-    "github.com/charmbracelet/bubbletea"
+    tea "github.com/charmbracelet/bubbletea"
 	"github.com/google/uuid"
 	"github.com/Ikit24/gomini/internal/database"
 )

@@ -2,14 +2,16 @@ package main
 
 import (
 	"os"
-	"os/signal"
 	"net/http"
+	"fmt"
 	"log"
 	"context"
 	"time"
 
-	"github.com/Ikit24/gomini/internal/database"
+	tea "github.com/charmbracelet/bubbletea"
+	"github.com/Ikit24/gomini/internal/tui"
 	"github.com/Ikit24/gomini/internal/gemini"
+	"github.com/Ikit24/gomini/internal/database"
 	"github.com/Ikit24/gomini/internal/handlers"
 	"github.com/joho/godotenv"
 )
@@ -46,9 +48,11 @@ func main() {
 		}
 	}()
 
-	stop := make(chan os.Signal, 1)
-	signal.Notify(stop, os.Interrupt)
-	<-stop
+	p:= tea.NewProgram(tui.InitialModel())
+	if _, err := p.Run(); err != nil {
+		fmt.Printf("TUI error: %v\n", err)
+		os.Exit(1)
+	}
 
 	log.Println("Shutting down server...")
 
