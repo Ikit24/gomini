@@ -5,6 +5,7 @@ import (
     tea "github.com/charmbracelet/bubbletea"
 	"github.com/google/uuid"
 	"github.com/Ikit24/gomini/internal/database"
+	"github.com/Ikit24/gomini/internal/gemini"
 )
 
 type Model struct {
@@ -13,15 +14,19 @@ type Model struct {
 	SelectedSession uuid.UUID
 	MessageInput    textinput.Model
 	LastMessage     string
+	DB              *database.DB
+	GeminiClient    *gemini.Client
 }
 
-func InitialModel() Model {
+func InitialModel(db *database.DB, client *gemini.Client) Model {
 	ti := textinput.New()
 	ti.Placeholder = "Type a message..."
 	ti.Focus()
 
 	return Model{
 		MessageInput: ti,
+		DB:           db,
+		GeminiClient: client,
 	}
 }
 

@@ -48,7 +48,7 @@ func main() {
 		}
 	}()
 
-	p:= tea.NewProgram(tui.InitialModel())
+	p:= tea.NewProgram(tui.InitialModel(db, aiClient))
 	if _, err := p.Run(); err != nil {
 		fmt.Printf("TUI error: %v\n", err)
 		os.Exit(1)

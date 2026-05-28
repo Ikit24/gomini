@@ -14,7 +14,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		case "enter":
 			userInput := m.MessageInput.Value()
-			m.MessageInput.Value("")
+			_ = userInput
+			m.MessageInput.SetValue("")
 			return m, nil
 		}
 	case GeminiResponseMsg:
