@@ -1,7 +1,9 @@
 package tui
 
 import (
-   tea "github.com/charmbracelet/bubbletea"
+	"context"
+	tea "github.com/charmbracelet/bubbletea"
+	"github.com/Ikit24/gomini/internal/gemini"
 )
 
 type GeminiResponseMsg string
@@ -14,9 +16,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		case "enter":
 			userInput := m.MessageInput.Value()
-			_ = userInput
 			m.MessageInput.SetValue("")
-			return m, nil
+			return m, sendToGemini(m.GeminiClient, userInput)
 		}
 	case GeminiResponseMsg:
 		m.LastMessage = string(msg)
@@ -28,4 +29,14 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	m.MessageInput, cmd = m.MessageInput.Update(msg)
 
 	return m, cmd
+}
+
+func sendToGemini(client *gemini.Client, prompt string) tea.Cmd {
+	return func() tea.Msg {
+		response, err := client.GenerateContent(context.Background(), prompt)
+		if err != nil {
+			return GeminiResponseMsg("error generating response from Gemini: " + err.Error())
+		}
+		return GeminiResponseMsg(response)
+	}
 }
