@@ -16,6 +16,12 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		case "enter":
 			userInput := m.MessageInput.Value()
+			dbMessage := database.Message{
+				SessionID: m.SelectedSession,
+				Role:      database.UserRole,
+				Content:   userInput,
+			}
+			m.Messages = append(m.Messages, dbMessage)
 			m.MessageInput.SetValue("")
 			return m, sendToGemini(m.GeminiClient, userInput)
 		}
