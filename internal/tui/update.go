@@ -4,6 +4,7 @@ import (
 	"context"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/Ikit24/gomini/internal/gemini"
+	"github.com/Ikit24/gomini/internal/database"
 )
 
 type GeminiResponseMsg string
@@ -16,6 +17,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		case "enter":
 			userInput := m.MessageInput.Value()
+
 			dbMessage := database.Message{
 				SessionID: m.SelectedSession,
 				Role:      database.UserRole,
@@ -23,10 +25,16 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			m.Messages = append(m.Messages, dbMessage)
 			m.MessageInput.SetValue("")
+
 			return m, sendToGemini(m.GeminiClient, userInput)
 		}
 	case GeminiResponseMsg:
-		m.LastMessage = string(msg)
+		aiMessage := database.Message{
+			SessionID: m.SelectedSession,
+			Role:      database.ModelRole,
+			Content:   string(msg),
+		}
+		m.Messages = append(m.Messages, aiMessage)
 
 		return m, nil
 	}
