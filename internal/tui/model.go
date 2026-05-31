@@ -17,9 +17,11 @@ type Model struct {
 	DB              *database.DB
 	GeminiClient    *gemini.Client
 	CurrentStream   string
+	Channel         chan tea.Msg
 }
 
 func InitialModel(db *database.DB, client *gemini.Client) Model {
+	ch := make(chan tea.Msg)
 	ti := textinput.New()
 	ti.Placeholder = "Type a message..."
 	ti.Focus()
@@ -28,6 +30,7 @@ func InitialModel(db *database.DB, client *gemini.Client) Model {
 		MessageInput: ti,
 		DB:           db,
 		GeminiClient: client,
+		Channel:      ch,
 	}
 }
 

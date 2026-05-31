@@ -10,6 +10,13 @@ import (
 type GeminiResponseMsg string
 type ArrivingMsg string
 type StreamFinish struct{}
+type ChunkChan chan tea.Msg
+
+func waitForChunk(ch ChunkChan) tea.Cmd {
+	return func() tea.Msg {
+		return <-ch
+	}
+}
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
@@ -17,6 +24,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.String() {
 		case "ctrl+c":
 			return m, tea.Quit
+
 		case "enter":
 			userInput := m.MessageInput.Value()
 
@@ -27,9 +35,23 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			m.Messages = append(m.Messages, dbMessage)
 			m.MessageInput.SetValue("")
-
 			return m, sendToGemini(m.GeminiClient, userInput)
+
+		case ArrivingMsg:
+			m.CurrentStream += string(msg)
+			waitForChunk(msg)
+			return m, nil
+
+		case StreamFinish:
+			finishedStream := database.Message{
+				SessionID: m.SelectedSession,
+				Role:      database.ModelRole,
+				Content:   m.CurrentStream,
+			}
+			m.Messages = append(m.Messages, finishedStream)
+			m.CurrentStream = ""
 		}
+
 	case GeminiResponseMsg:
 		aiMessage := database.Message{
 			SessionID: m.SelectedSession,
