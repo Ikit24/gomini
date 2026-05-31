@@ -8,6 +8,8 @@ import (
 )
 
 type GeminiResponseMsg string
+type ArrivingMsg string
+type StreamFinish struct{}
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {

@@ -16,6 +16,7 @@ type Model struct {
 	LastMessage     string
 	DB              *database.DB
 	GeminiClient    *gemini.Client
+	CurrentStream   string
 }
 
 func InitialModel(db *database.DB, client *gemini.Client) Model {

@@ -14,6 +14,11 @@ func (m Model) View() string {
 			s += "Gemini: " + msg.Content + "\n"
 		}
 	}
+
+	if m.CurrentStream != "" {
+		s += "Gemini: " + m.CurrentStream + "\n"
+	}
+
 	inputBox := m.MessageInput.View()
 
 	return s + "\n" + inputBox
