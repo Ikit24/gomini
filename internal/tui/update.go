@@ -5,6 +5,8 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/Ikit24/gomini/internal/gemini"
 	"github.com/Ikit24/gomini/internal/database"
+	"google.golang.org/api/iterator"
+	"github.com/google/generative-ai-go/genai"
 )
 
 type GeminiResponseMsg string
@@ -35,12 +37,35 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			m.Messages = append(m.Messages, dbMessage)
 			m.MessageInput.SetValue("")
-			return m, sendToGemini(m.GeminiClient, userInput)
+
+			go func(ch chan tea.Msg, prompt string, client *gemini.Client) {
+				stream := client.GenerateContentStream(context.Background(), prompt)
+				for {
+					resp, err := stream.Next()
+					if err == iterator.Done {
+						//server has nothing to send
+						break
+					}
+					if err != nil {
+						//exit upon network error
+						break
+					}
+
+					for _, part := range resp.Candidates[0].Content.Parts {
+						if text, ok := part.(genai.Text); ok {
+							ch<-ArrivingMsg(string(text))
+						}
+					}
+				}
+				ch<-StreamFinish{}
+			}(m.Channel, userInput, m.GeminiClient)
+
+			return m, waitForChunk(m.Channel)
+		}
 
 		case ArrivingMsg:
 			m.CurrentStream += string(msg)
-			waitForChunk(msg)
-			return m, nil
+			return m, waitForChunk(m.Channel)
 
 		case StreamFinish:
 			finishedStream := database.Message{
@@ -50,7 +75,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			m.Messages = append(m.Messages, finishedStream)
 			m.CurrentStream = ""
-		}
+			return m, nil
 
 	case GeminiResponseMsg:
 		aiMessage := database.Message{

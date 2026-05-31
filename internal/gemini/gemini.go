@@ -20,6 +20,10 @@ type Message struct {
 	Content string
 }
 
+func (c *Client) GenerateContentStream(ctx context.Context, prompt string) *genai.GenerateContentResponseIterator {
+    return c.model.GenerateContentStream(ctx, genai.Text(prompt))
+}
+
 func(c *Client) GenerateContent(ctx context.Context, prompt string) (string, error) {
 	resp, err := c.model.GenerateContent(ctx, genai.Text(prompt))
 	if err != nil {
