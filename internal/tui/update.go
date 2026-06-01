@@ -5,8 +5,6 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/Ikit24/gomini/internal/gemini"
 	"github.com/Ikit24/gomini/internal/database"
-	"google.golang.org/api/iterator"
-	"github.com/google/generative-ai-go/genai"
 )
 
 type GeminiResponseMsg string
@@ -22,6 +20,9 @@ func waitForChunk(ch ChunkChan) tea.Cmd {
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
+	case tea.WindowSizeMsg:
+		m.TerminalWidth = msg.Width
+		return m, nil
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "ctrl+c":
@@ -32,7 +33,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			geminiHistory := make([]gemini.Message, len(m.Messages))
 			for i, msg := range m.Messages {
 				geminiHistory[i] = gemini.Message{
-					Role:    msg.Role, // Ensure database.UserRole maps to what your gemini package expects
+					Role:    string(msg.Role),
 					Content: msg.Content,
 				}
 			}
