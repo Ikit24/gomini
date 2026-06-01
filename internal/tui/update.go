@@ -29,6 +29,13 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case "enter":
 			userInput := m.MessageInput.Value()
+			geminiHistory := make([]gemini.Message, len(m.Messages))
+			for i, msg := range m.Messages {
+				geminiHistory[i] = gemini.Message{
+					Role:    msg.Role, // Ensure database.UserRole maps to what your gemini package expects
+					Content: msg.Content,
+				}
+			}
 
 			dbMessage := database.Message{
 				SessionID: m.SelectedSession,
@@ -39,25 +46,15 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.MessageInput.SetValue("")
 
 			go func(ch chan tea.Msg, prompt string, client *gemini.Client) {
-				stream := client.GenerateContentStream(context.Background(), prompt)
-				for {
-					resp, err := stream.Next()
-					if err == iterator.Done {
-						//server has nothing to send
-						break
-					}
-					if err != nil {
-						//exit upon network error
-						break
-					}
-
-					for _, part := range resp.Candidates[0].Content.Parts {
-						if text, ok := part.(genai.Text); ok {
-							ch<-ArrivingMsg(string(text))
-						}
-					}
+				streamChan, err := client.GenerateChatResponse(context.Background(), geminiHistory, prompt)
+				if err != nil {
+					ch <- GeminiResponseMsg("error: " + err.Error())
+					return
 				}
-				ch<-StreamFinish{}
+				for text := range streamChan{
+					ch <- ArrivingMsg(text)
+				}
+				ch <- StreamFinish{}
 			}(m.Channel, userInput, m.GeminiClient)
 
 			return m, waitForChunk(m.Channel)
