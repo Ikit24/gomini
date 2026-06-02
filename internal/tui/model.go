@@ -19,6 +19,7 @@ type Model struct {
 	CurrentStream   string
 	Channel         chan tea.Msg
 	TerminalWidth   int
+	Viewport        viewport.Model
 }
 
 func InitialModel(db *database.DB, client *gemini.Client) Model {
