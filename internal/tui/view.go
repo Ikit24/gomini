@@ -21,6 +21,7 @@ func (m Model) View() string {
 	}
 
 	inputBox := m.MessageInput.View()
+	m.Viewport.SetContent(s)
 
-	return s + "\n" + inputBox
+	return m.Viewport.View() + "\n" + inputBox
 }

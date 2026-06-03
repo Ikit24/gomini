@@ -25,6 +25,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.Viewport.Height = msg.Height - 2
 		m.Viewport.Width = msg.Width
 		return m, nil
+
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "ctrl+c":
@@ -63,19 +64,19 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, waitForChunk(m.Channel)
 		}
 
-		case ArrivingMsg:
-			m.CurrentStream += string(msg)
-			return m, waitForChunk(m.Channel)
+	case ArrivingMsg:
+		m.CurrentStream += string(msg)
+		return m, waitForChunk(m.Channel)
 
-		case StreamFinish:
-			finishedStream := database.Message{
-				SessionID: m.SelectedSession,
-				Role:      database.ModelRole,
-				Content:   m.CurrentStream,
-			}
-			m.Messages = append(m.Messages, finishedStream)
-			m.CurrentStream = ""
-			return m, nil
+	case StreamFinish:
+		finishedStream := database.Message{
+			SessionID: m.SelectedSession,
+			Role:      database.ModelRole,
+			Content:   m.CurrentStream,
+		}
+		m.Messages = append(m.Messages, finishedStream)
+		m.CurrentStream = ""
+		return m, nil
 
 	case GeminiResponseMsg:
 		aiMessage := database.Message{
@@ -88,10 +89,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 	}
 
-	var cmd tea.Cmd
-	m.MessageInput, cmd = m.MessageInput.Update(msg)
+	var inputCmd, viewportCmd tea.Cmd
+	m.MessageInput, inputCmd = m.MessageInput.Update(msg)
+	m.Viewport, viewportCmd = m.Viewport.Update(msg)
 
-	return m, cmd
+	return m, tea.Batch(inputCmd, viewportCmd)
 }
 
 func sendToGemini(client *gemini.Client, prompt string) tea.Cmd {
