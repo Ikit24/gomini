@@ -3,6 +3,7 @@ package tui
 import (
 	"context"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/muesli/reflow/wordwrap"
 	"github.com/Ikit24/gomini/internal/gemini"
 	"github.com/Ikit24/gomini/internal/database"
 )
@@ -88,6 +89,22 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		return m, nil
 	}
+
+	var s string
+	for _, msg := range m.Messages {
+		if msg.Role == database.UserRole {
+			s += "You: " + wordwrap.String(msg.Content, m.TerminalWidth) + "\n"
+		}
+		if msg.Role == database.ModelRole {
+			s += "Gemini: " + wordwrap.String(msg.Content, m.TerminalWidth) + "\n"
+		}
+	}
+
+	if m.CurrentStream != "" {
+		s += "Gemini: " + wordwrap.String(m.CurrentStream, m.TerminalWidth) + "\n"
+	}
+
+	m.Viewport.SetContent(s)
 
 	var inputCmd, viewportCmd tea.Cmd
 	m.MessageInput, inputCmd = m.MessageInput.Update(msg)
