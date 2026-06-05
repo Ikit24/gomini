@@ -20,6 +20,8 @@ func waitForChunk(ch ChunkChan) tea.Cmd {
 }
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	var cmd tea.Cmd
+
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		m.TerminalWidth = msg.Width
@@ -62,12 +64,12 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				ch <- StreamFinish{}
 			}(m.Channel, userInput, m.GeminiClient)
 
-			return m, waitForChunk(m.Channel)
+			cmd = waitForChunk(m.Channel)
 		}
 
 	case ArrivingMsg:
 		m.CurrentStream += string(msg)
-		return m, waitForChunk(m.Channel)
+		cmd = waitForChunk(m.Channel)
 
 	case StreamFinish:
 		finishedStream := database.Message{
@@ -77,7 +79,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		m.Messages = append(m.Messages, finishedStream)
 		m.CurrentStream = ""
-		return m, nil
 
 	case GeminiResponseMsg:
 		aiMessage := database.Message{
@@ -86,8 +87,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			Content:   string(msg),
 		}
 		m.Messages = append(m.Messages, aiMessage)
-
-		return m, nil
 	}
 
 	var s string
@@ -105,7 +104,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 
 	m.Viewport.SetContent(s)
+	m.Viewport.GotoBottom()
 
+	//scolling
 	var inputCmd, viewportCmd tea.Cmd
 	m.MessageInput, inputCmd = m.MessageInput.Update(msg)
 	m.Viewport, viewportCmd = m.Viewport.Update(msg)
