@@ -21,14 +21,15 @@ func waitForChunk(ch ChunkChan) tea.Cmd {
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
-	var shouldScroll bool
+	var contentChanged bool
 
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		m.TerminalWidth = msg.Width
-		m.Viewport.Height = msg.Height - 2
+		m.Viewport.Height = msg.Height - 3
 		m.Viewport.Width = msg.Width
-		return m, nil
+
+		contentChanged = true
 
 	case tea.KeyMsg:
 		switch msg.String() {
@@ -53,6 +54,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.Messages = append(m.Messages, dbMessage)
 			m.MessageInput.SetValue("")
 
+		m.MessageInput, inputCmd = m.MessageInput.Update(msg)
+
 			go func(ch chan tea.Msg, prompt string, client *gemini.Client) {
 				streamChan, err := client.GenerateChatResponse(context.Background(), geminiHistory, prompt)
 				if err != nil {
@@ -66,13 +69,13 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}(m.Channel, userInput, m.GeminiClient)
 
 			cmd = waitForChunk(m.Channel)
-			shouldScroll = true
+			contentChanged = true
 		}
 
 	case ArrivingMsg:
 		m.CurrentStream += string(msg)
 		cmd = waitForChunk(m.Channel)
-		shouldScroll = true
+		contentChanged = true
 
 	case StreamFinish:
 		finishedStream := database.Message{
@@ -82,7 +85,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		m.Messages = append(m.Messages, finishedStream)
 		m.CurrentStream = ""
-		shouldScroll = true
+		contentChanged = true
 
 	case GeminiResponseMsg:
 		aiMessage := database.Message{
@@ -91,42 +94,40 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			Content:   string(msg),
 		}
 		m.Messages = append(m.Messages, aiMessage)
-		shouldScroll = true
+		contentChanged = true
 	}
 
-	var s string
-	for _, msg := range m.Messages {
-		if msg.Role == database.UserRole {
-			s += "You: " + wordwrap.String(msg.Content, m.TerminalWidth) + "\n"
+	if contentChanged {
+		var s string
+		for _, msg := range m.Messages {
+			if msg.Role == database.UserRole {
+				s += "You: " + wordwrap.String(msg.Content, m.TerminalWidth) + "\n"
+			}
+			if msg.Role == database.ModelRole {
+				s += "Gemini: " + wordwrap.String(msg.Content, m.TerminalWidth) + "\n"
+			}
 		}
-		if msg.Role == database.ModelRole {
-			s += "Gemini: " + wordwrap.String(msg.Content, m.TerminalWidth) + "\n"
+
+		if m.CurrentStream != "" {
+			s += "Gemini: " + wordwrap.String(m.CurrentStream, m.TerminalWidth) + "\n"
 		}
-	}
 
-	if m.CurrentStream != "" {
-		s += "Gemini: " + wordwrap.String(m.CurrentStream, m.TerminalWidth) + "\n"
-	}
-
-	m.Viewport.SetContent(s)
-	if shouldScroll {
-		m.Viewport.GotoBottom()
+		m.Viewport.SetContent(s)
 	}
 
 	//scrolling
 	var inputCmd, viewportCmd tea.Cmd
 	m.MessageInput, inputCmd = m.MessageInput.Update(msg)
-	m.Viewport, viewportCmd = m.Viewport.Update(msg)
+
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
+		switch msg.String() {
+		case "up", "down", "pgup", "pgdn":
+			m.Viewport, viewportCmd = m.Viewport.Update(msg)
+		}
+	default:
+		m.Viewport, viewportCmd = m.Viewport.Update(msg)
+	}
 
 	return m, tea.Batch(inputCmd, viewportCmd, cmd)
-}
-
-func sendToGemini(client *gemini.Client, prompt string) tea.Cmd {
-	return func() tea.Msg {
-		response, err := client.GenerateContent(context.Background(), prompt)
-		if err != nil {
-			return GeminiResponseMsg("error generating response from Gemini: " + err.Error())
-		}
-		return GeminiResponseMsg(response)
-	}
 }
