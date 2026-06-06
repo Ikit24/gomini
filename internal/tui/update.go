@@ -21,6 +21,7 @@ func waitForChunk(ch ChunkChan) tea.Cmd {
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
+	var shouldScroll bool
 
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
@@ -65,11 +66,13 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}(m.Channel, userInput, m.GeminiClient)
 
 			cmd = waitForChunk(m.Channel)
+			shouldScroll = true
 		}
 
 	case ArrivingMsg:
 		m.CurrentStream += string(msg)
 		cmd = waitForChunk(m.Channel)
+		shouldScroll = true
 
 	case StreamFinish:
 		finishedStream := database.Message{
@@ -79,6 +82,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		m.Messages = append(m.Messages, finishedStream)
 		m.CurrentStream = ""
+		shouldScroll = true
 
 	case GeminiResponseMsg:
 		aiMessage := database.Message{
@@ -87,6 +91,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			Content:   string(msg),
 		}
 		m.Messages = append(m.Messages, aiMessage)
+		shouldScroll = true
 	}
 
 	var s string
@@ -104,14 +109,16 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 
 	m.Viewport.SetContent(s)
-	m.Viewport.GotoBottom()
+	if shouldScroll {
+		m.Viewport.GotoBottom()
+	}
 
-	//scolling
+	//scrolling
 	var inputCmd, viewportCmd tea.Cmd
 	m.MessageInput, inputCmd = m.MessageInput.Update(msg)
 	m.Viewport, viewportCmd = m.Viewport.Update(msg)
 
-	return m, tea.Batch(inputCmd, viewportCmd)
+	return m, tea.Batch(inputCmd, viewportCmd, cmd)
 }
 
 func sendToGemini(client *gemini.Client, prompt string) tea.Cmd {
