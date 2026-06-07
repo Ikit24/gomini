@@ -22,7 +22,8 @@ func waitForChunk(ch ChunkChan) tea.Cmd {
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 	var contentChanged bool
-
+	var inputCmd, viewportCmd tea.Cmd
+	
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		m.TerminalWidth = msg.Width
@@ -53,8 +54,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			m.Messages = append(m.Messages, dbMessage)
 			m.MessageInput.SetValue("")
-
-		m.MessageInput, inputCmd = m.MessageInput.Update(msg)
+			m.MessageInput, inputCmd = m.MessageInput.Update(msg)
 
 			go func(ch chan tea.Msg, prompt string, client *gemini.Client) {
 				streamChan, err := client.GenerateChatResponse(context.Background(), geminiHistory, prompt)
@@ -115,19 +115,20 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.Viewport.SetContent(s)
 	}
 
-	//scrolling
-	var inputCmd, viewportCmd tea.Cmd
-	m.MessageInput, inputCmd = m.MessageInput.Update(msg)
-
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
+		case "enter":
+
 		case "up", "down", "pgup", "pgdn":
 			m.Viewport, viewportCmd = m.Viewport.Update(msg)
+		
+		default:
+			m.MessageInput, inputCmd = m.MessageInput.Update(msg)
 		}
 	default:
 		m.Viewport, viewportCmd = m.Viewport.Update(msg)
+		m.MessageInput, inputCmd = m.MessageInput.Update(msg)
 	}
-
 	return m, tea.Batch(inputCmd, viewportCmd, cmd)
 }
