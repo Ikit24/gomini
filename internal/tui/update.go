@@ -13,9 +13,24 @@ type ArrivingMsg string
 type StreamFinish struct{}
 type ChunkChan chan tea.Msg
 
+type dbSaveSuccessMSG struct{}
+type dbSaveErrorMSG struct{
+	err error
+}
+
 func waitForChunk(ch ChunkChan) tea.Cmd {
 	return func() tea.Msg {
 		return <-ch
+	}
+}
+
+func saveMessageToDB(msg database.Message) tea.Cmd {
+	return func() tea.Msg{
+		err := db.Save(&msg)
+		if err != nil {
+			return dbSaveErrorMSG{err: err}
+		}
+		return dbSaveSuccessMSG{}
 	}
 }
 
