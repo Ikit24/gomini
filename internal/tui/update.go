@@ -9,12 +9,14 @@ import (
 )
 
 type GeminiResponseMsg string
+type geminiStreamErrorMsg struct{
+	err error
+}
 type ArrivingMsg string
 type StreamFinish struct{}
 type ChunkChan chan tea.Msg
-
-type dbSaveSuccessMSG struct{}
-type dbSaveErrorMSG struct{
+type dbSaveSuccessMsg struct{}
+type dbSaveErrorMsg struct{
 	err error
 }
 
@@ -28,9 +30,9 @@ func saveMessageToDB(msg database.Message) tea.Cmd {
 	return func() tea.Msg{
 		err := db.Save(&msg)
 		if err != nil {
-			return dbSaveErrorMSG{err: err}
+			return dbSaveErrorMsg{err: err}
 		}
-		return dbSaveSuccessMSG{}
+		return dbSaveSuccessMsg{}
 	}
 }
 
@@ -89,9 +91,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			contentChanged = true
 		}
 
-		case dbSaveErrorMSG:
+		case dbSaveErrorMsg:
 			m.ErrorMessage = msg.err.Error()
-		case dbSaveSuccessMSG:
+		case dbSaveSuccessMsg:
 
 	case ArrivingMsg:
 		m.CurrentStream += string(msg)
@@ -153,4 +155,16 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.MessageInput, inputCmd = m.MessageInput.Update(msg)
 	}
 	return m, tea.Batch(inputCmd, viewportCmd, cmd)
+}
+
+func startGeminiStream (ch chan tea.Msg, prompt string, client *gemini.Client, m) tea.Cmd {
+	return func() tea.Msg {
+		streamChan, err := client.GenerateChatResponse(context.Background(), geminiHistory, prompt)
+		if err != nil {
+			return geminiStreamErrorMsg{err: err}
+		}
+		for text := range streamChan{
+		ch <- ArrivingMsg(text)
+		} return StreamFinish{}
+	}
 }
