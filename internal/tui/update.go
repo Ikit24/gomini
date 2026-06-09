@@ -84,8 +84,14 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}(m.Channel, userInput, m.GeminiClient)
 
 			cmd = waitForChunk(m.Channel)
+			dbSave := saveMessageToDB(dbMessage)
+			cmd = tea.Batch(cmd, dbSave)
 			contentChanged = true
 		}
+
+		case dbSaveErrorMSG:
+			m.ErrorMessage = msg.err.Error()
+		case dbSaveSuccessMSG:
 
 	case ArrivingMsg:
 		m.CurrentStream += string(msg)

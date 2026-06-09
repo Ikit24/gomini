@@ -21,6 +21,7 @@ type Model struct {
 	Channel         chan tea.Msg
 	TerminalWidth   int
 	Viewport        viewport.Model
+	ErrorMessage    string
 }
 
 func InitialModel(db *database.DB, client *gemini.Client) Model {
