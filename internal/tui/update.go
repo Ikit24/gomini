@@ -26,7 +26,7 @@ func waitForChunk(ch ChunkChan) tea.Cmd {
 	}
 }
 
-func saveMessageToDB(msg database.Message) tea.Cmd {
+func saveMessageToDB(db *database.DB, msg database.Message) tea.Cmd {
 	return func() tea.Msg{
 		err := db.Save(&msg)
 		if err != nil {
@@ -73,27 +73,19 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.MessageInput.SetValue("")
 			m.MessageInput, inputCmd = m.MessageInput.Update(msg)
 
-			go func(ch chan tea.Msg, prompt string, client *gemini.Client) {
-				streamChan, err := client.GenerateChatResponse(context.Background(), geminiHistory, prompt)
-				if err != nil {
-					ch <- GeminiResponseMsg("error: " + err.Error())
-					return
-				}
-				for text := range streamChan{
-					ch <- ArrivingMsg(text)
-				}
-				ch <- StreamFinish{}
-			}(m.Channel, userInput, m.GeminiClient)
-
 			cmd = waitForChunk(m.Channel)
-			dbSave := saveMessageToDB(dbMessage)
-			cmd = tea.Batch(cmd, dbSave)
+			dbSave := saveMessageToDB(m.DB, dbMessage)
+			geminiStream := startGeminiStream(m.Channel, userInput, m.GeminiClient, geminiHistory)
+			cmd = tea.Batch(cmd, dbSave, geminiStream)
 			contentChanged = true
 		}
 
 		case dbSaveErrorMsg:
 			m.ErrorMessage = msg.err.Error()
 		case dbSaveSuccessMsg:
+
+		case geminiStreamErrorMsg:
+			m.ErrorMessage = msg.err.Error()
 
 	case ArrivingMsg:
 		m.CurrentStream += string(msg)
@@ -157,14 +149,15 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, tea.Batch(inputCmd, viewportCmd, cmd)
 }
 
-func startGeminiStream (ch chan tea.Msg, prompt string, client *gemini.Client, m) tea.Cmd {
+func startGeminiStream (ch chan tea.Msg, prompt string, client *gemini.Client, history []gemini.Message) tea.Cmd {
 	return func() tea.Msg {
-		streamChan, err := client.GenerateChatResponse(context.Background(), geminiHistory, prompt)
+		streamChan, err := client.GenerateChatResponse(context.Background(), history, prompt)
 		if err != nil {
 			return geminiStreamErrorMsg{err: err}
 		}
 		for text := range streamChan{
 		ch <- ArrivingMsg(text)
-		} return StreamFinish{}
+		}
+		return StreamFinish{}
 	}
 }
