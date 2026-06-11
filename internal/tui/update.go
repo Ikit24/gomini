@@ -3,6 +3,7 @@ package tui
 import (
 	"context"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/google/uuid"
 	"github.com/muesli/reflow/wordwrap"
 	"github.com/Ikit24/gomini/internal/gemini"
 	"github.com/Ikit24/gomini/internal/database"
@@ -28,7 +29,7 @@ func waitForChunk(ch ChunkChan) tea.Cmd {
 
 func saveMessageToDB(db *database.DB, msg database.Message) tea.Cmd {
 	return func() tea.Msg{
-		err := db.Save(&msg)
+		err := db.SaveMessage(&msg)
 		if err != nil {
 			return dbSaveErrorMsg{err: err}
 		}
@@ -66,6 +67,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 			dbMessage := database.Message{
 				SessionID: m.SelectedSession,
+				UserID:    uuid.Nil,
 				Role:      database.UserRole,
 				Content:   userInput,
 			}
