@@ -159,3 +159,18 @@ func (d *DB) DeleteSessionBySessionID(sessionID uuid.UUID) error {
 
 	return nil
 }
+
+func (d *DB) SaveSession(m *Session) error {
+	if m.ID == uuid.Nil {
+		m.ID = uuid.New()
+	}
+
+	if m.CreatedAt.IsZero() {
+		m.CreatedAt = time.Now()
+	}
+
+	query := `INSERT INTO sessions (id, user_id, title, created_at, updated_at) VALUES (?, ?, ?, ?, ?)`
+
+	_, err := d.db.Exec(query, m.ID, m.UserID, m.Title, m.CreatedAt, m.UpdatedAt)
+	return err
+}

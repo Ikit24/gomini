@@ -27,14 +27,27 @@ type Model struct {
 func InitialModel(db *database.DB, client *gemini.Client) Model {
 	ch := make(chan tea.Msg)
 	ti := textinput.New()
-	ti.Placeholder = "Type a message..."
+	ti.Placeholder = "Please enter your message..."
 	ti.Focus()
 
+	sessionID := uuid.New()
+	
+	sess := &database.Session{
+		ID:     sessionID,
+		UserID: uuid.Nil,
+		Title:  "Local Chat",
+	}
+	err := db.SaveSession(sess)
+	if err != nil {
+		panic("SaveSession failed: " + err.Error())
+	}
+
 	return Model{
-		MessageInput: ti,
-		DB:           db,
-		GeminiClient: client,
-		Channel:      ch,
+		MessageInput:    ti,
+		DB:              db,
+		GeminiClient:    client,
+		Channel:         ch,
+		SelectedSession: sessionID,
 	}
 }
 
