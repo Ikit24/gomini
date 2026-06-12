@@ -32,9 +32,9 @@ func (d *DB) SaveMessage(m *Message) error {
 		m.CreatedAt = time.Now()
 	}
 
-	query := `INSERT INTO messages (id, session_id, user_id, role, content, created_at) VALUES (?, ?, ?, ?, ?, ?)`
+	query := `INSERT INTO messages (id, session_id, user_id, role, content, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)`
 
-	_, err := d.db.Exec(query, m.ID, m.SessionID, m.UserID, m.Role, m.Content, m.CreatedAt)
+	_, err := d.db.Exec(query, m.ID, m.SessionID, m.UserID, m.Role, m.Content, m.CreatedAt, m.UpdatedAt)
 	return err
 }
 

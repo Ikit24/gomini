@@ -75,10 +75,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				CreatedAt: time.Now(),
 				UpdatedAt: time.Now(),
 			}
-			err := m.DB.SaveMessage(&dbMessage)
-			if err != nil {
-				m.ErrorMessage = "DB save error: " + err.Error()
-			}
+			
 			m.Messages = append(m.Messages, dbMessage)
 			m.MessageInput.SetValue("")
 			m.MessageInput, inputCmd = m.MessageInput.Update(msg)
@@ -104,9 +101,13 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case StreamFinish:
 		finishedStream := database.Message{
+			ID:        uuid.New(),
+			UserID:    m.CurrentUser,
 			SessionID: m.SelectedSession,
 			Role:      database.ModelRole,
 			Content:   m.CurrentStream,
+			CreatedAt: time.Now(),
+			UpdatedAt: time.Now(),
 		}
 		m.Messages = append(m.Messages, finishedStream)
 		m.CurrentStream = ""
@@ -114,11 +115,17 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case GeminiResponseMsg:
 		aiMessage := database.Message{
+			ID:        uuid.New(),
+			UserID:    m.CurrentUser,
 			SessionID: m.SelectedSession,
 			Role:      database.ModelRole,
 			Content:   string(msg),
+			CreatedAt: time.Now(),
+			UpdatedAt: time.Now(),
 		}
 		m.Messages = append(m.Messages, aiMessage)
+		aiSaveCmd := saveMessageToDB(m.DB, finishedStream)
+		cmd = tea.Batch(cmd, aiSaveCmd)
 		contentChanged = true
 	}
 
