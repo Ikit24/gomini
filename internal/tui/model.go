@@ -1,6 +1,8 @@
 package tui
 
 import (
+	"log"
+	"time"
 	"github.com/charmbracelet/bubbles/textinput"
 	"github.com/charmbracelet/bubbles/viewport"
     tea "github.com/charmbracelet/bubbletea"
@@ -10,6 +12,7 @@ import (
 )
 
 type Model struct {
+	CurrentUser     uuid.UUID
 	Sessions        []database.Session
 	Messages        []database.Message
 	SelectedSession uuid.UUID
@@ -24,7 +27,7 @@ type Model struct {
 	ErrorMessage    string
 }
 
-func InitialModel(db *database.DB, client *gemini.Client) Model {
+func InitialModel(db *database.DB, client *gemini.Client, userID uuid.UUID) Model {
 	ch := make(chan tea.Msg)
 	ti := textinput.New()
 	ti.Placeholder = "Please enter your message..."
@@ -33,13 +36,15 @@ func InitialModel(db *database.DB, client *gemini.Client) Model {
 	sessionID := uuid.New()
 	
 	sess := &database.Session{
-		ID:     sessionID,
-		UserID: uuid.Nil,
-		Title:  "Local Chat",
+		ID:        sessionID,
+		UserID:    userID,
+		Title:     "Local Chat",
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
 	}
 	err := db.SaveSession(sess)
 	if err != nil {
-		panic("SaveSession failed: " + err.Error())
+		log.Fatalf("Failed to save session: %v", err)
 	}
 
 	return Model{
@@ -47,6 +52,7 @@ func InitialModel(db *database.DB, client *gemini.Client) Model {
 		DB:              db,
 		GeminiClient:    client,
 		Channel:         ch,
+		CurrentUser:     userID,
 		SelectedSession: sessionID,
 	}
 }

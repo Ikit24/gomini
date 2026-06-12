@@ -1,6 +1,7 @@
 package tui
 
 import (
+	"time"
 	"context"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/google/uuid"
@@ -66,10 +67,17 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 			dbMessage := database.Message{
+				ID:        uuid.New(),
 				SessionID: m.SelectedSession,
-				UserID:    uuid.Nil,
+				UserID:    m.CurrentUser,
 				Role:      database.UserRole,
 				Content:   userInput,
+				CreatedAt: time.Now(),
+				UpdatedAt: time.Now(),
+			}
+			err := m.DB.SaveMessage(&dbMessage)
+			if err != nil {
+				m.ErrorMessage = "DB save error: " + err.Error()
 			}
 			m.Messages = append(m.Messages, dbMessage)
 			m.MessageInput.SetValue("")

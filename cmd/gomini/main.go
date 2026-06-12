@@ -41,6 +41,22 @@ func main() {
 
 	servr := handlers.NewServer(db, aiClient)
 
+	user, err := db.GetUserByName("ati")
+	if err != nil {
+		log.Fatalf("Failed to query database for user: %v", err)
+	}
+
+	if user == nil {
+		user = &database.User{
+			Name: "ati",
+			Email: "ati@local.dev",
+		}
+		err = db.CreateUser(user)
+		if err != nil {
+			log.Fatalf("Failed to bootstrap local user: %v", err)
+		}
+	}
+
 	go func() {
 		log.Println("🚀 Server starting on http://localhost:8080")
 		if err := servr.ListenAndServe(":8080"); err != nil && err != http.ErrServerClosed {
@@ -48,7 +64,7 @@ func main() {
 		}
 	}()
 
-	p:= tea.NewProgram(tui.InitialModel(db, aiClient))
+	p:= tea.NewProgram(tui.InitialModel(db, aiClient, user.ID))
 	if _, err := p.Run(); err != nil {
 		fmt.Printf("TUI error: %v\n", err)
 		os.Exit(1)
