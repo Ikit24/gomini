@@ -25,7 +25,17 @@ type Model struct {
 	TerminalWidth   int
 	Viewport        viewport.Model
 	ErrorMessage    string
+	CurrentState    appState
+	PastSessions    []database.Session
 }
+
+type appState int
+
+const (
+	StateWelcome appState = iota
+	StateChat
+	StateBrowse
+)
 
 func InitialModel(db *database.DB, client *gemini.Client, userID uuid.UUID) Model {
 	ch := make(chan tea.Msg)

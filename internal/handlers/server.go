@@ -59,6 +59,5 @@ func (s *Server) ListenAndServe(addr string) error {
 		Addr:    addr,
 		Handler: handler,
 	}
-
 	return s.httpServer.ListenAndServe()
 }
