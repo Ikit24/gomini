@@ -113,6 +113,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.CurrentStream = ""
 		contentChanged = true
 
+		aiSaveCmd := saveMessageToDB(m.DB, finishedStream)
+		cmd = tea.Batch(cmd, aiSaveCmd)
+
 	case GeminiResponseMsg:
 		aiMessage := database.Message{
 			ID:        uuid.New(),
@@ -124,9 +127,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			UpdatedAt: time.Now(),
 		}
 		m.Messages = append(m.Messages, aiMessage)
-		aiSaveCmd := saveMessageToDB(m.DB, finishedStream)
-		cmd = tea.Batch(cmd, aiSaveCmd)
 		contentChanged = true
+		
+		aiSaveCmd := saveMessageToDB(m.DB, aiMessage)
+		cmd = tea.Batch(cmd, aiSaveCmd)
 	}
 
 	if contentChanged {
