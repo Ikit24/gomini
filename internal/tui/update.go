@@ -39,9 +39,7 @@ func saveMessageToDB(db *database.DB, msg database.Message) tea.Cmd {
 }
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	var cmd tea.Cmd
-	var contentChanged bool
-	var inputCmd, viewportCmd tea.Cmd
+	//var cmd tea.Cmd
 	
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
@@ -49,51 +47,31 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.Viewport.Height = msg.Height - 3
 		m.Viewport.Width = msg.Width
 
-		contentChanged = true
-
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "ctrl+c":
 			return m, tea.Quit
-
-		case "enter":
-			userInput := m.MessageInput.Value()
-			geminiHistory := make([]gemini.Message, len(m.Messages))
-			for i, msg := range m.Messages {
-				geminiHistory[i] = gemini.Message{
-					Role:    string(msg.Role),
-					Content: msg.Content,
-				}
-			}
-
-			dbMessage := database.Message{
-				ID:        uuid.New(),
-				SessionID: m.SelectedSession,
-				UserID:    m.CurrentUser,
-				Role:      database.UserRole,
-				Content:   userInput,
-				CreatedAt: time.Now(),
-				UpdatedAt: time.Now(),
-			}
-			
-			m.Messages = append(m.Messages, dbMessage)
-			m.MessageInput.SetValue("")
-			m.MessageInput, inputCmd = m.MessageInput.Update(msg)
-
-			cmd = waitForChunk(m.Channel)
-			dbSave := saveMessageToDB(m.DB, dbMessage)
-			geminiStream := startGeminiStream(m.Channel, userInput, m.GeminiClient, geminiHistory)
-			cmd = tea.Batch(cmd, dbSave, geminiStream)
-			contentChanged = true
 		}
+	}
 
-		case dbSaveErrorMsg:
-			m.ErrorMessage = msg.err.Error()
-		case dbSaveSuccessMsg:
+	//local msg routing based on state
+	switch m.CurrentState {
+	case StateWelcome:
+		return m.updateWelcome(msg)
+	case StateChat:
+		return m 
+	case StateChat:
+		return m.updateChat(msg)
+	default:
+		return m, nil
+	}
+}
 
-		case geminiStreamErrorMsg:
-			m.ErrorMessage = msg.err.Error()
-
+func (m Model) updateChat (msg tea.Msg) (tea.Model, tea.Cmd) {
+	var cmd, inputCmd, viewportCmd tea.Cmd
+    contentChanged := false
+	
+	switch msg := msg.(type) {
 	case ArrivingMsg:
 		m.CurrentStream += string(msg)
 		cmd = waitForChunk(m.Channel)
@@ -131,6 +109,70 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		
 		aiSaveCmd := saveMessageToDB(m.DB, aiMessage)
 		cmd = tea.Batch(cmd, aiSaveCmd)
+	
+		case dbSaveErrorMsg:
+			m.ErrorMessage = msg.err.Error()
+		case dbSaveSuccessMsg:
+
+		case geminiStreamErrorMsg:
+			m.ErrorMessage = msg.err.Error()
+
+	case tea.KeyMsg:
+		switch msg.String() {
+		case "enter":
+			userInput := m.MessageInput.Value()
+			if m.SelectedSession == uuid.Nil {
+				newSessionID := uuid.New()
+				newSession := database.Session{
+					ID:        newSessionID,
+					UserID:    m.CurrentUser,
+					Title:     "New Chat", //make dynamic later
+					CreatedAt: time.Now(),
+					UpdatedAt: time.Now(),
+				}
+				err  := HandleCreateSession(m.DB, newSession)
+				if err != nil {
+					m.ErrorMessage = "Failed to create session: %v" + err.Error()
+					return m, nil
+				}
+				m.SelectedSession = newSessionID
+				m.PastSessions = append([]database.Session{newSession}, m.PastSessions...)
+			}
+			geminiHistory := make([]gemini.Message, len(m.Messages))
+			for i, msg := range m.Messages {
+				geminiHistory[i] = gemini.Message{
+					Role:    string(msg.Role),
+					Content: msg.Content,
+				}
+			}
+			dbMessage := database.Message{
+			ID:        uuid.New(),
+			SessionID: m.SelectedSession,
+			UserID:    m.CurrentUser,
+			Role:      database.UserRole,
+			Content:   userInput,
+			CreatedAt: time.Now(),
+			UpdatedAt: time.Now(),
+			}
+			m.Messages = append(m.Messages, dbMessage)
+			m.MessageInput.SetValue("")
+			m.MessageInput, inputCmd = m.MessageInput.Update(msg)
+
+			cmd = waitForChunk(m.Channel)
+			dbSave := saveMessageToDB(m.DB, dbMessage)
+			geminiStream  := startGeminiStream(m.Channel, userInput, m.GeminiClient, geminiHistory)
+			cmd = tea.Batch(cmd, dbSave, geminiStream, inputCmd)
+			contentChanged = true
+			
+		case "up", "down", "pgup", "pgdn":
+			m.Viewport, viewportCmd = m.Viewport.Update(msg)
+		
+		default:
+			m.MessageInput, inputCmd = m.MessageInput.Update(msg)
+		}
+	default:
+		m.Viewport, viewportCmd = m.Viewport.Update(msg)
+		m.MessageInput, inputCmd = m.MessageInput.Update(msg)
 	}
 
 	if contentChanged {
@@ -143,31 +185,32 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				s += "Gemini: " + wordwrap.String(msg.Content, m.TerminalWidth) + "\n"
 			}
 		}
-
 		if m.CurrentStream != "" {
 			s += "Gemini: " + wordwrap.String(m.CurrentStream, m.TerminalWidth) + "\n"
 		}
-
 		m.Viewport.SetContent(s)
 		m.Viewport.GotoBottom()
 	}
+	return m, tea.Batch(inputCmd, viewportCmd, cmd)
+}
 
+func (m Model) updateWelcome (msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
-		case "enter":
-
-		case "up", "down", "pgup", "pgdn":
-			m.Viewport, viewportCmd = m.Viewport.Update(msg)
-		
-		default:
-			m.MessageInput, inputCmd = m.MessageInput.Update(msg)
+		case "n":
+			m.CurrentState = stateChat
+			m.SelectedSession = uuid.Nil
+			m.Messages = []database.Message{}
+			m.Viewport.SetContent("")
+			return m, nil
+			
+		case "b":
+			m.CurrentState = StateBrowse
+			return m, nil
 		}
-	default:
-		m.Viewport, viewportCmd = m.Viewport.Update(msg)
-		m.MessageInput, inputCmd = m.MessageInput.Update(msg)
 	}
-	return m, tea.Batch(inputCmd, viewportCmd, cmd)
+	return m, nil
 }
 
 func startGeminiStream (ch chan tea.Msg, prompt string, client *gemini.Client, history []gemini.Message) tea.Cmd {
