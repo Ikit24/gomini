@@ -57,6 +57,11 @@ func main() {
 		}
 	}
 
+	sessions, err := db.GetSessionByUserID(user.ID)
+	if err != nil {
+		log.Fatalf("Faield to fetch past sessions: %v", err)
+	}
+
 	go func() {
 		log.Println("🚀 Server starting on http://localhost:8080")
 		if err := servr.ListenAndServe(":8080"); err != nil && err != http.ErrServerClosed {
@@ -64,7 +69,7 @@ func main() {
 		}
 	}()
 
-	p:= tea.NewProgram(tui.InitialModel(db, aiClient, user.ID))
+	p:= tea.NewProgram(tui.InitialModel(db, aiClient, user.ID, sessions))
 	if _, err := p.Run(); err != nil {
 		fmt.Printf("TUI error: %v\n", err)
 		os.Exit(1)

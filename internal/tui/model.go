@@ -64,6 +64,8 @@ func InitialModel(db *database.DB, client *gemini.Client, userID uuid.UUID) Mode
 		Channel:         ch,
 		CurrentUser:     userID,
 		SelectedSession: sessionID,
+		CurrentState:    StateWelcome,
+		PastSessions:    sessions,
 	}
 }
 
