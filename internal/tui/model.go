@@ -37,7 +37,7 @@ const (
 	StateBrowse
 )
 
-func InitialModel(db *database.DB, client *gemini.Client, userID uuid.UUID) Model {
+func InitialModel(db *database.DB, client *gemini.Client, userID uuid.UUID, sessions []database.Session) Model {
 	ch := make(chan tea.Msg)
 	ti := textinput.New()
 	ti.Placeholder = "Please enter your message..."

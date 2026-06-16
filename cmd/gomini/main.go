@@ -57,7 +57,7 @@ func main() {
 		}
 	}
 
-	sessions, err := db.GetSessionByUserID(user.ID)
+	sessions, err := db.GetSessionsByUserID(user.ID)
 	if err != nil {
 		log.Fatalf("Faield to fetch past sessions: %v", err)
 	}

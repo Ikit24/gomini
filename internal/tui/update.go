@@ -59,8 +59,6 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case StateWelcome:
 		return m.updateWelcome(msg)
 	case StateChat:
-		return m 
-	case StateChat:
 		return m.updateChat(msg)
 	default:
 		return m, nil
@@ -130,7 +128,7 @@ func (m Model) updateChat (msg tea.Msg) (tea.Model, tea.Cmd) {
 					CreatedAt: time.Now(),
 					UpdatedAt: time.Now(),
 				}
-				err  := HandleCreateSession(m.DB, newSession)
+				err  := m.DB.CreateSession(&newSession)
 				if err != nil {
 					m.ErrorMessage = "Failed to create session: %v" + err.Error()
 					return m, nil
@@ -199,7 +197,7 @@ func (m Model) updateWelcome (msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "n":
-			m.CurrentState = stateChat
+			m.CurrentState = StateChat
 			m.SelectedSession = uuid.Nil
 			m.Messages = []database.Message{}
 			m.Viewport.SetContent("")
