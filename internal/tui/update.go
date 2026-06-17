@@ -4,6 +4,7 @@ import (
 	"time"
 	"context"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/bubbles/textinput"
 	"github.com/google/uuid"
 	"github.com/muesli/reflow/wordwrap"
 	"github.com/Ikit24/gomini/internal/gemini"
@@ -39,8 +40,6 @@ func saveMessageToDB(db *database.DB, msg database.Message) tea.Cmd {
 }
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	//var cmd tea.Cmd
-	
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		m.TerminalWidth = msg.Width
@@ -198,10 +197,13 @@ func (m Model) updateWelcome (msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.String() {
 		case "n":
 			m.CurrentState = StateChat
+			//old session clear to start new chat
 			m.SelectedSession = uuid.Nil
 			m.Messages = []database.Message{}
 			m.Viewport.SetContent("")
-			return m, nil
+
+			m.MessageInput.Focus()
+			return m, textinput.Blink
 			
 		case "b":
 			m.CurrentState = StateBrowse

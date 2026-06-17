@@ -172,5 +172,6 @@ func (d *DB) SaveSession(m *Session) error {
 	query := `INSERT INTO sessions (id, user_id, title, created_at, updated_at) VALUES (?, ?, ?, ?, ?)`
 
 	_, err := d.db.Exec(query, m.ID, m.UserID, m.Title, m.CreatedAt, m.UpdatedAt)
+
 	return err
 }

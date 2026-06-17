@@ -1,8 +1,6 @@
 package tui
 
 import (
-	"log"
-	"time"
 	"github.com/charmbracelet/bubbles/textinput"
 	"github.com/charmbracelet/bubbles/viewport"
     tea "github.com/charmbracelet/bubbletea"
@@ -43,27 +41,13 @@ func InitialModel(db *database.DB, client *gemini.Client, userID uuid.UUID, sess
 	ti.Placeholder = "Please enter your message..."
 	ti.Focus()
 
-	sessionID := uuid.New()
-	
-	sess := &database.Session{
-		ID:        sessionID,
-		UserID:    userID,
-		Title:     "Local Chat",
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
-	}
-	err := db.SaveSession(sess)
-	if err != nil {
-		log.Fatalf("Failed to save session: %v", err)
-	}
-
 	return Model{
 		MessageInput:    ti,
 		DB:              db,
 		GeminiClient:    client,
 		Channel:         ch,
 		CurrentUser:     userID,
-		SelectedSession: sessionID,
+		SelectedSession: uuid.Nil,
 		CurrentState:    StateWelcome,
 		PastSessions:    sessions,
 	}
