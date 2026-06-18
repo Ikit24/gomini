@@ -20,18 +20,8 @@ type Session struct {
 var ErrNotFound  = errors.New("resource not found or unauthorized")
 
 func (d *DB) CreateSession(s *Session) error {
-	id, err := uuid.NewRandom()
-	if err != nil {
-		return err
-	}
-
-	now := time.Now().UTC()
-	s.ID = id
-	s.CreatedAt = now
-	s.UpdatedAt = now
-
 	query := `INSERT INTO sessions (id, user_id, title, created_at, updated_at) VALUES (?, ?, ?, ?, ?)`
-	_, err = d.db.Exec(query, s.ID, s.UserID, s.Title, s.CreatedAt, s.UpdatedAt)
+	_, err := d.db.Exec(query, s.ID, s.UserID, s.Title, s.CreatedAt, s.UpdatedAt)
 	if err != nil {
 		return err
 	}

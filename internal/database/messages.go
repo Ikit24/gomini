@@ -2,7 +2,6 @@ package database
 
 import (
 	"time"
-	"log"
 
 	"github.com/google/uuid"
 )
@@ -35,7 +34,6 @@ func (d *DB) SaveMessage(m *Message) error {
 
 	query := `INSERT INTO messages (id, session_id, user_id, role, content, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)`
 
-	log.Printf("DEBUG: Saving message. MsgID: %v, SessionID: %v, UserID: %v", m.ID, m.SessionID, m.UserID)
 	_, err := d.db.Exec(query, m.ID, m.SessionID, m.UserID, m.Role, m.Content, m.CreatedAt, m.UpdatedAt)
 	return err
 }

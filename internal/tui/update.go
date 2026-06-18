@@ -120,14 +120,15 @@ func (m Model) updateChat (msg tea.Msg) (tea.Model, tea.Cmd) {
 			userInput := m.MessageInput.Value()
 			if m.SelectedSession == uuid.Nil {
 				newSessionID := uuid.New()
+				now := time.Now().UTC()
 				newSession := database.Session{
 					ID:        newSessionID,
 					UserID:    m.CurrentUser,
 					Title:     "New Chat", //make dynamic later
-					CreatedAt: time.Now(),
-					UpdatedAt: time.Now(),
+					CreatedAt: now,
+					UpdatedAt: now,
 				}
-				err  := m.DB.CreateSession(&newSession)
+				err := m.DB.CreateSession(&newSession)
 				if err != nil {
 					m.ErrorMessage = "Failed to create session: %v" + err.Error()
 					return m, nil
