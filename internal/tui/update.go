@@ -91,22 +91,6 @@ func (m Model) updateChat (msg tea.Msg) (tea.Model, tea.Cmd) {
 		aiSaveCmd := saveMessageToDB(m.DB, finishedStream)
 		cmd = tea.Batch(cmd, aiSaveCmd)
 
-	case GeminiResponseMsg:
-		aiMessage := database.Message{
-			ID:        uuid.New(),
-			UserID:    m.CurrentUser,
-			SessionID: m.SelectedSession,
-			Role:      database.ModelRole,
-			Content:   string(msg),
-			CreatedAt: time.Now(),
-			UpdatedAt: time.Now(),
-		}
-		m.Messages = append(m.Messages, aiMessage)
-		contentChanged = true
-		
-		aiSaveCmd := saveMessageToDB(m.DB, aiMessage)
-		cmd = tea.Batch(cmd, aiSaveCmd)
-	
 		case dbSaveErrorMsg:
 			m.ErrorMessage = msg.err.Error()
 		case dbSaveSuccessMsg:
@@ -223,6 +207,7 @@ func startGeminiStream (ch chan tea.Msg, prompt string, client *gemini.Client, h
 		for text := range streamChan{
 		ch <- ArrivingMsg(text)
 		}
-		return StreamFinish{}
+		ch <- StreamFinish{}
+		return nil
 	}
 }

@@ -94,9 +94,11 @@ func (c *Client) GenerateChatResponse(ctx context.Context, history []Message, ne
 				fmt.Println("couldn't stream data")
 				return
 			}
-			for _, part := range resp.Candidates[0].Content.Parts {
-				if text, ok := part.(genai.Text); ok {
-					ch <- string(text)
+			if len(resp.Candidates) > 0 && resp.Candidates[0].Content != nil  {
+				for _, part := range resp.Candidates[0].Content.Parts {
+					if text, ok := part.(genai.Text); ok {
+						ch <- string(text)
+					}
 				}
 			}
 		}
