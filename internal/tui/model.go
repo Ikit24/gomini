@@ -25,6 +25,7 @@ type Model struct {
 	ErrorMessage    string
 	CurrentState    appState
 	PastSessions    []database.Session
+	BrowseCursor    int
 }
 
 type appState int

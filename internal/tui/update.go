@@ -64,7 +64,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 }
 
-func (m Model) updateChat (msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m Model) updateChat(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd, inputCmd, viewportCmd tea.Cmd
     contentChanged := false
 	
@@ -114,7 +114,6 @@ func (m Model) updateChat (msg tea.Msg) (tea.Model, tea.Cmd) {
 				} else if title == "" {
 					title = "New Chat"
 				}
-
 				newSessionID := uuid.New()
 				now := time.Now().UTC()
 				newSession := database.Session{
@@ -188,7 +187,7 @@ func (m Model) updateChat (msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, tea.Batch(inputCmd, viewportCmd, cmd)
 }
 
-func (m Model) updateWelcome (msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m Model) updateWelcome(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
@@ -203,6 +202,13 @@ func (m Model) updateWelcome (msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, textinput.Blink
 			
 		case "b":
+			sessions, err := m.DB.GetSessionsByUserID(m.CurrentUser)
+			if err != nil {
+				m.ErrorMessage = "Failed to fetch session: %v" + err.Error()
+				return m, nil
+			}
+			m.PastSessions = sessions
+			m.BrowseCursor = 0
 			m.CurrentState = StateBrowse
 			return m, nil
 		}
@@ -210,7 +216,26 @@ func (m Model) updateWelcome (msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-func startGeminiStream (ch chan tea.Msg, prompt string, client *gemini.Client, history []gemini.Message) tea.Cmd {
+func ( m Model) updateBrowse(msg tea.Msg) (tea.Model, tea.Cmd) {
+	switch msg = msg.(type) {
+	case tea.KeyMsg:
+		switch msg.String() {
+		case "up":
+			if m.BrowseCursor > 0 {
+				m.BrowseCursor--
+			}
+		case "down":
+			if m.BrowseCursor < len(m.PastSessions)-1 {
+				m.BrowseCursor++
+			}
+		case "esc":
+			m.CurrentState = StateWelcome
+			return m, nil
+		}
+	}
+}
+
+func startGeminiStream(ch chan tea.Msg, prompt string, client *gemini.Client, history []gemini.Message) tea.Cmd {
 	return func() tea.Msg {
 		streamChan, err := client.GenerateChatResponse(context.Background(), history, prompt)
 		if err != nil {
