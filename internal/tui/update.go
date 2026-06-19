@@ -103,12 +103,24 @@ func (m Model) updateChat (msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "enter":
 			userInput := m.MessageInput.Value()
 			if m.SelectedSession == uuid.Nil {
+				title := userInput
+				if len(title) > 35 {
+					lastSpace := strings.LastIndex(title:[35], " ")
+					if lastSpace != -1 {
+						title = title[:lastSpace] + "..."
+					} else {
+						title = title[:32] + "..."
+					}
+				} else if title == "" {
+					title = "New Chat"
+				}
+
 				newSessionID := uuid.New()
 				now := time.Now().UTC()
 				newSession := database.Session{
 					ID:        newSessionID,
 					UserID:    m.CurrentUser,
-					Title:     "New Chat", //make dynamic later
+					Title:     title,
 					CreatedAt: now,
 					UpdatedAt: now,
 				}
