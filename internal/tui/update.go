@@ -1,25 +1,25 @@
 package tui
 
 import (
-	"time"
 	"context"
-	tea "github.com/charmbracelet/bubbletea"
+	"github.com/Ikit24/gomini/internal/database"
+	"github.com/Ikit24/gomini/internal/gemini"
 	"github.com/charmbracelet/bubbles/textinput"
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/google/uuid"
 	"github.com/muesli/reflow/wordwrap"
-	"github.com/Ikit24/gomini/internal/gemini"
-	"github.com/Ikit24/gomini/internal/database"
+	"time"
 )
 
 type GeminiResponseMsg string
-type geminiStreamErrorMsg struct{
+type geminiStreamErrorMsg struct {
 	err error
 }
 type ArrivingMsg string
 type StreamFinish struct{}
 type ChunkChan chan tea.Msg
 type dbSaveSuccessMsg struct{}
-type dbSaveErrorMsg struct{
+type dbSaveErrorMsg struct {
 	err error
 }
 
@@ -30,7 +30,7 @@ func waitForChunk(ch ChunkChan) tea.Cmd {
 }
 
 func saveMessageToDB(db *database.DB, msg database.Message) tea.Cmd {
-	return func() tea.Msg{
+	return func() tea.Msg {
 		err := db.SaveMessage(&msg)
 		if err != nil {
 			return dbSaveErrorMsg{err: err}
@@ -66,8 +66,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m Model) updateChat(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd, inputCmd, viewportCmd tea.Cmd
-    contentChanged := false
-	
+	contentChanged := false
+
 	switch msg := msg.(type) {
 	case ArrivingMsg:
 		m.CurrentStream += string(msg)
@@ -91,12 +91,12 @@ func (m Model) updateChat(msg tea.Msg) (tea.Model, tea.Cmd) {
 		aiSaveCmd := saveMessageToDB(m.DB, finishedStream)
 		cmd = tea.Batch(cmd, aiSaveCmd)
 
-		case dbSaveErrorMsg:
-			m.ErrorMessage = msg.err.Error()
-		case dbSaveSuccessMsg:
+	case dbSaveErrorMsg:
+		m.ErrorMessage = msg.err.Error()
+	case dbSaveSuccessMsg:
 
-		case geminiStreamErrorMsg:
-			m.ErrorMessage = msg.err.Error()
+	case geminiStreamErrorMsg:
+		m.ErrorMessage = msg.err.Error()
 
 	case tea.KeyMsg:
 		switch msg.String() {
@@ -104,8 +104,9 @@ func (m Model) updateChat(msg tea.Msg) (tea.Model, tea.Cmd) {
 			userInput := m.MessageInput.Value()
 			if m.SelectedSession == uuid.Nil {
 				title := userInput
+				//dynamic chat title
 				if len(title) > 35 {
-					lastSpace := strings.LastIndex(title:[35], " ")
+					lastSpace := strings.LastIndex(title[:35], " ")
 					if lastSpace != -1 {
 						title = title[:lastSpace] + "..."
 					} else {
@@ -139,13 +140,13 @@ func (m Model) updateChat(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}
 			}
 			dbMessage := database.Message{
-			ID:        uuid.New(),
-			SessionID: m.SelectedSession,
-			UserID:    m.CurrentUser,
-			Role:      database.UserRole,
-			Content:   userInput,
-			CreatedAt: time.Now(),
-			UpdatedAt: time.Now(),
+				ID:        uuid.New(),
+				SessionID: m.SelectedSession,
+				UserID:    m.CurrentUser,
+				Role:      database.UserRole,
+				Content:   userInput,
+				CreatedAt: time.Now(),
+				UpdatedAt: time.Now(),
 			}
 			m.Messages = append(m.Messages, dbMessage)
 			m.MessageInput.SetValue("")
@@ -153,13 +154,13 @@ func (m Model) updateChat(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 			cmd = waitForChunk(m.Channel)
 			dbSave := saveMessageToDB(m.DB, dbMessage)
-			geminiStream  := startGeminiStream(m.Channel, userInput, m.GeminiClient, geminiHistory)
+			geminiStream := startGeminiStream(m.Channel, userInput, m.GeminiClient, geminiHistory)
 			cmd = tea.Batch(cmd, dbSave, geminiStream, inputCmd)
 			contentChanged = true
-			
+
 		case "up", "down", "pgup", "pgdn":
 			m.Viewport, viewportCmd = m.Viewport.Update(msg)
-		
+
 		default:
 			m.MessageInput, inputCmd = m.MessageInput.Update(msg)
 		}
@@ -200,7 +201,7 @@ func (m Model) updateWelcome(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 			m.MessageInput.Focus()
 			return m, textinput.Blink
-			
+
 		case "b":
 			sessions, err := m.DB.GetSessionsByUserID(m.CurrentUser)
 			if err != nil {
@@ -216,8 +217,8 @@ func (m Model) updateWelcome(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-func ( m Model) updateBrowse(msg tea.Msg) (tea.Model, tea.Cmd) {
-	switch msg = msg.(type) {
+func (m Model) updateBrowse(msg tea.Msg) (tea.Model, tea.Cmd) {
+	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "up":
@@ -231,6 +232,19 @@ func ( m Model) updateBrowse(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "esc":
 			m.CurrentState = StateWelcome
 			return m, nil
+		case "enter":
+			if len(m.PastSessions) == 0 {
+			return m, nil
+			}
+			selectedSession := m.PastSessions[m.BrowseCursor]
+			m.SelectedSession = selectedSession.ID
+			messagesFromSession, err := m.DB.GetMessagesBySessionID(selectedSession.ID)
+			if err != nil {
+				m.ErrorMessage = "Failed to fetch messages: " + err.Error()
+				return m, nil
+			}
+			m.Messages = messagesFromSession
+			m.CurrentState = StateChat
 		}
 	}
 }
@@ -241,8 +255,8 @@ func startGeminiStream(ch chan tea.Msg, prompt string, client *gemini.Client, hi
 		if err != nil {
 			return geminiStreamErrorMsg{err: err}
 		}
-		for text := range streamChan{
-		ch <- ArrivingMsg(text)
+		for text := range streamChan {
+			ch <- ArrivingMsg(text)
 		}
 		ch <- StreamFinish{}
 		return nil

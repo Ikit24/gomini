@@ -1,9 +1,8 @@
 package database
 
 import (
-	"time"
 	"database/sql"
-
+	"time"
 
 	"github.com/google/uuid"
 	_ "github.com/mattn/go-sqlite3"
@@ -29,7 +28,7 @@ func (d *DB) CreateUser(u *User) error {
 	u.UpdatedAt = now
 
 	query := `INSERT INTO users (id, email, name, created_at, updated_at) VALUES (?, ?, ?, ?, ?)`
-	_, err =  d.db.Exec(query, u.ID, u.Email, u.Name, u.CreatedAt, u.UpdatedAt)
+	_, err = d.db.Exec(query, u.ID, u.Email, u.Name, u.CreatedAt, u.UpdatedAt)
 	if err != nil {
 		return err
 	}

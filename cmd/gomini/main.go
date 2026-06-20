@@ -1,18 +1,18 @@
 package main
 
 import (
-	"os"
-	"net/http"
+	"context"
 	"fmt"
 	"log"
-	"context"
+	"net/http"
+	"os"
 	"time"
 
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/Ikit24/gomini/internal/tui"
-	"github.com/Ikit24/gomini/internal/gemini"
 	"github.com/Ikit24/gomini/internal/database"
+	"github.com/Ikit24/gomini/internal/gemini"
 	"github.com/Ikit24/gomini/internal/handlers"
+	"github.com/Ikit24/gomini/internal/tui"
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/joho/godotenv"
 )
 
@@ -20,9 +20,9 @@ func main() {
 	_ = godotenv.Load()
 
 	geminiKey := os.Getenv("GEMINI_API_KEY")
-		if geminiKey == "" {
-			log.Fatal("GEMINI_API_KEY missing")
-		}
+	if geminiKey == "" {
+		log.Fatal("GEMINI_API_KEY missing")
+	}
 
 	ctx := context.Background()
 
@@ -48,7 +48,7 @@ func main() {
 
 	if user == nil {
 		user = &database.User{
-			Name: "ati",
+			Name:  "ati",
 			Email: "ati@local.dev",
 		}
 		err = db.CreateUser(user)
@@ -69,7 +69,7 @@ func main() {
 		}
 	}()
 
-	p:= tea.NewProgram(tui.InitialModel(db, aiClient, user.ID, sessions))
+	p := tea.NewProgram(tui.InitialModel(db, aiClient, user.ID, sessions))
 	if _, err := p.Run(); err != nil {
 		fmt.Printf("TUI error: %v\n", err)
 		os.Exit(1)
@@ -77,7 +77,7 @@ func main() {
 
 	log.Println("Shutting down server...")
 
-	shutdownCtx, cancel := context.WithTimeout(ctx, 10 * time.Second)
+	shutdownCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
 	defer cancel()
 
 	err = servr.Shutdown(shutdownCtx)

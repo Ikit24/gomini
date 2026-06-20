@@ -44,7 +44,7 @@ func (d *DB) GetMessagesBySessionID(sessionID uuid.UUID) ([]Message, error) {
 
 	rows, err := d.db.Query(query, sessionID)
 	if err != nil {
-		return  nil, err
+		return nil, err
 	}
 	defer rows.Close()
 

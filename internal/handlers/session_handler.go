@@ -1,12 +1,12 @@
 package handlers
 
 import (
+	"encoding/json"
 	"errors"
 	"net/http"
-	"encoding/json"
 
-	"github.com/google/uuid"
 	"github.com/Ikit24/gomini/internal/database"
+	"github.com/google/uuid"
 )
 
 func (s *Server) HandleCreateSession(w http.ResponseWriter, r *http.Request) {
@@ -29,7 +29,7 @@ func (s *Server) HandleCreateSession(w http.ResponseWriter, r *http.Request) {
 
 	sessionToCreate := database.Session{
 		UserID: userID,
-		Title: params.Name,
+		Title:  params.Name,
 	}
 
 	err = s.DB.CreateSession(&sessionToCreate)
@@ -99,7 +99,7 @@ func (s *Server) HandleUpdateSession(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	RespondWithJSON(w, http.StatusOK, map[string]string{"status":"updated"})
+	RespondWithJSON(w, http.StatusOK, map[string]string{"status": "updated"})
 }
 
 func (s *Server) HandleListAllSessions(w http.ResponseWriter, r *http.Request) {

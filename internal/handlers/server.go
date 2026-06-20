@@ -1,16 +1,16 @@
 package handlers
 
 import (
-	"net/http"
 	"context"
+	"net/http"
 
 	"github.com/Ikit24/gomini/internal/database"
 	"github.com/Ikit24/gomini/internal/gemini"
 )
 
 type Server struct {
-	DB *database.DB
-	AI *gemini.Client
+	DB         *database.DB
+	AI         *gemini.Client
 	httpServer *http.Server
 }
 
@@ -28,7 +28,7 @@ func (s *Server) HandleHealthCheck(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	RespondWithJSON(w, http.StatusOK, map[string]string{"status":"available"})
+	RespondWithJSON(w, http.StatusOK, map[string]string{"status": "available"})
 }
 
 func (s *Server) Shutdown(ctx context.Context) error {
@@ -40,7 +40,7 @@ func (s *Server) ListenAndServe(addr string) error {
 
 	mux.HandleFunc("POST /api/users", s.HandleCreateUser)
 	mux.HandleFunc("GET /api/sessions/", s.HandleListAllSessions)
-	
+
 	mux.HandleFunc("POST /api/users/{user_id}/sessions", s.HandleCreateSession)
 	mux.HandleFunc("GET /api/users/{user_id}/sessions", s.HandleGetSessionByUserID)
 

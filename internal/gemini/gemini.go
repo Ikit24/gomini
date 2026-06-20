@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"strings"
 
-    "github.com/google/generative-ai-go/genai"
-    "google.golang.org/api/option"
-    "google.golang.org/api/iterator"
+	"github.com/google/generative-ai-go/genai"
+	"google.golang.org/api/iterator"
+	"google.golang.org/api/option"
 )
 
 type Client struct {
@@ -21,10 +21,10 @@ type Message struct {
 }
 
 func (c *Client) GenerateContentStream(ctx context.Context, prompt string) *genai.GenerateContentResponseIterator {
-    return c.model.GenerateContentStream(ctx, genai.Text(prompt))
+	return c.model.GenerateContentStream(ctx, genai.Text(prompt))
 }
 
-func(c *Client) GenerateContent(ctx context.Context, prompt string) (string, error) {
+func (c *Client) GenerateContent(ctx context.Context, prompt string) (string, error) {
 	resp, err := c.model.GenerateContent(ctx, genai.Text(prompt))
 	if err != nil {
 		return "", err
@@ -73,7 +73,7 @@ func (c *Client) GenerateChatResponse(ctx context.Context, history []Message, ne
 	sdkHistory := make([]*genai.Content, 0, len(history))
 	for _, msg := range history {
 		sdkMsg := &genai.Content{
-			Role: msg.Role,
+			Role:  msg.Role,
 			Parts: []genai.Part{genai.Text(msg.Content)},
 		}
 		sdkHistory = append(sdkHistory, sdkMsg)
@@ -94,7 +94,7 @@ func (c *Client) GenerateChatResponse(ctx context.Context, history []Message, ne
 				fmt.Println("couldn't stream data")
 				return
 			}
-			if len(resp.Candidates) > 0 && resp.Candidates[0].Content != nil  {
+			if len(resp.Candidates) > 0 && resp.Candidates[0].Content != nil {
 				for _, part := range resp.Candidates[0].Content.Parts {
 					if text, ok := part.(genai.Text); ok {
 						ch <- string(text)

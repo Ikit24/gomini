@@ -7,7 +7,7 @@ import (
 )
 
 type DB struct {
-	db *sql.DB
+	db   *sql.DB
 	path string
 }
 
@@ -22,8 +22,9 @@ func (d *DB) Ping() error {
 func Open(path string) (*DB, error) {
 	dsn := path + "?_foreign_keys=on"
 	conn, err := sql.Open("sqlite3", dsn)
-		if err != nil{
-		return nil, err }
+	if err != nil {
+		return nil, err
+	}
 	conn.SetMaxOpenConns(1)
 
 	if err = conn.Ping(); err != nil {

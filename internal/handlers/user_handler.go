@@ -1,13 +1,13 @@
 package handlers
 
 import (
-	"time"
+	"encoding/json"
 	"log"
 	"net/http"
-	"encoding/json"
+	"time"
 
-	"github.com/google/uuid"
 	"github.com/Ikit24/gomini/internal/database"
+	"github.com/google/uuid"
 )
 
 func (s *Server) HandleCreateUser(w http.ResponseWriter, r *http.Request) {

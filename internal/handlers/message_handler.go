@@ -1,15 +1,15 @@
 package handlers
 
 import (
-	"fmt"
-	"time"
-	"net/http"
 	"encoding/json"
+	"fmt"
+	"net/http"
 	"strings"
+	"time"
 
-	"github.com/google/uuid"
 	"github.com/Ikit24/gomini/internal/database"
 	"github.com/Ikit24/gomini/internal/gemini"
+	"github.com/google/uuid"
 )
 
 func (s *Server) HandleCreateMessage(w http.ResponseWriter, r *http.Request) {
@@ -61,7 +61,7 @@ func (s *Server) HandleCreateMessage(w http.ResponseWriter, r *http.Request) {
 	geminiMessages := make([]gemini.Message, 0, len(dbMessages))
 	for _, dbMsg := range dbMessages {
 		gMsg := gemini.Message{
-			Role: string(dbMsg.Role),
+			Role:    string(dbMsg.Role),
 			Content: dbMsg.Content,
 		}
 		geminiMessages = append(geminiMessages, gMsg)

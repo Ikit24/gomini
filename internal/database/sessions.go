@@ -1,10 +1,10 @@
 package database
 
 import (
+	"database/sql"
+	"errors"
 	"fmt"
 	"time"
-	"errors"
-	"database/sql"
 
 	"github.com/google/uuid"
 )
@@ -17,7 +17,7 @@ type Session struct {
 	UpdatedAt time.Time `json:"updated_at" db:"updated_at"`
 }
 
-var ErrNotFound  = errors.New("resource not found or unauthorized")
+var ErrNotFound = errors.New("resource not found or unauthorized")
 
 func (d *DB) CreateSession(s *Session) error {
 	query := `INSERT INTO sessions (id, user_id, title, created_at, updated_at) VALUES (?, ?, ?, ?, ?)`
@@ -35,7 +35,7 @@ func (d *DB) GetSessionsByUserID(userID uuid.UUID) ([]Session, error) {
 
 	rows, err := d.db.Query(query, userID)
 	if err != nil {
-		return  nil, err
+		return nil, err
 	}
 	defer rows.Close()
 
@@ -85,7 +85,7 @@ func (d *DB) GetSessionByID(id uuid.UUID) (*Session, error) {
 
 	err := d.db.QueryRow(query, id).Scan(&s.ID, &s.UserID, &s.Title, &s.CreatedAt, &s.UpdatedAt)
 	if err != nil {
-		if err == sql.ErrNoRows{
+		if err == sql.ErrNoRows {
 			return nil, fmt.Errorf("lookup failed: %w", sql.ErrNoRows)
 		}
 		return nil, err
@@ -110,17 +110,17 @@ func (d *DB) GetAllSessions() ([]Session, error) {
 	query := `SELECT id, user_id, title, created_at, updated_at FROM sessions`
 
 	rows, err := d.db.Query(query)
-		if err != nil {
-			return nil, err
-		}
-		defer rows.Close()
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
 
 	for rows.Next() {
 		var currentSession Session
 		err = rows.Scan(&currentSession.ID, &currentSession.UserID, &currentSession.Title, &currentSession.CreatedAt, &currentSession.UpdatedAt)
 		if err != nil {
 			return nil, err
-			}
+		}
 		s = append(s, currentSession)
 	}
 	if err = rows.Err(); err != nil {
@@ -134,7 +134,7 @@ func (d *DB) DeleteSessionBySessionID(sessionID uuid.UUID) error {
 	query := `DELETE FROM sessions WHERE id = ?`
 
 	res, err := d.db.Exec(query, sessionID)
-	if  err != nil {
+	if err != nil {
 		return err
 	}
 
