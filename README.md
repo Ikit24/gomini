@@ -1,8 +1,10 @@
+```
 ____                 _       _ 
  / ___| ___  _ __ ___ (_)_ __ (_)
 | |  _ / _ \| '_ ` _ \| | '_ \| |
 | |_| | (_) | | | | | | | | | | |
  \____|\___/|_| |_| |_|_|_| |_|_|
+```
 
 Gomini is a production-ready, terminal-based AI chat application written in Go. It provides a seamless, keyboard-driven interface for conversing with the Gemini AI, with all chat history and sessions persisted locally using SQLite.
 
