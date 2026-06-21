@@ -1,37 +1,38 @@
-```text
-  ____                 _       _ 
+____                 _       _ 
  / ___| ___  _ __ ___ (_)_ __ (_)
 | |  _ / _ \| '_ ` _ \| | '_ \| |
 | |_| | (_) | | | | | | | | | | |
  \____|\___/|_| |_| |_|_|_| |_|_|
-```
 
-Gomini is a production-ready, lightweight Go backend API that orchestrates conversation sessions using SQLite for persistence and the Gemini AI live client for intelligent responses.
+Gomini is a production-ready, terminal-based AI chat application written in Go. It provides a seamless, keyboard-driven interface for conversing with the Gemini AI, with all chat history and sessions persisted locally using SQLite.
 
 ## 🚀 Features
 
-- **AI Chat Orchestration:** Manages multi-turn conversations, persisting user queries and streaming/saving Gemini AI responses.
-- **Session Management:** Full CRUD capabilities for tracking separate chat sessions, history, and metadata.
-- **Robust Health Monitoring:** Active server and database pulse checking via custom SQLite pool delegation.
-- **Graceful Shutdown:** Cleans up active database connections and handles server lifecycles safely on termination signals.
+- **Terminal User Interface (TUI):** Fully interactive, state-driven command-line interface.
+- **Local Session Management:** Automatically saves and organizes all past chats in a local SQLite database.
+- **Interactive History Browser:** Scroll through past sessions and resume conversations instantly.
+- **Live AI Streaming:** Real-time streaming of Gemini AI responses directly to the terminal viewport.
 
 ## 📁 Project Structure
 
-The project follows the standard Go enterprise layout to prevent circular dependencies:
-- `cmd/gomini/` - The main application entry point.
-- `internal/database/` - Isolated SQLite connection pool and low-level data persistence handlers.
-- `internal/gemini/` - Wrapper client for managing Google AI configurations.
-- `internal/handlers/` - HTTP routing, server logic, and request orchestration.
+The project follows a modular Go layout to separate concerns:
+- `cmd/gomini/` - The main application entry point and TUI initialization.
+- `internal/database/` - Isolated SQLite connection pool and CRUD operations for sessions and messages.
+- `internal/gemini/` - Wrapper client for managing Google AI configurations and stream processing.
+- `internal/ui/` (or wherever your `update.go` lives) - State machine routing, keyboard event handling, and viewport rendering.
 
-## 🛣️ API Endpoints
+## ⌨️ Keyboard Controls
 
-| Method | Endpoint | Description | Status |
-| :--- | :--- | :--- | :--- |
-| `GET` | `/healthz` | Checks API and Database pool health | Complete |
-| `GET` | `/api/sessions/{session_id}` | Retrieves a specific chat session | Complete |
-| `PATCH` | `/api/sessions/{session_id}` | Updates session titles and metadata | Complete |
-| `GET` | `/api/sessions/{session_id}/messages` | Fetches full message history for a session | Complete |
-| `POST` | `/api/sessions/{session_id}/messages` | Sends a message to the database and fetches Gemini AI reply | Complete |
+| Context | Key | Action |
+| :--- | :--- | :--- |
+| **Global** | `ctrl+c` | Quit application gracefully |
+| **Welcome** | `n` | Start a new chat |
+| **Welcome** | `b` | Browse past chat sessions |
+| **Browse** | `up` / `k` | Move cursor up |
+| **Browse** | `down` / `j` | Move cursor down |
+| **Browse** | `enter` | Load selected chat |
+| **Browse** | `esc` | Return to Welcome screen |
+| **Chat** | `???` | ??? |
 
 ## 🛠️ Getting Started
 
@@ -47,24 +48,3 @@ Ensure you have your Gemini API key set in your environment variables, then run:
 export GEMINI_API_KEY="your_api_key_here"
 go run ./cmd/gomini/main.go
 ```
-### MIT License
-
-Copyright (c) 2026 Attila Szasz
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
