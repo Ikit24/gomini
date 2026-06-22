@@ -1,6 +1,7 @@
 package tui
 
 import (
+	"strings"
 	"context"
 	"github.com/Ikit24/gomini/internal/database"
 	"github.com/Ikit24/gomini/internal/gemini"
@@ -161,6 +162,12 @@ func (m Model) updateChat(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "up", "down", "pgup", "pgdn":
 			m.Viewport, viewportCmd = m.Viewport.Update(msg)
 
+		case "ctrl+n":
+			return m.startNewChat()
+
+		case "ctrl+b":
+			return m.switchToBrowse()
+		
 		default:
 			m.MessageInput, inputCmd = m.MessageInput.Update(msg)
 		}
@@ -192,28 +199,34 @@ func (m Model) updateWelcome(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
-		case "n":
-			m.CurrentState = StateChat
-			//old session clear to start new chat
-			m.SelectedSession = uuid.Nil
-			m.Messages = []database.Message{}
-			m.Viewport.SetContent("")
+		case "ctrl+n":
+			return m.startNewChat()
 
-			m.MessageInput.Focus()
-			return m, textinput.Blink
-
-		case "b":
-			sessions, err := m.DB.GetSessionsByUserID(m.CurrentUser)
-			if err != nil {
-				m.ErrorMessage = "Failed to fetch session: %v" + err.Error()
-				return m, nil
-			}
-			m.PastSessions = sessions
-			m.BrowseCursor = 0
-			m.CurrentState = StateBrowse
-			return m, nil
+		case "ctrl+b":
+			return m.switchToBrowse()
 		}
 	}
+	return m, nil
+}
+
+func (m Model) startNewChat() (tea.Model, tea.Cmd) {
+	m.CurrentState = StateChat
+	m.SelectedSession = uuid.Nil
+	m.Messages = []database.Message{}
+	m.Viewport.SetContent("")
+	m.MessageInput.Focus()
+	return m, textinput.Blink
+}
+
+func (m Model) switchToBrowse() (tea.Model, tea.Cmd) {
+	sessions, err := m.DB.GetSessionsByUserID(m.CurrentUser)
+	if err != nil {
+		m.ErrorMessage = "Failed to fetch session: " + err.Error()
+		return m, nil
+	}
+	m.PastSessions = sessions
+	m.BrowseCursor = 0
+	m.CurrentState = StateBrowse
 	return m, nil
 }
 
@@ -247,6 +260,7 @@ func (m Model) updateBrowse(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.CurrentState = StateChat
 		}
 	}
+	return m, nil
 }
 
 func startGeminiStream(ch chan tea.Msg, prompt string, client *gemini.Client, history []gemini.Message) tea.Cmd {

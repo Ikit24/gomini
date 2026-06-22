@@ -26,9 +26,9 @@ func (m Model) viewWelcome() string {
 	s += "Welcome to Gomini! \n\n"
 	if len(m.PastSessions) > 0 {
 		s += "You have " + fmt.Sprint(len(m.PastSessions)) + " previous conversations.\n"
-		s += "Press [b] to browse your history, or [n] to start new chat."
+		s += "Press [ctrl+b] to browse your history, or [ctrl+n] to start new chat."
 	} else {
-		s += "Press [n] to start new chat."
+		s += "Press [ctrl+n] to start new chat."
 	}
 	s += "\n\nPress [ctrl+c] to quit."
 

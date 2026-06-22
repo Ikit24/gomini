@@ -21,20 +21,24 @@ The project follows a modular Go layout to separate concerns:
 - `cmd/gomini/` - The main application entry point and TUI initialization.
 - `internal/database/` - Isolated SQLite connection pool and CRUD operations for sessions and messages.
 - `internal/gemini/` - Wrapper client for managing Google AI configurations and stream processing.
-- `internal/ui/` (or wherever your `update.go` lives) - State machine routing, keyboard event handling, and viewport rendering.
+- `internal/tui/` - State machine routing, keyboard event handling, and viewport rendering.
 
 ## ⌨️ Keyboard Controls
 
 | Context | Key | Action |
 | :--- | :--- | :--- |
-| **Global** | `ctrl+c` | Quit application gracefully |
-| **Welcome** | `n` | Start a new chat |
-| **Welcome** | `b` | Browse past chat sessions |
-| **Browse** | `up` / `k` | Move cursor up |
-| **Browse** | `down` / `j` | Move cursor down |
+| **Global** | `ctrl+c` | Quit application |
+| **Welcome** | `ctrl+n` | Start a new chat |
+| **Welcome** | `ctrl+b` | Browse past chat sessions |
+| **Browse** | `up` | Move cursor up |
+| **Browse** | `down` | Move cursor down |
 | **Browse** | `enter` | Load selected chat |
 | **Browse** | `esc` | Return to Welcome screen |
-| **Chat** | `???` | ??? |
+| **Chat** | `up` / `pgup` | Scroll chat history up |
+| **Chat** | `down` / `pgdn` | Scroll chat history down |
+| **Chat** | `enter` | Submit message |
+| **Chat** | `ctrl+b` | Browse past chat sessions |
+| **Chat** | `ctrl+n` | Start new chat |
 
 ## 🛠️ Getting Started
 
