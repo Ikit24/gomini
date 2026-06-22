@@ -15,6 +15,19 @@ func (m Model) View() string {
 		return m.viewWelcome()
 	case StateChat:
 		return m.viewChat()
+	case StateBrowse:
+		var savedChats string
+		savedChats += "Saved Chats:\n\n"
+		for i, session := range m.PastSessions {
+			if i = m.BrowseCursor {
+				savedChats += "> "
+			} else {
+				savedChats += "  "
+			}
+			s += session.ID.String() + "\n"
+		}
+		s += "\nPress [esc] to return"
+		return s
 	default:
 		return "Unknown application state"
 	}
