@@ -196,6 +196,27 @@ func (m Model) updateChat(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, tea.Batch(inputCmd, viewportCmd, cmd)
 }
 
+func (m Model) refreshViewportContent(msg tea.Msg) (tea.Model, tea.Cmd) {
+	contentChanged := false
+	if contentChanged {
+		var s string
+		for _, msg := range m.Messages {
+			if msg.Role == database.UserRole {
+				s += "You: " + wordwrap.String(msg.Content, m.TerminalWidth) + "\n"
+			}
+			if msg.Role == database.ModelRole {
+				s += "Gemini: " + wordwrap.String(msg.Content, m.TerminalWidth) + "\n"
+			}
+		}
+		if m.CurrentStream != "" {
+			s += "Gemini: " + wordwrap.String(m.CurrentStream, m.TerminalWidth) + "\n"
+		}
+		m.Viewport.SetContent(s)
+		m.Viewport.GotoBottom()
+	}
+	return m, nil
+}
+
 func (m Model) updateWelcome(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
@@ -258,7 +279,23 @@ func (m Model) updateBrowse(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, nil
 			}
 			m.Messages = messagesFromSession
+			var s string
+			for _, msg := range m.Messages {
+				if msg.Role == database.UserRole {
+					s += "You: " + wordwrap.String(msg.Content, m.TerminalWidth) + "\n"
+				}
+				if msg.Role == database.ModelRole {
+					s += "Gemini: " + wordwrap.String(msg.Content, m.TerminalWidth) + "\n"
+				}
+			}
+			if m.CurrentStream != "" {
+				s += "Gemini: " + wordwrap.String(m.CurrentStream, m.TerminalWidth) + "\n"
+			}
+			m.Viewport.SetContent(s)
+			m.Viewport.GotoBottom()
 			m.CurrentState = StateChat
+			m.MessageInput.Focus()
+			return m, textinput.Blink
 		}
 	}
 	return m, nil

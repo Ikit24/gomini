@@ -7,9 +7,8 @@ import (
 
 func (m Model) View() string {
 	if m.ErrorMessage != "" {
-		return "Critical error: " + m.ErrorMessage + "\nPress ctrl + c to quit."
+		return "Critical error: " + m.ErrorMessage + "\nPress [ctrl+c] to quit."
 	}
-
 	switch m.CurrentState {
 	case StateWelcome:
 		return m.viewWelcome()
@@ -24,7 +23,7 @@ func (m Model) View() string {
 			} else {
 				savedChats += "  "
 			}
-			savedChats += session.ID.String() + session.CreatedAt.String() + "\n"
+			savedChats += "SessionID: " + session.ID.String() + " " + "CreatedAt: " + session.CreatedAt.Format("02/01/2006") + "\n"
 		}
 		savedChats += "\nPress [esc] to return"
 		return savedChats
@@ -35,8 +34,8 @@ func (m Model) View() string {
 
 func (m Model) viewWelcome() string {
 	var s string
-
 	s += "Welcome to Gomini! \n\n"
+
 	if len(m.PastSessions) > 0 {
 		s += "You have " + fmt.Sprint(len(m.PastSessions)) + " previous conversations.\n"
 		s += "Press [ctrl+b] to browse your history, or [ctrl+n] to start new chat."
@@ -50,12 +49,6 @@ func (m Model) viewWelcome() string {
 }
 
 func (m Model) viewChat() string {
-	return fmt.Sprintf(
-		"%s\n\n%s",
-		m.Viewport.View(),
-		m.MessageInput.View(),
-	)
-
 	var errorStyle = lipgloss.NewStyle().
 		Foreground(lipgloss.Color("9")).
 		Bold(true)
