@@ -19,15 +19,15 @@ func (m Model) View() string {
 		var savedChats string
 		savedChats += "Saved Chats:\n\n"
 		for i, session := range m.PastSessions {
-			if i = m.BrowseCursor {
+			if i == m.BrowseCursor {
 				savedChats += "> "
 			} else {
 				savedChats += "  "
 			}
-			s += session.ID.String() + "\n"
+			savedChats += session.ID.String() + session.CreatedAt.String() + "\n"
 		}
-		s += "\nPress [esc] to return"
-		return s
+		savedChats += "\nPress [esc] to return"
+		return savedChats
 	default:
 		return "Unknown application state"
 	}

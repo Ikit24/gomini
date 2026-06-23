@@ -53,13 +53,14 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		}
 	}
-
 	//local msg routing based on state
 	switch m.CurrentState {
 	case StateWelcome:
 		return m.updateWelcome(msg)
 	case StateChat:
 		return m.updateChat(msg)
+	case StateBrowse:
+		return m.updateBrowse(msg)
 	default:
 		return m, nil
 	}
@@ -167,7 +168,7 @@ func (m Model) updateChat(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case "ctrl+b":
 			return m.switchToBrowse()
-		
+
 		default:
 			m.MessageInput, inputCmd = m.MessageInput.Update(msg)
 		}
