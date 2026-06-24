@@ -176,45 +176,28 @@ func (m Model) updateChat(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.Viewport, viewportCmd = m.Viewport.Update(msg)
 		m.MessageInput, inputCmd = m.MessageInput.Update(msg)
 	}
-
 	if contentChanged {
-		var s string
-		for _, msg := range m.Messages {
-			if msg.Role == database.UserRole {
-				s += "You: " + wordwrap.String(msg.Content, m.TerminalWidth) + "\n"
-			}
-			if msg.Role == database.ModelRole {
-				s += "Gemini: " + wordwrap.String(msg.Content, m.TerminalWidth) + "\n"
-			}
-		}
-		if m.CurrentStream != "" {
-			s += "Gemini: " + wordwrap.String(m.CurrentStream, m.TerminalWidth) + "\n"
-		}
-		m.Viewport.SetContent(s)
-		m.Viewport.GotoBottom()
+		m = m.refreshViewportContent()
 	}
 	return m, tea.Batch(inputCmd, viewportCmd, cmd)
 }
 
-func (m Model) refreshViewportContent(msg tea.Msg) (tea.Model, tea.Cmd) {
-	contentChanged := false
-	if contentChanged {
-		var s string
-		for _, msg := range m.Messages {
-			if msg.Role == database.UserRole {
-				s += "You: " + wordwrap.String(msg.Content, m.TerminalWidth) + "\n"
-			}
-			if msg.Role == database.ModelRole {
-				s += "Gemini: " + wordwrap.String(msg.Content, m.TerminalWidth) + "\n"
-			}
+func (m Model) refreshViewportContent() Model {
+	var s string
+	for _, msg := range m.Messages {
+		if msg.Role == database.UserRole {
+			s += "You: " + wordwrap.String(msg.Content, m.TerminalWidth) + "\n"
 		}
-		if m.CurrentStream != "" {
-			s += "Gemini: " + wordwrap.String(m.CurrentStream, m.TerminalWidth) + "\n"
+		if msg.Role == database.ModelRole {
+			s += "Gemini: " + wordwrap.String(msg.Content, m.TerminalWidth) + "\n"
 		}
-		m.Viewport.SetContent(s)
-		m.Viewport.GotoBottom()
 	}
-	return m, nil
+	if m.CurrentStream != "" {
+		s += "Gemini: " + wordwrap.String(m.CurrentStream, m.TerminalWidth) + "\n"
+	}
+	m.Viewport.SetContent(s)
+	m.Viewport.GotoBottom()
+	return m
 }
 
 func (m Model) updateWelcome(msg tea.Msg) (tea.Model, tea.Cmd) {
