@@ -184,16 +184,17 @@ func (m Model) updateChat(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m Model) refreshViewportContent() Model {
 	var s string
+	safeWidth := m.TerminalWidth - 2
 	for _, msg := range m.Messages {
 		if msg.Role == database.UserRole {
-			s += "You: " + wordwrap.String(msg.Content, m.TerminalWidth) + "\n"
+			s += wordwrap.String("You: " +msg.Content, safeWidth) + "\n"
 		}
 		if msg.Role == database.ModelRole {
-			s += "Gemini: " + wordwrap.String(msg.Content, m.TerminalWidth) + "\n"
+			s += wordwrap.String("Gemini: " +msg.Content, safeWidth) + "\n"
 		}
 	}
 	if m.CurrentStream != "" {
-		s += "Gemini: " + wordwrap.String(m.CurrentStream, m.TerminalWidth) + "\n"
+		s += wordwrap.String("Gemini: " +m.CurrentStream, safeWidth) + "\n"
 	}
 	m.Viewport.SetContent(s)
 	m.Viewport.GotoBottom()

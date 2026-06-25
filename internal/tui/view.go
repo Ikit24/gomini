@@ -43,7 +43,6 @@ func (m Model) viewWelcome() string {
 		s += "Press [ctrl+n] to start new chat."
 	}
 	s += "\n\nPress [ctrl+c] to quit."
-
 	//lip gloss later here to center text and add borders
 	return s
 }
