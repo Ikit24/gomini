@@ -18,6 +18,7 @@ type Model struct {
 	LastMessage     string
 	DB              *database.DB
 	GeminiClient    *gemini.Client
+	cancel          context.CancelFunc
 	CurrentStream   string
 	Channel         chan tea.Msg
 	TerminalWidth   int

@@ -103,6 +103,5 @@ func (c *Client) GenerateChatResponse(ctx context.Context, history []Message, ne
 			}
 		}
 	}()
-
 	return ch, nil
 }

@@ -51,6 +51,11 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.String() {
 		case "ctrl+c":
 			return m, tea.Quit
+		case "ctrl+n":
+			if m.cancel != nil {
+				m.cancel()
+				m.cancel = nil
+			}
 		}
 	}
 	//local msg routing based on state
@@ -221,6 +226,7 @@ func (m Model) startNewChat() (tea.Model, tea.Cmd) {
 	m.Messages = []database.Message{}
 	m.Viewport.SetContent("")
 	m.MessageInput.Focus()
+	m.MessageInput.Reset()
 	return m, textinput.Blink
 }
 
@@ -296,5 +302,13 @@ func startGeminiStream(ch chan tea.Msg, prompt string, client *gemini.Client, hi
 		}
 		ch <- StreamFinish{}
 		return nil
+	}
+}
+
+func (m Model) fetchResponse(input string) tea.Cmd {
+	ctx, cancel := context.WithCancel(context.Background())
+	m.cancel = cancel
+	return func() tea.Msg {
+		return m, nil
 	}
 }
