@@ -161,8 +161,9 @@ func (m Model) updateChat(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 			cmd = waitForChunk(m.Channel)
 			dbSave := saveMessageToDB(m.DB, dbMessage)
-			geminiStream := startGeminiStream(m.Channel, userInput, m.GeminiClient, geminiHistory)
-			cmd = tea.Batch(cmd, dbSave, geminiStream, inputCmd)
+			var geminiCmd tea.Cmd
+			m, geminiCmd = m.startGeminiStream(m.Channel, userInput, m.GeminiClient, geminiHistory)
+			cmd = tea.Batch(cmd, dbSave, geminiCmd, inputCmd)
 			contentChanged = true
 
 		case "up", "down", "pgup", "pgdn":
@@ -291,9 +292,11 @@ func (m Model) updateBrowse(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-func startGeminiStream(ch chan tea.Msg, prompt string, client *gemini.Client, history []gemini.Message) tea.Cmd {
-	return func() tea.Msg {
-		streamChan, err := client.GenerateChatResponse(context.Background(), history, prompt)
+func (m Model) startGeminiStream(ch chan tea.Msg, prompt string, client *gemini.Client, history []gemini.Message) (odel, tea.Cmd) {
+	ctx, cancel := context.WithCancel(context.Background())
+	m.cancel = cancel
+	return m, func() tea.Msg {
+		streamChan, err := client.GenerateChatResponse(ctx, history, prompt)
 		if err != nil {
 			return geminiStreamErrorMsg{err: err}
 		}
@@ -302,13 +305,5 @@ func startGeminiStream(ch chan tea.Msg, prompt string, client *gemini.Client, hi
 		}
 		ch <- StreamFinish{}
 		return nil
-	}
-}
-
-func (m Model) fetchResponse(input string) tea.Cmd {
-	ctx, cancel := context.WithCancel(context.Background())
-	m.cancel = cancel
-	return func() tea.Msg {
-		return m, nil
 	}
 }

@@ -1,6 +1,7 @@
 package tui
 
 import (
+	"context"
 	"github.com/Ikit24/gomini/internal/database"
 	"github.com/Ikit24/gomini/internal/gemini"
 	"github.com/charmbracelet/bubbles/textinput"
