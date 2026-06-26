@@ -6,10 +6,16 @@ import (
 	"github.com/Ikit24/gomini/internal/database"
 	"github.com/Ikit24/gomini/internal/gemini"
 	"github.com/charmbracelet/bubbles/textinput"
+	"github.com/charmbracelet/lipgloss"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/google/uuid"
 	"github.com/muesli/reflow/wordwrap"
 	"time"
+)
+
+var (
+	userPrefixColor = lipgloss.NewStyle().Foreground(lipgloss.Color("205")).Bold(true)
+	gominiPrefixColor = lipgloss.NewStyle().Foreground(lipgloss.Color("39")).Bold(true)
 )
 
 type GeminiResponseMsg string
@@ -193,14 +199,17 @@ func (m Model) refreshViewportContent() Model {
 	safeWidth := m.TerminalWidth - 2
 	for _, msg := range m.Messages {
 		if msg.Role == database.UserRole {
-			s += wordwrap.String("You: " +msg.Content, safeWidth) + "\n"
+			coloredPrefix := userPrefixColor.Render("You: ")
+			s += wordwrap.String(coloredPrefix+msg.Content, safeWidth) + "\n\n"
 		}
 		if msg.Role == database.ModelRole {
-			s += wordwrap.String("Gemini: " +msg.Content, safeWidth) + "\n"
+			coloredPrefix := gominiPrefixColor.Render("Gemini: ")
+			s += wordwrap.String(coloredPrefix+msg.Content, safeWidth) + "\n\n"
 		}
 	}
 	if m.CurrentStream != "" {
-		s += wordwrap.String("Gemini: " +m.CurrentStream, safeWidth) + "\n"
+		coloredPrefix := gominiPrefixColor.Render("Gemini: ")
+		s += wordwrap.String(coloredPrefix+m.CurrentStream, safeWidth) + "\n"
 	}
 	m.Viewport.SetContent(s)
 	m.Viewport.GotoBottom()
@@ -273,14 +282,17 @@ func (m Model) updateBrowse(msg tea.Msg) (tea.Model, tea.Cmd) {
 			var s string
 			for _, msg := range m.Messages {
 				if msg.Role == database.UserRole {
-					s += "You: " + wordwrap.String(msg.Content, m.TerminalWidth) + "\n"
+					coloredPrefix := userPrefixColor.Render("You: ")
+					s += wordwrap.String(coloredPrefix + msg.Content, m.TerminalWidth) + "\n\n"
 				}
 				if msg.Role == database.ModelRole {
-					s += "Gemini: " + wordwrap.String(msg.Content, m.TerminalWidth) + "\n"
+					coloredPrefix := gominiPrefixColor.Render("Gemini: ")
+					s += wordwrap.String(coloredPrefix + msg.Content, m.TerminalWidth) + "\n\n"
 				}
 			}
 			if m.CurrentStream != "" {
-				s += "Gemini: " + wordwrap.String(m.CurrentStream, m.TerminalWidth) + "\n"
+				coloredPrefix := gominiPrefixColor.Render("Gemini: ")
+				s += wordwrap.String(coloredPrefix + m.CurrentStream, m.TerminalWidth) + "\n"
 			}
 			m.Viewport.SetContent(s)
 			m.Viewport.GotoBottom()
@@ -292,7 +304,7 @@ func (m Model) updateBrowse(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-func (m Model) startGeminiStream(ch chan tea.Msg, prompt string, client *gemini.Client, history []gemini.Message) (odel, tea.Cmd) {
+func (m Model) startGeminiStream(ch chan tea.Msg, prompt string, client *gemini.Client, history []gemini.Message) (Model, tea.Cmd) {
 	ctx, cancel := context.WithCancel(context.Background())
 	m.cancel = cancel
 	return m, func() tea.Msg {
