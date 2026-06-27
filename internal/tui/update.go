@@ -181,6 +181,9 @@ func (m Model) updateChat(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "ctrl+b":
 			return m.switchToBrowse()
 
+		case "ctrl+d":
+			return m.deleteSelectedSession()
+
 		default:
 			m.MessageInput, inputCmd = m.MessageInput.Update(msg)
 		}
@@ -252,6 +255,39 @@ func (m Model) switchToBrowse() (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
+func (m Model) deleteSelectedSession() (tea.Model, tea.Cmd) {
+	var sessionToDelete uuid.UUID
+	if m.CurrentState == StateBrowse {
+		if len(m.PastSessions) == 0 {
+			return m, nil
+		}
+		sessionToDelete = m.PastSessions[m.BrowseCursor].ID
+	} else {
+		if m.SelectedSession == uuid.Nil {
+			return m, nil
+		}
+		sessionToDelete = m.SelectedSession
+	}
+	err := m.DB.DeleteSessionBySessionID(sessionToDelete)
+	if err != nil {
+		m.ErrorMessage = "Session deletion failed: " + err.Error()
+		return m, nil
+	}
+	if m.CurrentState == StateBrowse {
+		m.PastSessions = append(m.PastSessions[:m.BrowseCursor], m.PastSessions[m.BrowseCursor+1:]...)
+		if m.BrowseCursor >= len(m.PastSessions) && m.BrowseCursor > 0 {
+			m.BrowseCursor--
+		}
+	}
+	if sessionToDelete == m.SelectedSession {
+		m.SelectedSession = uuid.Nil
+		m.Messages = nil
+		//return user to menu
+		m.CurrentState = StateBrowse
+	}
+	return m, nil
+}
+
 func (m Model) updateBrowse(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
@@ -264,6 +300,8 @@ func (m Model) updateBrowse(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.BrowseCursor < len(m.PastSessions)-1 {
 				m.BrowseCursor++
 			}
+		case "ctrl+d":
+			return m.deleteSelectedSession()
 		case "esc":
 			m.CurrentState = StateWelcome
 			return m, nil
