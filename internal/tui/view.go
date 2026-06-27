@@ -5,6 +5,8 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
+var cursorPrefixColor = lipgloss.NewStyle().Foreground(lipgloss.Color("123")).Bold(true)
+
 func (m Model) View() string {
 	if m.ErrorMessage != "" {
 		return "Critical error: " + m.ErrorMessage + "\nPress [ctrl+c] to quit."
@@ -19,7 +21,8 @@ func (m Model) View() string {
 		savedChats += "Saved Chats:\n\n"
 		for i, session := range m.PastSessions {
 			if i == m.BrowseCursor {
-				savedChats += "> "
+				coloredPrefix := cursorPrefixColor.Render("> ")
+				savedChats += coloredPrefix
 			} else {
 				savedChats += "  "
 			}
