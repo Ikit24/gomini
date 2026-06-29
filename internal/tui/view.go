@@ -32,7 +32,7 @@ func (m Model) View() string {
 
 func (m Model) viewBrowse() string {
 	var savedChats string
-	savedChats += prefixFormatter("Saved Chats:\n")
+	savedChats += prefixFormatter("Saved Chats:") + "\n\n"
 
 	for i, session := range m.PastSessions {
 		baseText := "SessionID: " + session.ID.String() + " " + "CreatedAt: " + session.CreatedAt.Format("02/01/2006")
