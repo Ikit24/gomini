@@ -7,6 +7,8 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
+	"github.com/charmbracelet/bubbles/spinner"
 	"github.com/google/uuid"
 )
 
@@ -28,6 +30,7 @@ type Model struct {
 	CurrentState    appState
 	PastSessions    []database.Session
 	BrowseCursor    int
+	spinner         spinner.Model
 }
 
 type appState int
@@ -39,6 +42,10 @@ const (
 )
 
 func InitialModel(db *database.DB, client *gemini.Client, userID uuid.UUID, sessions []database.Session) Model {
+	s := spinner.New()
+	s.Spinner = spinner.Dot
+	s.Style = lipgloss.NewStyle().Foreground(lipgloss.Color("205"))
+	
 	ch := make(chan tea.Msg)
 	ti := textinput.New()
 	ti.Placeholder = "Please enter your message..."
@@ -53,9 +60,10 @@ func InitialModel(db *database.DB, client *gemini.Client, userID uuid.UUID, sess
 		SelectedSession: uuid.Nil,
 		CurrentState:    StateWelcome,
 		PastSessions:    sessions,
+		spinner:         s,
 	}
 }
 
 func (m Model) Init() tea.Cmd {
-	return nil
+	return m.spinner.Tick
 }
