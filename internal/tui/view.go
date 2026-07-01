@@ -6,7 +6,11 @@ import (
 )
 
 var (
-	cursorPrefixColor = lipgloss.NewStyle().Foreground(lipgloss.Color("123")).Bold(true)
+	selectedStyle = lipgloss.NewStyle().
+		Background(lipgloss.Color("#88C0D0")).
+		Foreground(lipgloss.Color("#1e1e2e")).Bold(true)
+	unselectedStyle = lipgloss.NewStyle().
+        Foreground(lipgloss.Color("241"))
 	tooltipPrefix = lipgloss.NewStyle().Bold(true)
 )
 
@@ -35,11 +39,10 @@ func (m Model) viewBrowse() string {
 	savedChats += formatText(tooltipPrefix, "Saved Chats:") + "\n\n"
 
 	for i, session := range m.PastSessions {
-		baseText := "SessionID: " + session.ID.String() + " " + "CreatedAt: " + session.CreatedAt.Format("02/01/2006")
 		if i == m.BrowseCursor {
-			savedChats += formatText(cursorPrefixColor, "-> " + baseText) + "\n"
+			savedChats += selectedStyle.Render(fmt.Sprintf("-> SessionID: %s CreatedAt: %s", session.ID, session.CreatedAt.Format("02/01/2006"))) + "\n"
 		} else {
-			savedChats += "  " + baseText + "\n"
+			savedChats += unselectedStyle.Render(fmt.Sprintf("   SessionID: %s CreatedAt: %s", session.ID, session.CreatedAt.Format("02/01/2006"))) + "\n"
 		}
 	}
 	savedChats += formatText(tooltipPrefix, "\nPress [esc] to return")
