@@ -7,6 +7,7 @@ import (
 	"github.com/Ikit24/gomini/internal/gemini"
 	"github.com/charmbracelet/bubbles/textinput"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/charmbracelet/bubbles/spinner"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/google/uuid"
 	"github.com/muesli/reflow/wordwrap"
@@ -82,12 +83,19 @@ func (m Model) updateChat(msg tea.Msg) (tea.Model, tea.Cmd) {
 	contentChanged := false
 
 	switch msg := msg.(type) {
+	case spinner.TickMsg:
+		var spinCmd tea.Cmd
+		m.spinner, spinCmd = m.spinner.Update(msg)
+		return m, spinCmd
+
 	case ArrivingMsg:
+		m.isLoading = false
 		m.CurrentStream += string(msg)
 		cmd = waitForChunk(m.Channel)
 		contentChanged = true
 
 	case StreamFinish:
+		m.isLoading = false
 		finishedStream := database.Message{
 			ID:        uuid.New(),
 			UserID:    m.CurrentUser,
@@ -105,10 +113,13 @@ func (m Model) updateChat(msg tea.Msg) (tea.Model, tea.Cmd) {
 		cmd = tea.Batch(cmd, aiSaveCmd)
 
 	case dbSaveErrorMsg:
+		m.isLoading = false
 		m.ErrorMessage = msg.err.Error()
+
 	case dbSaveSuccessMsg:
 
 	case geminiStreamErrorMsg:
+		m.isLoading = false
 		m.ErrorMessage = msg.err.Error()
 
 	case tea.KeyMsg:
@@ -161,6 +172,7 @@ func (m Model) updateChat(msg tea.Msg) (tea.Model, tea.Cmd) {
 				CreatedAt: time.Now(),
 				UpdatedAt: time.Now(),
 			}
+			m.isLoading = true
 			m.Messages = append(m.Messages, dbMessage)
 			m.MessageInput.SetValue("")
 			m.MessageInput, inputCmd = m.MessageInput.Update(msg)
@@ -169,7 +181,7 @@ func (m Model) updateChat(msg tea.Msg) (tea.Model, tea.Cmd) {
 			dbSave := saveMessageToDB(m.DB, dbMessage)
 			var geminiCmd tea.Cmd
 			m, geminiCmd = m.startGeminiStream(m.Channel, userInput, m.GeminiClient, geminiHistory)
-			cmd = tea.Batch(cmd, dbSave, geminiCmd, inputCmd)
+			cmd = tea.Batch(cmd, dbSave, geminiCmd, inputCmd, m.spinner.Tick)
 			contentChanged = true
 
 		case "up", "down", "pgup", "pgdn":

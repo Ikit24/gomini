@@ -31,6 +31,7 @@ type Model struct {
 	PastSessions    []database.Session
 	BrowseCursor    int
 	spinner         spinner.Model
+	isLoading       bool
 }
 
 type appState int

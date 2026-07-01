@@ -37,7 +37,7 @@ func (m Model) viewBrowse() string {
 	for i, session := range m.PastSessions {
 		baseText := "SessionID: " + session.ID.String() + " " + "CreatedAt: " + session.CreatedAt.Format("02/01/2006")
 		if i == m.BrowseCursor {
-			savedChats += formatText(cursorPrefixColor, "> " + baseText) + "\n"
+			savedChats += formatText(cursorPrefixColor, "-> " + baseText) + "\n"
 		} else {
 			savedChats += "  " + baseText + "\n"
 		}
@@ -67,6 +67,9 @@ func (m Model) viewChat() string {
 		Bold(true)
 
 	var UI string = m.Viewport.View() + "\n"
+	if m.isLoading {
+		UI += m.spinner.View() + " Contemplating life choices...\n\n"
+	}
 
 	if m.ErrorMessage != "" {
 		UI += errorStyle.Render(m.ErrorMessage) + "\n"
