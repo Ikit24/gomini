@@ -215,16 +215,16 @@ func (m Model) refreshViewportContent() Model {
 	for _, msg := range m.Messages {
 		if msg.Role == database.UserRole {
 			coloredPrefix := formatText(userPrefixColor, "You: ")
-			s += wordwrap.String(coloredPrefix+msg.Content, safeWidth) + "\n\n"
+			s += wordwrap.String(coloredPrefix + msg.Content, safeWidth) + "\n\n"
 		}
 		if msg.Role == database.ModelRole {
 			coloredPrefix := formatText(gominiPrefixColor, "Gemini: ")
-			s += wordwrap.String(coloredPrefix+msg.Content, safeWidth) + "\n\n"
+			s += wordwrap.String(coloredPrefix + msg.Content, safeWidth) + "\n\n"
 		}
 	}
 	if m.CurrentStream != "" {
 		coloredPrefix := formatText(gominiPrefixColor, "Gemini: ")
-		s += wordwrap.String(coloredPrefix+m.CurrentStream, safeWidth) + "\n"
+		s += wordwrap.String(coloredPrefix + m.CurrentStream, safeWidth) + "\n"
 	}
 	m.Viewport.SetContent(s)
 	m.Viewport.GotoBottom()
