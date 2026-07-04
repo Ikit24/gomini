@@ -40,9 +40,9 @@ func (m Model) viewBrowse() string {
 
 	for i, session := range m.PastSessions {
 		if i == m.BrowseCursor {
-			savedChats += selectedStyle.Render(fmt.Sprintf("-> SessionID: %s CreatedAt: %s", session.ID, session.CreatedAt.Format("02/01/2006"))) + "\n"
+			savedChats += selectedStyle.Render(fmt.Sprintf("->    [CreatedAt: %s] Title: %s", session.CreatedAt.Format("02/01/2006"), session.Title)) + "\n"
 		} else {
-			savedChats += unselectedStyle.Render(fmt.Sprintf("   SessionID: %s CreatedAt: %s", session.ID, session.CreatedAt.Format("02/01/2006"))) + "\n"
+			savedChats += unselectedStyle.Render(fmt.Sprintf("   [CreatedAt: %s] Title: %s", session.CreatedAt.Format("02/01/2006"), session.Title)) + "\n"
 		}
 	}
 	savedChats += formatText(tooltipPrefix, "\nPress [esc] to return")

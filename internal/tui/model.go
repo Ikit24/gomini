@@ -1,6 +1,7 @@
 package tui
 
 import (
+	"fmt"
 	"context"
 	"github.com/Ikit24/gomini/internal/database"
 	"github.com/Ikit24/gomini/internal/gemini"
@@ -64,7 +65,7 @@ func InitialModel(db *database.DB, client *gemini.Client, userID uuid.UUID, sess
 		CurrentState:    StateWelcome,
 		PastSessions:    sessions,
 		spinner:         s,
-		renderer:        createMarkdownRenderer(TerminalWidth),
+		renderer:        createMarkdownRenderer(80),
 	}
 }
 
@@ -74,7 +75,7 @@ func createMarkdownRenderer(width int) *glamour.TermRenderer {
 		glamour.WithWordWrap(width),
 		)
 	if err != nil {
-		return fmt.Println("Failed to start renderer:", err)
+		fmt.Println("Failed to start renderer:", err)
 	}
 	return renderer
 }
