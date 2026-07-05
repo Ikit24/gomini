@@ -53,6 +53,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.TerminalWidth = msg.Width
 		m.Viewport.Height = msg.Height - 5
 		m.Viewport.Width = msg.Width
+		m.renderer = createMarkdownRenderer(m.Viewport.Width)
 
 	case tea.KeyMsg:
 		switch msg.String() {
@@ -211,20 +212,34 @@ func (m Model) updateChat(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m Model) refreshViewportContent() Model {
 	var s string
-	safeWidth := m.TerminalWidth - 2
 	for _, msg := range m.Messages {
 		if msg.Role == database.UserRole {
+			renderedMessage, err := m.renderer.Render(msg.Content)
+			if err != nil {
+				m.ErrorMessage = "Failed to render user message: " + err.Error()
+				return m
+			}
 			coloredPrefix := formatText(userPrefixColor, "You: ")
-			s += wordwrap.String(coloredPrefix + msg.Content, safeWidth) + "\n\n"
+			s += coloredPrefix + renderedMessage + "\n\n"
 		}
 		if msg.Role == database.ModelRole {
+			renderedGominiMessage, err := m.renderer.Render(msg.Content)
+			if err != nil {
+				m.ErrorMessage = "Failed to render gemini message: " + err.Error()
+				return m
+			}
 			coloredPrefix := formatText(gominiPrefixColor, "Gemini: ")
-			s += wordwrap.String(coloredPrefix + msg.Content, safeWidth) + "\n\n"
+			s += coloredPrefix + renderedGominiMessage + "\n\n"
 		}
 	}
 	if m.CurrentStream != "" {
+		renderedGominiMessage, err := m.renderer.Render(m.CurrentStream)
+		if err != nil {
+			m.ErrorMessage = "Failed to stream message: " + err.Error()
+			return m
+		}
 		coloredPrefix := formatText(gominiPrefixColor, "Gemini: ")
-		s += wordwrap.String(coloredPrefix + m.CurrentStream, safeWidth) + "\n"
+		s +=  coloredPrefix + renderedGominiMessage + "\n\n"
 	}
 	m.Viewport.SetContent(s)
 	m.Viewport.GotoBottom()

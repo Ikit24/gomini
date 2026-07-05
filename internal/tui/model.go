@@ -8,6 +8,7 @@ import (
 	"github.com/charmbracelet/bubbles/textinput"
 	"github.com/charmbracelet/bubbles/viewport"
 	"github.com/charmbracelet/glamour"
+	"github.com/charmbracelet/glamour/ansi"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/bubbles/spinner"
@@ -73,11 +74,23 @@ func createMarkdownRenderer(width int) *glamour.TermRenderer {
 	renderer, err := glamour.NewTermRenderer(
 		glamour.WithAutoStyle(),
 		glamour.WithWordWrap(width),
-		)
+		glamour.WithStyles(ansi.StyleConfig{
+			Document: ansi.StyleBlock{
+				Margin: uintPtr(0),
+			},
+			Paragraph: ansi.StyleBlock{
+				Margin: uintPtr(0),
+			},
+		}),
+	)
 	if err != nil {
 		fmt.Println("Failed to start renderer:", err)
 	}
 	return renderer
+}
+
+func uintPtr(i uint) *uint {
+	return &i
 }
 
 func (m Model) Init() tea.Cmd {
