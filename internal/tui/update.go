@@ -53,7 +53,9 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.TerminalWidth = msg.Width
 		m.Viewport.Height = msg.Height - 5
 		m.Viewport.Width = msg.Width
-		m.renderer = createMarkdownRenderer(m.Viewport.Width)
+		geminiPrefix := "Gemini: "
+		prefixWidth := lipgloss.Width(geminiPrefix)
+		m.renderer = createMarkdownRenderer(m.Viewport.Width - prefixWidth)
 
 	case tea.KeyMsg:
 		switch msg.String() {
@@ -80,7 +82,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m Model) updateChat(msg tea.Msg) (tea.Model, tea.Cmd) {
-	var cmd, inputCmd, viewportCmd tea.Cmd
+	var cmd, inputCmd, viewportCmd, geminiCmd tea.Cmd
+	
 	contentChanged := false
 
 	switch msg := msg.(type) {
@@ -180,7 +183,6 @@ func (m Model) updateChat(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 			cmd = waitForChunk(m.Channel)
 			dbSave := saveMessageToDB(m.DB, dbMessage)
-			var geminiCmd tea.Cmd
 			m, geminiCmd = m.startGeminiStream(m.Channel, userInput, m.GeminiClient, geminiHistory)
 			cmd = tea.Batch(cmd, dbSave, geminiCmd, inputCmd, m.spinner.Tick)
 			contentChanged = true
@@ -215,31 +217,34 @@ func (m Model) refreshViewportContent() Model {
 	for _, msg := range m.Messages {
 		if msg.Role == database.UserRole {
 			renderedMessage, err := m.renderer.Render(msg.Content)
+			renderedMessage = strings.TrimSpace(renderedMessage)
 			if err != nil {
 				m.ErrorMessage = "Failed to render user message: " + err.Error()
 				return m
 			}
 			coloredPrefix := formatText(userPrefixColor, "You: ")
-			s += coloredPrefix + renderedMessage + "\n\n"
+			s += lipgloss.JoinHorizontal(lipgloss.Top, coloredPrefix, renderedMessage) + "\n\n"
 		}
 		if msg.Role == database.ModelRole {
 			renderedGominiMessage, err := m.renderer.Render(msg.Content)
+			renderedGominiMessage = strings.TrimSpace(renderedGominiMessage)
 			if err != nil {
 				m.ErrorMessage = "Failed to render gemini message: " + err.Error()
 				return m
 			}
 			coloredPrefix := formatText(gominiPrefixColor, "Gemini: ")
-			s += coloredPrefix + renderedGominiMessage + "\n\n"
+			s += lipgloss.JoinHorizontal(lipgloss.Top, coloredPrefix, renderedGominiMessage) + "\n\n"
 		}
 	}
 	if m.CurrentStream != "" {
 		renderedGominiMessage, err := m.renderer.Render(m.CurrentStream)
+		renderedGominiMessage = strings.TrimSpace(renderedGominiMessage)
 		if err != nil {
 			m.ErrorMessage = "Failed to stream message: " + err.Error()
 			return m
 		}
 		coloredPrefix := formatText(gominiPrefixColor, "Gemini: ")
-		s +=  coloredPrefix + renderedGominiMessage + "\n\n"
+		s += lipgloss.JoinHorizontal(lipgloss.Top, coloredPrefix, renderedGominiMessage) + "\n\n"
 	}
 	m.Viewport.SetContent(s)
 	m.Viewport.GotoBottom()
