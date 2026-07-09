@@ -53,9 +53,14 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.TerminalWidth = msg.Width
 		m.Viewport.Height = msg.Height - 5
 		m.Viewport.Width = msg.Width
-		geminiPrefix := "Gemini: "
-		prefixWidth := lipgloss.Width(geminiPrefix)
-		m.renderer = createMarkdownRenderer(m.Viewport.Width - prefixWidth)
+		//terminal message spacing
+		gutterWidth := 10
+		messageWidth := m.Viewport.Width - gutterWidth
+		if messageWidth < 10 {
+			messageWidth = 10
+		}
+		glamourWrapWidth := messageWidth - 4
+		m.renderer = createMarkdownRenderer(glamourWrapWidth)
 
 	case tea.KeyMsg:
 		switch msg.String() {
@@ -214,6 +219,11 @@ func (m Model) updateChat(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m Model) refreshViewportContent() Model {
 	var s string
+	gutterWidth := 10
+	gutterStyle := lipgloss.NewStyle().Width(gutterWidth)
+	messageWidth := m.Viewport.Width - gutterWidth
+	messageStyle := lipgloss.NewStyle().Width(messageWidth)
+	
 	for _, msg := range m.Messages {
 		if msg.Role == database.UserRole {
 			renderedMessage, err := m.renderer.Render(msg.Content)
@@ -223,7 +233,9 @@ func (m Model) refreshViewportContent() Model {
 				return m
 			}
 			coloredPrefix := formatText(userPrefixColor, "You: ")
-			s += lipgloss.JoinHorizontal(lipgloss.Top, coloredPrefix, renderedMessage) + "\n\n"
+			boxedPrefix := gutterStyle.Render(coloredPrefix)
+		    boxedMessage := messageStyle.Render(renderedMessage)
+			s += lipgloss.JoinHorizontal(lipgloss.Top, boxedPrefix, boxedMessage) + "\n\n"
 		}
 		if msg.Role == database.ModelRole {
 			renderedGominiMessage, err := m.renderer.Render(msg.Content)
@@ -233,7 +245,9 @@ func (m Model) refreshViewportContent() Model {
 				return m
 			}
 			coloredPrefix := formatText(gominiPrefixColor, "Gemini: ")
-			s += lipgloss.JoinHorizontal(lipgloss.Top, coloredPrefix, renderedGominiMessage) + "\n\n"
+			boxedAiPrefix := gutterStyle.Render(coloredPrefix)
+			boxedAiMessage := messageStyle.Render(renderedGominiMessage)
+			s += lipgloss.JoinHorizontal(lipgloss.Top, boxedAiPrefix, boxedAiMessage) + "\n\n"
 		}
 	}
 	if m.CurrentStream != "" {
@@ -244,7 +258,9 @@ func (m Model) refreshViewportContent() Model {
 			return m
 		}
 		coloredPrefix := formatText(gominiPrefixColor, "Gemini: ")
-		s += lipgloss.JoinHorizontal(lipgloss.Top, coloredPrefix, renderedGominiMessage) + "\n\n"
+		boxedAiPrefix := gutterStyle.Render(coloredPrefix)
+		boxedAiMessage := messageStyle.Render(renderedGominiMessage)
+		s += lipgloss.JoinHorizontal(lipgloss.Top, boxedAiPrefix, boxedAiMessage) + "\n\n"
 	}
 	m.Viewport.SetContent(s)
 	m.Viewport.GotoBottom()
