@@ -16,22 +16,22 @@ import (
 )
 
 type Model struct {
-	CurrentUser     uuid.UUID
-	Sessions        []database.Session
-	Messages        []database.Message
-	SelectedSession uuid.UUID
-	MessageInput    textinput.Model
-	DB              *database.DB
-	GeminiClient    *gemini.Client
+	currentUser     uuid.UUID
+	sessions        []database.Session
+	messages        []database.Message
+	selectedSession uuid.UUID
+	messageInput    textinput.Model
+	db              *database.DB
+	geminiClient    *gemini.Client
 	cancel          context.CancelFunc
-	CurrentStream   string
-	Channel         chan tea.Msg
-	TerminalWidth   int
-	Viewport        viewport.Model
-	ErrorMessage    string
-	CurrentState    appState
-	PastSessions    []database.Session
-	BrowseCursor    int
+	currentStream   string
+	channel         chan tea.Msg
+	terminalWidth   int
+	viewport        viewport.Model
+	errorMessage    string
+	currentState    appState
+	pastSessions    []database.Session
+	browseCursor    int
 	spinner         spinner.Model
 	isLoading       bool
 	renderer        *glamour.TermRenderer
@@ -56,14 +56,14 @@ func InitialModel(db *database.DB, client *gemini.Client, userID uuid.UUID, sess
 	ti.Focus()
 
 	return Model{
-		MessageInput:    ti,
-		DB:              db,
-		GeminiClient:    client,
-		Channel:         ch,
-		CurrentUser:     userID,
-		SelectedSession: uuid.Nil,
-		CurrentState:    StateWelcome,
-		PastSessions:    sessions,
+		messageInput:    ti,
+		db:              db,
+		geminiClient:    client,
+		channel:         ch,
+		currentUser:     userID,
+		selectedSession: uuid.Nil,
+		currentState:    StateWelcome,
+		pastSessions:    sessions,
 		spinner:         s,
 		renderer:        createMarkdownRenderer(80),
 	}

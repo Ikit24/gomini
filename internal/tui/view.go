@@ -19,10 +19,10 @@ func formatText(style lipgloss.Style, text string) string {
 }
 
 func (m Model) View() string {
-	if m.ErrorMessage != "" {
-		return formatText(tooltipPrefix, "Critical error: ") + m.ErrorMessage + formatText(tooltipPrefix, "\nPress [ctrl+c] to quit.")
+	if m.errorMessage != "" {
+		return formatText(tooltipPrefix, "Critical error: ") + m.errorMessage + formatText(tooltipPrefix, "\nPress [ctrl+c] to quit.")
 	}
-	switch m.CurrentState {
+	switch m.currentState {
 	case StateWelcome:
 		return m.viewWelcome()
 	case StateChat:
@@ -38,8 +38,8 @@ func (m Model) viewBrowse() string {
 	var savedChats string
 	savedChats += formatText(tooltipPrefix, "Saved Chats:") + "\n\n"
 
-	for i, session := range m.PastSessions {
-		if i == m.BrowseCursor {
+	for i, session := range m.pastSessions {
+		if i == m.browseCursor {
 			savedChats += selectedStyle.Render(fmt.Sprintf("-> [CreatedAt: %s] Title: %s", session.CreatedAt.Format("02/01/2006"), session.Title)) + "\n"
 		} else {
 			savedChats += unselectedStyle.Render(fmt.Sprintf("   [CreatedAt: %s] Title: %s", session.CreatedAt.Format("02/01/2006"), session.Title)) + "\n"
@@ -53,8 +53,8 @@ func (m Model) viewWelcome() string {
 	var s string
 	s += formatText(tooltipPrefix, "Welcome to Gomini! \n\n")
 
-	if len(m.PastSessions) > 0 {
-		s += "You have " + fmt.Sprint(len(m.PastSessions)) + " previous conversations.\n"
+	if len(m.pastSessions) > 0 {
+		s += "You have " + fmt.Sprint(len(m.pastSessions)) + " previous conversations.\n"
 		s += formatText(tooltipPrefix, "Press [ctrl+b] to browse your history, or [ctrl+n] to start new chat.")
 	} else {
 		s += formatText(tooltipPrefix, "Press [ctrl+n] to start new chat.")
@@ -68,15 +68,15 @@ func (m Model) viewChat() string {
 		Foreground(lipgloss.Color("9")).
 		Bold(true)
 
-	var UI string = m.Viewport.View() + "\n"
+	var UI string = m.viewport.View() + "\n"
 	if m.isLoading {
 		UI += m.spinner.View() + " Generating response...\n\n"
 	}
 
-	if m.ErrorMessage != "" {
-		UI += errorStyle.Render(m.ErrorMessage) + "\n"
+	if m.errorMessage != "" {
+		UI += errorStyle.Render(m.errorMessage) + "\n"
 	}
-	UI += m.MessageInput.View()
+	UI += m.messageInput.View()
 
 	return UI
 }
