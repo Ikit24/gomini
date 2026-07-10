@@ -21,7 +21,6 @@ type Model struct {
 	Messages        []database.Message
 	SelectedSession uuid.UUID
 	MessageInput    textinput.Model
-	LastMessage     string
 	DB              *database.DB
 	GeminiClient    *gemini.Client
 	cancel          context.CancelFunc

@@ -10,7 +10,6 @@ import (
 	"github.com/charmbracelet/bubbles/spinner"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/google/uuid"
-	"github.com/muesli/reflow/wordwrap"
 	"time"
 )
 
@@ -61,6 +60,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		glamourWrapWidth := messageWidth - 4
 		m.renderer = createMarkdownRenderer(glamourWrapWidth)
+		m = m.refreshViewportContent()
 
 	case tea.KeyMsg:
 		switch msg.String() {
@@ -365,23 +365,7 @@ func (m Model) updateBrowse(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, nil
 			}
 			m.Messages = messagesFromSession
-			var s string
-			for _, msg := range m.Messages {
-				if msg.Role == database.UserRole {
-					coloredPrefix := formatText(userPrefixColor, "You: ")
-					s += wordwrap.String(coloredPrefix + msg.Content, m.TerminalWidth) + "\n\n"
-				}
-				if msg.Role == database.ModelRole {
-					coloredPrefix := formatText(gominiPrefixColor, "Gemini: ")
-					s += wordwrap.String(coloredPrefix + msg.Content, m.TerminalWidth) + "\n\n"
-				}
-			}
-			if m.CurrentStream != "" {
-				coloredPrefix := formatText(gominiPrefixColor, "Gemini: ")
-				s += wordwrap.String(coloredPrefix + m.CurrentStream, m.TerminalWidth) + "\n"
-			}
-			m.Viewport.SetContent(s)
-			m.Viewport.GotoBottom()
+			m = m.refreshViewportContent()
 			m.CurrentState = StateChat
 			m.MessageInput.Focus()
 			return m, textinput.Blink
