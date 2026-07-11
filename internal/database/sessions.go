@@ -137,12 +137,10 @@ func (d *DB) DeleteSessionBySessionID(sessionID uuid.UUID) error {
 	if err != nil {
 		return err
 	}
-
 	rows, err := res.RowsAffected()
 	if err != nil {
 		return err
 	}
-
 	if rows == 0 {
 		return ErrNotFound
 	}
@@ -154,7 +152,6 @@ func (d *DB) SaveSession(m *Session) error {
 	if m.ID == uuid.Nil {
 		m.ID = uuid.New()
 	}
-
 	if m.CreatedAt.IsZero() {
 		m.CreatedAt = time.Now()
 	}

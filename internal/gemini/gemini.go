@@ -1,6 +1,7 @@
 package gemini
 
 import (
+	"time"
 	"context"
 	"fmt"
 	"strings"
@@ -56,6 +57,8 @@ func NewClient(ctx context.Context, apiKey string) (*Client, error) {
 	}
 
 	m := c.GenerativeModel("gemini-2.5-flash")
+	currentDate := time.Now().Format("01-02-2006")
+	m.SystemInstruction = genai.NewUserContent(genai.Text("You are a helpful, through assistant in a terminal UI. The current date is: " + currentDate))
 
 	return &Client{
 		genaiClient: c,

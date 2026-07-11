@@ -63,7 +63,7 @@ func main() {
 	}
 
 	go func() {
-		log.Println("🚀 Server starting on http://localhost:8080")
+		log.Println("🚀 Server running on http://localhost:8080")
 		if err := servr.ListenAndServe(":8080"); err != nil && err != http.ErrServerClosed {
 			log.Fatalf("listen: %s\n", err)
 		}
@@ -74,7 +74,6 @@ func main() {
 		fmt.Printf("TUI error: %v\n", err)
 		os.Exit(1)
 	}
-
 	log.Println("Shutting down server...")
 
 	shutdownCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
