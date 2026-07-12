@@ -192,6 +192,8 @@ func (m Model) updateChat(msg tea.Msg) (tea.Model, tea.Cmd) {
 			cmd = tea.Batch(cmd, dbSave, geminiCmd, inputCmd, m.spinner.Tick)
 			contentChanged = true
 
+		//case "shift+enter":
+		//	m.messageInput, inputCmd = m.messageInput.Update(msg) + "\n\n"
 		case "up", "down", "pgup", "pgdn":
 			m.viewport, viewportCmd = m.viewport.Update(msg)
 

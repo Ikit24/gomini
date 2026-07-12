@@ -30,7 +30,6 @@ func main() {
 	if err != nil {
 		log.Fatal("couldn't initialize gemini client", err)
 	}
-	defer aiClient.Close()
 
 	const dbPath = "gomini.db"
 	db, err := database.Open(dbPath)

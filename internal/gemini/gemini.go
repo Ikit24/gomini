@@ -4,16 +4,13 @@ import (
 	"time"
 	"context"
 	"fmt"
-	"strings"
-
-	"github.com/google/generative-ai-go/genai"
-	"google.golang.org/api/iterator"
-	"google.golang.org/api/option"
+	"google.golang.org/genai"
 )
 
 type Client struct {
-	genaiClient *genai.Client
-	model       *genai.GenerativeModel
+	genaiClient   *genai.Client
+	model         string
+	genaiSysTools *genai.GenerateContentConfig
 }
 
 type Message struct {
@@ -21,86 +18,63 @@ type Message struct {
 	Content string
 }
 
-func (c *Client) GenerateContentStream(ctx context.Context, prompt string) *genai.GenerateContentResponseIterator {
-	return c.model.GenerateContentStream(ctx, genai.Text(prompt))
-}
-
-func (c *Client) GenerateContent(ctx context.Context, prompt string) (string, error) {
-	resp, err := c.model.GenerateContent(ctx, genai.Text(prompt))
-	if err != nil {
-		return "", err
-	}
-
-	if len(resp.Candidates) == 0 {
-		return "", fmt.Errorf("no response candidates returned from Gemini")
-	}
-
-	var builder strings.Builder
-	for _, part := range resp.Candidates[0].Content.Parts {
-		if text, ok := part.(genai.Text); ok {
-			builder.WriteString(string(text))
-		}
-	}
-
-	finalResponse := builder.String()
-	if finalResponse == "" {
-		return "", fmt.Errorf("AI returned a response but no text content was found")
-	}
-
-	return finalResponse, nil
-}
-
 func NewClient(ctx context.Context, apiKey string) (*Client, error) {
-	c, err := genai.NewClient(ctx, option.WithAPIKey(apiKey))
+	c, err := genai.NewClient(ctx, &genai.ClientConfig{
+		APIKey: apiKey,
+	})
 	if err != nil {
 		return nil, err
 	}
 
-	m := c.GenerativeModel("gemini-2.5-flash")
+	//date&time hallucination
 	currentDate := time.Now().Format("01-02-2006")
-	m.SystemInstruction = genai.NewUserContent(genai.Text("You are a helpful, through assistant in a terminal UI. The current date is: " + currentDate))
+	config := &genai.GenerateContentConfig{
+		SystemInstruction: &genai.Content{
+			Parts: []*genai.Part{
+				{Text:"You are a helfpul and through assistant in a terminal UI. The current date is: " + currentDate},
+			},
+		},
+		Tools: []*genai.Tool{
+			{GoogleSearch: &genai.GoogleSearch{}},
+		},
+	}
 
 	return &Client{
-		genaiClient: c,
-		model:       m,
+		genaiClient:   c,
+		model:         "gemini-2.5-flash",
+		genaiSysTools: config,
 	}, nil
 }
 
-func (c *Client) Close() error {
-	return c.genaiClient.Close()
-}
-
 func (c *Client) GenerateChatResponse(ctx context.Context, history []Message, newPrompt string) (<-chan string, error) {
-	cs := c.model.StartChat()
-
-	sdkHistory := make([]*genai.Content, 0, len(history))
+	sdkHistory := make([]*genai.Content, 0, len(history)+1)
 	for _, msg := range history {
 		sdkMsg := &genai.Content{
 			Role:  msg.Role,
-			Parts: []genai.Part{genai.Text(msg.Content)},
+			Parts: []*genai.Part{{Text: msg.Content}},
 		}
 		sdkHistory = append(sdkHistory, sdkMsg)
 	}
-	cs.History = sdkHistory
 
-	iter := cs.SendMessageStream(ctx, genai.Text(newPrompt))
+	newMsg := &genai.Content{
+		Role:  "user",
+		Parts: []*genai.Part{{Text: newPrompt}},
+	}
+	sdkHistory = append(sdkHistory, newMsg)
+	
+	iter := c.genaiClient.Models.GenerateContentStream(ctx, c.model, sdkHistory, c.genaiSysTools)
 	ch := make(chan string)
 	go func() {
 		defer close(ch)
-		for {
-			resp, err := iter.Next()
-			if err == iterator.Done {
-				//stream finished
-				break
-			}
+		for resp, err := range iter {
 			if err != nil {
-				fmt.Println("couldn't stream data")
+				fmt.Println("couldn't stream data", err)
 				return
 			}
 			if len(resp.Candidates) > 0 && resp.Candidates[0].Content != nil {
 				for _, part := range resp.Candidates[0].Content.Parts {
-					if text, ok := part.(genai.Text); ok {
-						ch <- string(text)
+					if part.Text != "" {
+						ch <- part.Text
 					}
 				}
 			}
