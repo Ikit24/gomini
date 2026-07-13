@@ -2,6 +2,7 @@ package database
 
 import (
 	"time"
+	"fmt"
 
 	"github.com/google/uuid"
 )
@@ -76,6 +77,16 @@ func (d *DB) CreateMessage(m *Message) error {
 	_, err := d.db.Exec(query, m.ID, m.SessionID, m.UserID, m.Role, m.Content, m.CreatedAt, m.CreatedAt)
 	if err != nil {
 		return err
+	}
+	
+	return nil
+}
+
+func (d *DB) PurgeEmptyMessages() error {
+	query := `Delete FROM messages WHERE TRIM(content) = ' ' OR content is NULL;`
+	_, err := d.db.Exec(query)
+	if err != nil {
+		return fmt.Errorf("failed to purge empty messages: w%", err)
 	}
 
 	return nil

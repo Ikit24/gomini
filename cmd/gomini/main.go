@@ -38,6 +38,10 @@ func main() {
 	}
 	defer db.Close()
 
+	if err := db.PurgeEmptyMessages(); err != nil {
+		log.Printf("Warning: Failed to auto-purge empty messages from the database: v%", err)
+	}
+
 	servr := handlers.NewServer(db, aiClient)
 
 	user, err := db.GetUserByName("ati")
