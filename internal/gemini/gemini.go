@@ -1,6 +1,7 @@
 package gemini
 
 import (
+	"strings"
 	"time"
 	"context"
 	"fmt"
@@ -25,7 +26,6 @@ func NewClient(ctx context.Context, apiKey string) (*Client, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	//date&time hallucination
 	currentDate := time.Now().Format("01-02-2006")
 	config := &genai.GenerateContentConfig{
@@ -49,6 +49,9 @@ func NewClient(ctx context.Context, apiKey string) (*Client, error) {
 func (c *Client) GenerateChatResponse(ctx context.Context, history []Message, newPrompt string) (<-chan string, error) {
 	sdkHistory := make([]*genai.Content, 0, len(history)+1)
 	for _, msg := range history {
+		if strings.TrimSpace(msg.Content) == "" {
+			continue
+		}
 		sdkMsg := &genai.Content{
 			Role:  msg.Role,
 			Parts: []*genai.Part{{Text: msg.Content}},

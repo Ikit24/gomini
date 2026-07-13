@@ -70,7 +70,7 @@ func (m Model) viewChat() string {
 
 	var UI string = m.viewport.View() + "\n"
 	if m.isLoading {
-		UI += m.spinner.View() + " Generating response...\n\n"
+		UI += m.spinner.View() + " Looking for answers...\n\n"
 	}
 
 	if m.errorMessage != "" {

@@ -134,7 +134,13 @@ func (m Model) updateChat(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "enter":
-			userInput := m.messageInput.Value()
+			cleanInput := strings.TrimSpace(m.messageInput.Value())
+			if cleanInput == "" {
+				m.messageInput.Reset()
+				return m, nil
+			}
+			userInput := cleanInput
+			m.messageInput.Reset()
 			if m.selectedSession == uuid.Nil {
 				title := userInput
 				//dynamic chat title
@@ -192,8 +198,6 @@ func (m Model) updateChat(msg tea.Msg) (tea.Model, tea.Cmd) {
 			cmd = tea.Batch(cmd, dbSave, geminiCmd, inputCmd, m.spinner.Tick)
 			contentChanged = true
 
-		//case "shift+enter":
-		//	m.messageInput, inputCmd = m.messageInput.Update(msg) + "\n\n"
 		case "up", "down", "pgup", "pgdn":
 			m.viewport, viewportCmd = m.viewport.Update(msg)
 
