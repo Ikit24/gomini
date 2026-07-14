@@ -34,6 +34,7 @@ type Model struct {
 	browseCursor    int
 	spinner         spinner.Model
 	isLoading       bool
+	isThinking      bool
 	renderer        *glamour.TermRenderer
 }
 

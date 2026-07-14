@@ -98,7 +98,6 @@ func (m Model) updateChat(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, spinCmd
 
 	case ArrivingMsg:
-		m.isLoading = false
 		m.currentStream += string(msg)
 		cmd = waitForChunk(m.channel)
 		contentChanged = true
@@ -134,6 +133,10 @@ func (m Model) updateChat(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "enter":
+			if m.isLoading {
+				return m, nil
+			}
+
 			cleanInput := strings.TrimSpace(m.messageInput.Value())
 			if cleanInput == "" {
 				m.messageInput.Reset()
@@ -141,6 +144,7 @@ func (m Model) updateChat(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			userInput := cleanInput
 			m.messageInput.Reset()
+
 			if m.selectedSession == uuid.Nil {
 				title := userInput
 				//dynamic chat title
@@ -220,6 +224,7 @@ func (m Model) updateChat(msg tea.Msg) (tea.Model, tea.Cmd) {
 	if contentChanged {
 		m = m.refreshViewportContent()
 	}
+
 	return m, tea.Batch(inputCmd, viewportCmd, cmd)
 }
 
