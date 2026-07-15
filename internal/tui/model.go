@@ -35,6 +35,7 @@ type Model struct {
 	spinner         spinner.Model
 	isLoading       bool
 	isThinking      bool
+	showHelp        bool
 	renderer        *glamour.TermRenderer
 }
 
@@ -53,7 +54,7 @@ func InitialModel(db *database.DB, client *gemini.Client, userID uuid.UUID, sess
 	
 	ch := make(chan tea.Msg)
 	ti := textinput.New()
-	ti.Placeholder = "Please enter your message..."
+	ti.Placeholder = "Please enter your message or press [ctrl+h] for help"
 	ti.Focus()
 
 	return Model{
@@ -82,6 +83,7 @@ func createMarkdownRenderer(width int) *glamour.TermRenderer {
 	if err != nil {
 		fmt.Println("Failed to start renderer:", err)
 	}
+
 	return renderer
 }
 

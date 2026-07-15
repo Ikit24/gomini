@@ -351,19 +351,38 @@ func (m Model) updateBrowse(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
+		case "ctrl+g":
+			m.showHelp = !m.showHelp
+			if m.showHelp {
+				m.messageInput.Blur()
+			} else {
+				m.messageInput.Focus()
+			}
+			return m, nil
+
 		case "up":
 			if m.browseCursor > 0 {
 				m.browseCursor--
 			}
+
 		case "down":
 			if m.browseCursor < len(m.pastSessions)-1 {
 				m.browseCursor++
 			}
+		
 		case "ctrl+d":
 			return m.deleteSelectedSession()
+		
 		case "esc":
+			if m.showHelp {
+				m.showHelp = false
+				m.messageInput.Focus()
+        	    return m, nil
+        	}
 			m.currentState = StateWelcome
+			m.messageInput.Blur()
 			return m, nil
+
 		case "enter":
 			if len(m.pastSessions) == 0 {
 			return m, nil

@@ -22,6 +22,11 @@ func (m Model) View() string {
 	if m.errorMessage != "" {
 		return formatText(tooltipPrefix, "Critical error: ") + m.errorMessage + formatText(tooltipPrefix, "\nPress [ctrl+c] to quit.")
 	}
+
+	if m.showHelp {
+		return m.helpView()
+	}
+
 	switch m.currentState {
 	case StateWelcome:
 		return m.viewWelcome()
@@ -32,6 +37,15 @@ func (m Model) View() string {
 	default:
 		return "Unknown application state"
 	}
+}
+
+func (m Model) helpView() string {
+    return "[ctrl+h] close this menu\n" +
+           "[ctrl+b] browse your history.\n" +
+           "[ctrl+n] to start new chat.\n" +
+           "[ctrl+c] to quit.\n" +
+           "[ctrl+d] to delete selected sessions (Warning!!! This is instant and cannot be reversed).\n" +
+           "You can use navigation when in a session, using [ctrl+b] will return you to the session list.\n"
 }
 
 func (m Model) viewBrowse() string {
