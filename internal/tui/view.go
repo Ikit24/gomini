@@ -40,12 +40,13 @@ func (m Model) View() string {
 }
 
 func (m Model) helpView() string {
-    return "[ctrl+h] close this menu\n" +
-           "[ctrl+b] browse your history.\n" +
-           "[ctrl+n] to start new chat.\n" +
-           "[ctrl+c] to quit.\n" +
-           "[ctrl+d] to delete selected sessions (Warning!!! This is instant and cannot be reversed).\n" +
-           "You can use navigation when in a session, using [ctrl+b] will return you to the session list.\n"
+	return formatText(tooltipPrefix, `[ctrl+g] Close this menu.
+[ctrl+b] Browse your history.
+[ctrl+n] Start new chat.
+[ctrl+c] Quit application.
+[ctrl+d] Delete selected sessions (Warning!!! This is instant and cannot be reversed).
+
+You can use navigation when in a session, using [ctrl+b] will return you to the session list.`)
 }
 
 func (m Model) viewBrowse() string {
@@ -69,7 +70,9 @@ func (m Model) viewWelcome() string {
 
 	if len(m.pastSessions) > 0 {
 		s += "You have " + fmt.Sprint(len(m.pastSessions)) + " previous conversations.\n"
-		s += formatText(tooltipPrefix, "Press [ctrl+b] to browse your history, or [ctrl+n] to start new chat.")
+		s += formatText(tooltipPrefix, `Press [ctrl+b] to browse your history,
+Press [ctrl+n] to start new chat.
+Press [ctrl+g] for help.`)
 	} else {
 		s += formatText(tooltipPrefix, "Press [ctrl+n] to start new chat.")
 	}

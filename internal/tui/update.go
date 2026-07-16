@@ -132,6 +132,25 @@ func (m Model) updateChat(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case tea.KeyMsg:
 		switch msg.String() {
+		case "ctrl+g":
+			m.showHelp = !m.showHelp
+			if m.showHelp {
+				m.messageInput.Blur()
+			} else {
+				m.messageInput.Focus()
+			}
+			return m, nil
+
+		case "esc":
+			if m.showHelp {
+				m.showHelp = false
+				m.messageInput.Focus()
+        	    return m, nil
+        	}
+			m.currentState = StateWelcome
+			m.messageInput.Blur()
+			return m, nil
+
 		case "enter":
 			if m.isLoading {
 				return m, nil
