@@ -151,7 +151,7 @@ func (m Model) updateChat(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.messageInput.Blur()
 			return m, nil
 
-		case "enter":
+		case "ctrl+s":
 			if m.isLoading {
 				return m, nil
 			}
@@ -402,7 +402,7 @@ func (m Model) updateBrowse(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.messageInput.Blur()
 			return m, nil
 
-		case "enter":
+		case "ctrl+s":
 			if len(m.pastSessions) == 0 {
 			return m, nil
 			}

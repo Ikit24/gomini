@@ -5,7 +5,7 @@ import (
 	"context"
 	"github.com/Ikit24/gomini/internal/database"
 	"github.com/Ikit24/gomini/internal/gemini"
-	"github.com/charmbracelet/bubbles/textinput"
+	"github.com/charmbracelet/bubbles/textarea"
 	"github.com/charmbracelet/bubbles/viewport"
 	"github.com/charmbracelet/glamour"
 	"github.com/charmbracelet/glamour/styles"
@@ -20,7 +20,7 @@ type Model struct {
 	sessions        []database.Session
 	messages        []database.Message
 	selectedSession uuid.UUID
-	messageInput    textinput.Model
+	messageInput    textarea.Model
 	db              *database.DB
 	geminiClient    *gemini.Client
 	cancel          context.CancelFunc
@@ -53,9 +53,10 @@ func InitialModel(db *database.DB, client *gemini.Client, userID uuid.UUID, sess
 	s.Style = lipgloss.NewStyle().Foreground(lipgloss.Color("205"))
 	
 	ch := make(chan tea.Msg)
-	ti := textinput.New()
+	ti := textarea.New()
 	ti.Placeholder = "Please enter your message or press [ctrl+h] for help"
 	ti.Focus()
+	ti.SetHeight(3)
 
 	return Model{
 		messageInput:    ti,

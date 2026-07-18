@@ -12,6 +12,8 @@ var (
 	unselectedStyle = lipgloss.NewStyle().
         Foreground(lipgloss.Color("241"))
 	tooltipPrefix = lipgloss.NewStyle().Bold(true)
+	helpStyle = lipgloss.NewStyle().
+		Foreground(lipgloss.Color("#18ffa2")).Bold(true)
 )
 
 func formatText(style lipgloss.Style, text string) string {
@@ -40,13 +42,13 @@ func (m Model) View() string {
 }
 
 func (m Model) helpView() string {
-	return formatText(tooltipPrefix, `[ctrl+g] Close this menu.
+	return formatText(helpStyle, `[ctrl+g] Close this menu.
 [ctrl+b] Browse your history.
 [ctrl+n] Start new chat.
 [ctrl+c] Quit application.
 [ctrl+d] Delete selected sessions (Warning!!! This is instant and cannot be reversed).
 
-You can use navigation when in a session, using [ctrl+b] will return you to the session list.`)
+You can use navigation when in a session,for ex. using [ctrl+b] will return you to the session list.`)
 }
 
 func (m Model) viewBrowse() string {
