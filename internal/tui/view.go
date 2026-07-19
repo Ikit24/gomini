@@ -68,18 +68,25 @@ func (m Model) viewBrowse() string {
 
 func (m Model) viewWelcome() string {
 	var s string
+	var welcomeBoxStyle = lipgloss.NewStyle().
+		Border(lipgloss.RoundedBorder()).
+		BorderForeground(lipgloss.Color("#874BFD")).
+		Padding(1, 4).
+		Align(lipgloss.Center)
+
 	s += formatText(tooltipPrefix, "Welcome to Gomini! \n\n")
 
 	if len(m.pastSessions) > 0 {
 		s += "You have " + fmt.Sprint(len(m.pastSessions)) + " previous conversations.\n"
-		s += formatText(tooltipPrefix, `Press [ctrl+b] to browse your history,
-Press [ctrl+n] to start new chat.
-Press [ctrl+g] for help.`)
+		s += formatText(tooltipPrefix, "Press [ctrl+b] to browse your history,\n" +
+			"Press [ctrl+n] to start new chat.\n" +
+			"Press [ctrl+g] for help.\n")
 	} else {
 		s += formatText(tooltipPrefix, "Press [ctrl+n] to start new chat.")
 	}
 	s += formatText(tooltipPrefix, "\n\nPress [ctrl+c] to quit.")
-	return s
+
+	return welcomeBoxStyle.Render(s)
 }
 
 func (m Model) viewChat() string {

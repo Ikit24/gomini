@@ -72,7 +72,10 @@ func main() {
 		}
 	}()
 
-	p := tea.NewProgram(tui.InitialModel(db, aiClient, user.ID, sessions))
+	p := tea.NewProgram(
+		tui.InitialModel(db, aiClient, user.ID, sessions),
+		tea.WithAltScreen(),
+	)
 	if _, err := p.Run(); err != nil {
 		fmt.Printf("TUI error: %v\n", err)
 		os.Exit(1)

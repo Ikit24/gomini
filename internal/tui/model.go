@@ -53,13 +53,14 @@ func InitialModel(db *database.DB, client *gemini.Client, userID uuid.UUID, sess
 	s.Style = lipgloss.NewStyle().Foreground(lipgloss.Color("205"))
 	
 	ch := make(chan tea.Msg)
-	ti := textarea.New()
-	ti.Placeholder = "Please enter your message or press [ctrl+h] for help"
-	ti.Focus()
-	ti.SetHeight(3)
+	ta := textarea.New()
+	ta.Placeholder = "Please enter your message or press [ctrl+h] for help"
+	ta.Focus()
+	ta.Prompt = ""
+	ta.SetHeight(3)
 
 	return Model{
-		messageInput:    ti,
+		messageInput:    ta,
 		db:              db,
 		geminiClient:    client,
 		channel:         ch,
