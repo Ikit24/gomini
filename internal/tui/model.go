@@ -27,6 +27,7 @@ type Model struct {
 	currentStream   string
 	channel         chan tea.Msg
 	terminalWidth   int
+	terminalHeight  int
 	viewport        viewport.Model
 	errorMessage    string
 	currentState    appState

@@ -50,6 +50,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.WindowSizeMsg:
 		m.terminalWidth = msg.Width
+		m.terminalHeight = msg.Height
 		m.viewport.Height = msg.Height - 5
 		m.viewport.Width = msg.Width
 		//terminal message spacing
