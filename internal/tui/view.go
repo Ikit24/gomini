@@ -12,8 +12,6 @@ var (
 	unselectedStyle = lipgloss.NewStyle().
         Foreground(lipgloss.Color("241"))
 	tooltipPrefix = lipgloss.NewStyle().Bold(true)
-	helpStyle = lipgloss.NewStyle().
-		Foreground(lipgloss.Color("#18ffa2")).Bold(true)
 )
 
 func formatText(style lipgloss.Style, text string) string {
@@ -42,17 +40,53 @@ func (m Model) View() string {
 }
 
 func (m Model) helpView() string {
-	return formatText(helpStyle, "[ctrl+g] Close this menu.\n" +
-		"[ctrl+b] Browse your history.\n" +
-		"[ctrl+n] Start new chat.\n" +
-		"[ctrl+c] Quit application.\n" +
-		"[ctrl+d] Delete selected sessions (Warning!!! This is instant and cannot be reversed).\n" +
-		"You can use navigation when in a session,for ex. using [ctrl+b] will return you to the session list.\n")
+	var helpBoxStyle = lipgloss.NewStyle().
+		Foreground(lipgloss.Color("#18ffa2")).Bold(true).
+		Border(lipgloss.RoundedBorder()).
+		BorderForeground(lipgloss.Color("#18ffa2")).
+		Margin(1, 2).
+		Width(m.terminalWidth - 4).
+		Height(m.terminalHeight - 4).
+		Align(lipgloss.Center).
+		AlignVertical(lipgloss.Center)
+
+	var helpInfoStyle = lipgloss.NewStyle().
+		Width(35).
+		Align(lipgloss.Left)
+
+	help := "[ctrl+g] Close this menu.\n\n" +
+		"[ctrl+b] Browse your history.\n\n" +
+		"[ctrl+n] Start new chat.\n\n" +
+		"[ctrl+c] Quit application.\n\n" +
+		"[ctrl+d] Delete selected sessions (Warning!!! This is instant and cannot be reversed).\n\n" +
+		"You can use navigation when in a session,for ex. using [ctrl+b] will return you to the session list.\n\n"
+
+	help = helpInfoStyle.Render(help)
+	return helpBoxStyle.Render(help)
 }
 
 func (m Model) viewBrowse() string {
 	var savedChats string
+
+	var chatListHeaderStyle = lipgloss.NewStyle().
+		Width(40).
+		Align(lipgloss.Center)
+
+	var chatInfoStyle = lipgloss.NewStyle().
+		Width(40).
+		Align(lipgloss.Left)
+
+	var chatsBoxStyle = lipgloss.NewStyle().
+		Border(lipgloss.RoundedBorder()).
+		BorderForeground(lipgloss.Color("#88C0D0")).
+		Margin(1, 2).
+		Width(m.terminalWidth - 4).
+		Height(m.terminalHeight - 4).
+		Align(lipgloss.Center).
+		AlignVertical(lipgloss.Center)
+
 	savedChats += formatText(tooltipPrefix, "Saved Chats:") + "\n\n"
+	savedChats = chatListHeaderStyle.Render(savedChats)
 
 	for i, session := range m.pastSessions {
 		if i == m.browseCursor {
@@ -61,12 +95,15 @@ func (m Model) viewBrowse() string {
 			savedChats += unselectedStyle.Render(fmt.Sprintf("   [CreatedAt: %s] Title: %s", session.CreatedAt.Format("02/01/2006"), session.Title)) + "\n"
 		}
 	}
-	savedChats += formatText(tooltipPrefix, "\nPress [esc] to return")
-	return savedChats
+
+	savedChats += formatText(tooltipPrefix,"\nPress [esc] to return")
+	savedChats = chatInfoStyle.Render(savedChats)
+	return chatsBoxStyle.Render(savedChats)
 }
 
 func (m Model) viewWelcome() string {
 	var s string
+
 	var welcomeBoxStyle = lipgloss.NewStyle().
 		Border(lipgloss.RoundedBorder()).
 		BorderForeground(lipgloss.Color("#874BFD")).
