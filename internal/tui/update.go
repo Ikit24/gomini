@@ -72,8 +72,23 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.cancel()
 				m.cancel = nil
 			}
+		case "ctrl+g":
+			m.showHelp = !m.showHelp
+			if m.showHelp {
+				m.messageInput.Blur()
+			} else {
+				m.messageInput.Focus()
+			}
+			return m, nil
+		case "esc":
+			if m.showHelp {
+				m.showHelp = false
+				m.messageInput.Focus()
+        	    return m, nil
+        	}
 		}
 	}
+
 	//local msg routing based on state
 	switch m.currentState {
 	case StateWelcome:

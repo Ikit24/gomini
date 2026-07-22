@@ -9,9 +9,14 @@ var (
 	selectedStyle = lipgloss.NewStyle().
 		Background(lipgloss.Color("#88C0D0")).
 		Foreground(lipgloss.Color("#1e1e2e")).Bold(true)
+
 	unselectedStyle = lipgloss.NewStyle().
         Foreground(lipgloss.Color("241"))
+
 	tooltipPrefix = lipgloss.NewStyle().Bold(true)
+
+	sessListPrefix = lipgloss.NewStyle().
+		Foreground(lipgloss.Color("#874BFD"))
 )
 
 func formatText(style lipgloss.Style, text string) string {
@@ -41,7 +46,7 @@ func (m Model) View() string {
 
 func (m Model) helpView() string {
 	var helpBoxStyle = lipgloss.NewStyle().
-		Foreground(lipgloss.Color("#18ffa2")).Bold(true).
+		Foreground(lipgloss.Color("#18ffa2")).
 		Border(lipgloss.RoundedBorder()).
 		BorderForeground(lipgloss.Color("#18ffa2")).
 		Margin(1, 2).
@@ -54,11 +59,11 @@ func (m Model) helpView() string {
 		Width(35).
 		Align(lipgloss.Left)
 
-	help := "[ctrl+g] Close this menu.\n\n" +
+	help := "[ctrl+g] or [esc] Close this menu.\n\n" +
 		"[ctrl+b] Browse your history.\n\n" +
 		"[ctrl+n] Start new chat.\n\n" +
 		"[ctrl+c] Quit application.\n\n" +
-		"[ctrl+d] Delete selected sessions (Warning!!! This is instant and cannot be reversed).\n\n" +
+		"[ctrl+d] Delete selected sessions Warning!!! This is instant and cannot be reversed.\n\n" +
 		"You can use navigation when in a session,for ex. using [ctrl+b] will return you to the session list.\n\n"
 
 	help = helpInfoStyle.Render(help)
@@ -102,7 +107,7 @@ func (m Model) viewBrowse() string {
 }
 
 func (m Model) viewWelcome() string {
-	var s string
+	var title, s, sessList string
 
 	var welcomeBoxStyle = lipgloss.NewStyle().
 		Border(lipgloss.RoundedBorder()).
@@ -113,20 +118,20 @@ func (m Model) viewWelcome() string {
 		Align(lipgloss.Center).
 		AlignVertical(lipgloss.Center)
 
-	s += formatText(tooltipPrefix, "Welcome to Gomini!\n\n")
+	title += formatText(tooltipPrefix, "Welcome to Gomini!\n")
+	s += formatText(tooltipPrefix,
+		"Press [ctrl+g] for help.\n\n" +
+		"Press [ctrl+n] to start new chat.\n\n" +
+		"Press [ctrl+b] to browse your history.\n\n")
 
 	if len(m.pastSessions) > 0 {
-		s += "You have " + fmt.Sprint(len(m.pastSessions)) + " previous conversations.\n\n"
-		s += formatText(tooltipPrefix,
-			"Press [ctrl+g] for help.\n" +
-			"Press [ctrl+n] to start new chat.\n" +
-			"Press [ctrl+b] to browse your history.\n")
+		sessList += formatText(sessListPrefix,"You have " + fmt.Sprint(len(m.pastSessions)) + " previous conversations.")
 	} else {
 		s += formatText(tooltipPrefix, "Press [ctrl+n] to start new chat.")
 	}
-	s += formatText(tooltipPrefix, "\n\nPress [ctrl+c] to quit.")
+	s += formatText(tooltipPrefix, "\nPress [ctrl+c] to quit.")
 
-	return welcomeBoxStyle.Render(s)
+	return welcomeBoxStyle.Render(title + "\n\n" + sessList + "\n\n" + s)
 }
 
 func (m Model) viewChat() string {

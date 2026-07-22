@@ -46,6 +46,7 @@ const (
 	StateWelcome appState = iota
 	StateChat
 	StateBrowse
+	StateHelp
 )
 
 func InitialModel(db *database.DB, client *gemini.Client, userID uuid.UUID, sessions []database.Session) Model {
