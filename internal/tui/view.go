@@ -67,15 +67,16 @@ func (m Model) helpView() string {
 		"You can use navigation when in a session,for ex. using [ctrl+b] will return you to the session list.\n\n"
 
 	help = helpInfoStyle.Render(help)
+
 	return helpBoxStyle.Render(help)
 }
 
 func (m Model) viewBrowse() string {
-	var savedChats string
+	var chatsHeader, savedChats string
 
-	var chatListHeaderStyle = lipgloss.NewStyle().
+	var chatQuitStyle = lipgloss.NewStyle().
 		Width(40).
-		Align(lipgloss.Center)
+		Align(lipgloss.Center).Bold(true)
 
 	var chatInfoStyle = lipgloss.NewStyle().
 		Width(40).
@@ -90,20 +91,19 @@ func (m Model) viewBrowse() string {
 		Align(lipgloss.Center).
 		AlignVertical(lipgloss.Center)
 
-	savedChats += formatText(tooltipPrefix, "Saved Chats:") + "\n\n"
-	savedChats = chatListHeaderStyle.Render(savedChats)
+	chatsHeader += formatText(tooltipPrefix, "Previous chats:") + "\n"
 
 	for i, session := range m.pastSessions {
 		if i == m.browseCursor {
-			savedChats += selectedStyle.Render(fmt.Sprintf("-> [CreatedAt: %s] Title: %s", session.CreatedAt.Format("02/01/2006"), session.Title)) + "\n"
+			savedChats += selectedStyle.Render(fmt.Sprintf("->[CreatedAt: %s] Title: %s", session.CreatedAt.Format("02/01/2006"), session.Title)) + "\n"
 		} else {
-			savedChats += unselectedStyle.Render(fmt.Sprintf("   [CreatedAt: %s] Title: %s", session.CreatedAt.Format("02/01/2006"), session.Title)) + "\n"
+			savedChats += unselectedStyle.Render(fmt.Sprintf("  [CreatedAt: %s] Title: %s", session.CreatedAt.Format("02/01/2006"), session.Title)) + "\n"
 		}
 	}
 
-	savedChats += formatText(tooltipPrefix,"\nPress [esc] to return")
+	savedChats += formatText(chatQuitStyle,"\nPress [esc] to return")
 	savedChats = chatInfoStyle.Render(savedChats)
-	return chatsBoxStyle.Render(savedChats)
+	return chatsBoxStyle.Render(chatsHeader + "\n" + savedChats)
 }
 
 func (m Model) viewWelcome() string {
@@ -139,6 +139,10 @@ func (m Model) viewChat() string {
 		Foreground(lipgloss.Color("9")).
 		Bold(true)
 
+	var chatInputStyle = lipgloss.NewStyle().
+		Width(m.terminalWidth).
+		Align(lipgloss.Center)
+
 	var UI string = m.viewport.View() + "\n"
 	if m.isLoading {
 		UI += m.spinner.View() + " Looking for answers...\n\n"
@@ -147,7 +151,7 @@ func (m Model) viewChat() string {
 	if m.errorMessage != "" {
 		UI += errorStyle.Render(m.errorMessage) + "\n"
 	}
-	UI += m.messageInput.View()
+	UI += chatInputStyle.Render(m.messageInput.View())
 
 	return UI
 }

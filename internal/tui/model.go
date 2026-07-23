@@ -46,22 +46,22 @@ const (
 	StateWelcome appState = iota
 	StateChat
 	StateBrowse
-	StateHelp
 )
 
 func InitialModel(db *database.DB, client *gemini.Client, userID uuid.UUID, sessions []database.Session) Model {
 	s := spinner.New()
 	s.Spinner = spinner.Dot
 	s.Style = lipgloss.NewStyle().Foreground(lipgloss.Color("205"))
-	
+
 	ch := make(chan tea.Msg)
 	ta := textarea.New()
-	ta.Placeholder = "Please enter your message or press [ctrl+h] for help"
+	ta.Placeholder = "Please enter your message or press [ctrl+g] for help"
 	ta.Focus()
 	ta.Prompt = ""
 	ta.SetHeight(3)
+	//ta.SetWidth(100)
 
-	return Model{
+	return Model {
 		messageInput:    ta,
 		db:              db,
 		geminiClient:    client,
