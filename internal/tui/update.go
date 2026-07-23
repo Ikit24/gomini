@@ -183,12 +183,12 @@ func (m Model) updateChat(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.selectedSession == uuid.Nil {
 				title := userInput
 				//dynamic chat title
-				if len(title) > 35 {
-					lastSpace := strings.LastIndex(title[:35], " ")
+				if len(title) > 20 {
+					lastSpace := strings.LastIndex(title[:20], " ")
 					if lastSpace != -1 {
 						title = title[:lastSpace] + "..."
 					} else {
-						title = title[:32] + "..."
+						title = title[:17] + "..."
 					}
 				} else if title == "" {
 					title = "New Chat"

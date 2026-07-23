@@ -79,7 +79,7 @@ func (m Model) viewBrowse() string {
 		Align(lipgloss.Center).Bold(true)
 
 	var chatInfoStyle = lipgloss.NewStyle().
-		Width(40).
+		Width(50).
 		Align(lipgloss.Left)
 
 	var chatsBoxStyle = lipgloss.NewStyle().

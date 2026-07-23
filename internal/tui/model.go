@@ -59,7 +59,6 @@ func InitialModel(db *database.DB, client *gemini.Client, userID uuid.UUID, sess
 	ta.Focus()
 	ta.Prompt = ""
 	ta.SetHeight(3)
-	//ta.SetWidth(100)
 
 	return Model {
 		messageInput:    ta,
@@ -96,5 +95,5 @@ func uintPtr(i uint) *uint {
 }
 
 func (m Model) Init() tea.Cmd {
-	return m.spinner.Tick
+	return tea.Batch(m.spinner.Tick, tea.EnterAltScreen)
 }
