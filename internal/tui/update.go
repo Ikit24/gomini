@@ -3,6 +3,7 @@ package tui
 import (
 	"strings"
 	"context"
+	"github.com/atotto/clipboard"
 	"github.com/Ikit24/gomini/internal/database"
 	"github.com/Ikit24/gomini/internal/gemini"
 	"github.com/charmbracelet/bubbles/textinput"
@@ -11,6 +12,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/google/uuid"
 	"time"
+	"regexp"
 )
 
 var (
@@ -21,6 +23,9 @@ var (
 type GeminiResponseMsg string
 type geminiStreamErrorMsg struct {
 	err error
+}
+type clipboardErrorMsg struct {
+    err error
 }
 type ArrivingMsg string
 type StreamFinish struct{}
@@ -44,6 +49,26 @@ func saveMessageToDB(db *database.DB, msg database.Message) tea.Cmd {
 		}
 		return dbSaveSuccessMsg{}
 	}
+}
+
+var codeBlockRegex = regexp.MustCompile("(?s)```.*?\\n(.*?)\\n```")
+
+func extractCode(text string) string {
+	matches := codeBlockRegex.FindAllStringSubmatch(text, -1)
+	if len(matches) == 0 {
+		return ""
+	}
+	return matches[len(matches)- 1][1]
+}
+
+func (m *Model) copyMsgFromResponse() (tea.Model, tea.Cmd) {
+	extracted := extractCode(m.currentStream)
+	if extracted == "" {
+		return m, nil
+	}
+	clipboard.WriteAll(extracted)
+
+	return m, nil
 }
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -79,7 +104,25 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			} else {
 				m.messageInput.Focus()
 			}
+
 			return m, nil
+		case "ctrl+y":
+			if len(m.messages) == 0 {
+				return m, nil
+			}
+			lastMessageContent := m.messages[len(m.messages)-1].Content
+
+			code := extractCode(lastMessageContent)
+			if code != "" {
+				err := clipboard.WriteAll(code)
+				if err != nil {
+					return m, func() tea.Msg {
+						return clipboardErrorMsg{err: err}
+					}
+				}
+			}
+			return m.copyMsgFromResponse()
+
 		case "esc":
 			if m.showHelp {
 				m.showHelp = false

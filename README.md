@@ -28,6 +28,7 @@ The project follows a modular Go layout to separate concerns:
 | Context | Key | Action |
 | :--- | :--- | :--- |
 | **Global** | `ctrl+c` | Quit application |
+| **Global** | `ctrl+g` | Show help |
 | **Welcome** | `ctrl+n` | Start a new chat |
 | **Welcome** | `ctrl+b` | Browse past chat sessions |
 | **Browse** | `up` | Move cursor up |
@@ -36,9 +37,10 @@ The project follows a modular Go layout to separate concerns:
 | **Browse** | `esc` | Return to Welcome screen |
 | **Chat** | `up` / `pgup` | Scroll chat history up |
 | **Chat** | `down` / `pgdn` | Scroll chat history down |
-| **Chat** | `enter` | Submit message |
+| **Chat** | `ctrl+s` | Submit message |
 | **Chat** | `ctrl+b` | Browse past chat sessions |
 | **Chat** | `ctrl+n` | Start new chat |
+| **Chat** | `ctrl+y` | Copy latest code from llm response |
 
 ## 🛠️ Getting Started
 
