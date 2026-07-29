@@ -74,8 +74,8 @@ func (m Model) helpView() string {
 	help := "[ctrl+g] or [esc] Close this menu.\n\n" +
 		"[ctrl+b] Browse your history.\n\n" +
 		"[ctrl+n] Start new chat.\n\n" +
-		"[ctrl+y] Copy the latest llm message.\n\n" +
-		"[alt+y] Copy the latest code block.\n\n" +
+		"[ctrl+y] Copy the latest code block.\n\n" +
+		"[alt+y] Copy the latest LLM message.\n\n" +
 		"[ctrl+c] Quit application.\n\n" +
 		"[ctrl+d] Delete selected sessions Warning!!! This is instant and cannot be reversed.\n\n" +
 		"You can use navigation when in a session,for ex. using [ctrl+b] will return you to the session list.\n\n"

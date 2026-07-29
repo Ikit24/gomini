@@ -87,7 +87,11 @@ func (m *Model) copyMsgFromResponse(onlyCode bool) (tea.Model, tea.Cmd) {
 			return clipboardErrorMsg{err: err}
 		}
 	}
-	m.statusMessage = "Copied to clipboard."
+	if onlyCode  {
+		m.statusMessage = "Code to clipboard."
+	} else {
+		m.statusMessage = "Copied to clipboard."
+	}
 
 	return m, clearStatusCmd()
 }
