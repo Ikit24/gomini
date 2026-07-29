@@ -40,7 +40,8 @@ The project follows a modular Go layout to separate concerns:
 | **Chat** | `ctrl+s` | Submit message |
 | **Chat** | `ctrl+b` | Browse past chat sessions |
 | **Chat** | `ctrl+n` | Start new chat |
-| **Chat** | `ctrl+y` | Copy latest code from llm response |
+| **Chat** | `ctrl+y` | Copy the latest whole llm response |
+| **Chat** | `alt+y` | Copy the latest code block from llm response |
 
 ## 🛠️ Getting Started
 

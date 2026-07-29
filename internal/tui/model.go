@@ -29,6 +29,7 @@ type Model struct {
 	terminalWidth   int
 	terminalHeight  int
 	viewport        viewport.Model
+	statusMessage   string
 	errorMessage    string
 	currentState    appState
 	pastSessions    []database.Session

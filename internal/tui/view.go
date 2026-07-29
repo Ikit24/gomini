@@ -24,6 +24,11 @@ func formatText(style lipgloss.Style, text string) string {
 }
 
 func (m Model) View() string {
+	var statusMsgStyle = lipgloss.NewStyle().
+		Foreground(lipgloss.Color("#18ffa2")).
+		Align(lipgloss.Center).
+		AlignVertical(lipgloss.Center)
+
 	if m.errorMessage != "" {
 		return formatText(tooltipPrefix, "Critical error: ") + m.errorMessage + formatText(tooltipPrefix, "\nPress [ctrl+c] to quit.")
 	}
@@ -32,16 +37,23 @@ func (m Model) View() string {
 		return m.helpView()
 	}
 
+	var currentView string
 	switch m.currentState {
 	case StateWelcome:
-		return m.viewWelcome()
+		currentView = m.viewWelcome()
 	case StateChat:
-		return m.viewChat()
+		currentView = m.viewChat()
 	case StateBrowse:
-		return m.viewBrowse()
+		currentView = m.viewBrowse()
 	default:
-		return "Unknown application state"
+		currentView = "Unknown application state"
 	}
+
+	if m.statusMessage != "" {
+		currentView = currentView + "\n" + formatText(statusMsgStyle, m.statusMessage)
+	}
+
+	return currentView
 }
 
 func (m Model) helpView() string {
@@ -62,6 +74,8 @@ func (m Model) helpView() string {
 	help := "[ctrl+g] or [esc] Close this menu.\n\n" +
 		"[ctrl+b] Browse your history.\n\n" +
 		"[ctrl+n] Start new chat.\n\n" +
+		"[ctrl+y] Copy the latest llm message.\n\n" +
+		"[alt+y] Copy the latest code block.\n\n" +
 		"[ctrl+c] Quit application.\n\n" +
 		"[ctrl+d] Delete selected sessions Warning!!! This is instant and cannot be reversed.\n\n" +
 		"You can use navigation when in a session,for ex. using [ctrl+b] will return you to the session list.\n\n"

@@ -20,7 +20,6 @@ var (
 	gominiPrefixColor = lipgloss.NewStyle().Foreground(lipgloss.Color("39")).Bold(true)
 )
 
-type GeminiResponseMsg string
 type geminiStreamErrorMsg struct {
 	err error
 }
@@ -34,6 +33,7 @@ type dbSaveSuccessMsg struct{}
 type dbSaveErrorMsg struct {
 	err error
 }
+type clearStatusMsg struct{}
 
 func waitForChunk(ch ChunkChan) tea.Cmd {
 	return func() tea.Msg {
@@ -54,25 +54,55 @@ func saveMessageToDB(db *database.DB, msg database.Message) tea.Cmd {
 var codeBlockRegex = regexp.MustCompile("(?s)```.*?\\n(.*?)\\n```")
 
 func extractCode(text string) string {
+	var allCodeBlocks []string
+
 	matches := codeBlockRegex.FindAllStringSubmatch(text, -1)
 	if len(matches) == 0 {
 		return ""
 	}
-	return matches[len(matches)- 1][1]
+
+	for _, match := range matches {
+		allCodeBlocks = append(allCodeBlocks, match[1])
+	}
+	return strings.Join(allCodeBlocks, "\n\n")
 }
 
-func (m *Model) copyMsgFromResponse() (tea.Model, tea.Cmd) {
-	extracted := extractCode(m.currentStream)
-	if extracted == "" {
+func (m *Model) copyMsgFromResponse(onlyCode bool) (tea.Model, tea.Cmd) {
+	if len(m.messages) == 0 {
 		return m, nil
 	}
-	clipboard.WriteAll(extracted)
+	lastContent := m.messages[len(m.messages)-1].Content
+	textToCopy := lastContent
 
-	return m, nil
+	if onlyCode {
+		textToCopy = extractCode(lastContent)
+		if textToCopy == "" {
+			return m, nil
+		}
+	}
+
+	err := clipboard.WriteAll(textToCopy)
+	if err != nil {
+		return m, func() tea.Msg {
+			return clipboardErrorMsg{err: err}
+		}
+	}
+	m.statusMessage = "Copied to clipboard."
+
+	return m, clearStatusCmd()
+}
+
+func clearStatusCmd() tea.Cmd {
+	return func() tea.Msg {
+		time.Sleep(3 * time.Second)
+		return clearStatusMsg{}
+	}
 }
 
 func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
+	case clearStatusMsg:
+		m.statusMessage = ""
 	case tea.WindowSizeMsg:
 		m.terminalWidth = msg.Width
 		m.terminalHeight = msg.Height
@@ -104,24 +134,15 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			} else {
 				m.messageInput.Focus()
 			}
-
 			return m, nil
-		case "ctrl+y":
-			if len(m.messages) == 0 {
-				return m, nil
-			}
-			lastMessageContent := m.messages[len(m.messages)-1].Content
 
-			code := extractCode(lastMessageContent)
-			if code != "" {
-				err := clipboard.WriteAll(code)
-				if err != nil {
-					return m, func() tea.Msg {
-						return clipboardErrorMsg{err: err}
-					}
-				}
-			}
-			return m.copyMsgFromResponse()
+		case "ctrl+y":
+			//extract code only
+			return m.copyMsgFromResponse(true)
+
+		case "alt+y":
+			//extract full raw message
+			return m.copyMsgFromResponse(false)
 
 		case "esc":
 			if m.showHelp {
