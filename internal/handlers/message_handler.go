@@ -70,7 +70,7 @@ func (s *Server) HandleCreateMessage(w http.ResponseWriter, r *http.Request) {
 	aiResponse, err := s.AI.GenerateChatResponse(r.Context(), geminiMessages, params.Content)
 	if err != nil {
 		fmt.Printf("AI Client error: %v\n", err)
-		RespondWithError(w, http.StatusInternalServerError, "failed to get response from the AI")
+		RespondWithError(w, http.StatusInternalServerError, "failed to get response from the LLM")
 		return
 	}
 
@@ -105,7 +105,7 @@ func (s *Server) HandleCreateMessage(w http.ResponseWriter, r *http.Request) {
 
 	err = s.DB.CreateMessage(&aiMessage)
 	if err != nil {
-		fmt.Printf("database error: couldn't save AI response: %v\n", err)
+		fmt.Printf("database error: couldn't save LLM response: %v\n", err)
 		return
 	}
 }

@@ -39,14 +39,14 @@ func main() {
 	defer db.Close()
 
 	if err := db.PurgeEmptyMessages(); err != nil {
-		log.Printf("Warning: Failed to auto-purge empty messages from the database: v%", err)
+		log.Printf("warning: Failed to auto-purge empty messages from the database: v%", err)
 	}
 
 	servr := handlers.NewServer(db, aiClient)
 
 	user, err := db.GetUserByName("ati")
 	if err != nil {
-		log.Fatalf("Failed to query database for user: %v", err)
+		log.Fatalf("failed to query database for user: %v", err)
 	}
 
 	if user == nil {
@@ -56,13 +56,13 @@ func main() {
 		}
 		err = db.CreateUser(user)
 		if err != nil {
-			log.Fatalf("Failed to bootstrap local user: %v", err)
+			log.Fatalf("failed to bootstrap local user: %v", err)
 		}
 	}
 
 	sessions, err := db.GetSessionsByUserID(user.ID)
 	if err != nil {
-		log.Fatalf("Faield to fetch past sessions: %v", err)
+		log.Fatalf("failed to fetch past sessions: %v", err)
 	}
 
 	go func() {

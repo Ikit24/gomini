@@ -85,7 +85,7 @@ func createMarkdownRenderer(width int) *glamour.TermRenderer {
 		glamour.WithStyles(customStyle),
 	)
 	if err != nil {
-		fmt.Println("Failed to start renderer:", err)
+		fmt.Println("failed to start renderer:", err)
 	}
 
 	return renderer

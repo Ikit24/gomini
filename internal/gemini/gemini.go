@@ -31,7 +31,7 @@ func NewClient(ctx context.Context, apiKey string) (*Client, error) {
 	config := &genai.GenerateContentConfig{
 		SystemInstruction: &genai.Content{
 			Parts: []*genai.Part{
-				{Text:"You are a helfpul and through assistant in a terminal UI. The current date is: " + currentDate},
+				{Text:"You are a helfpul and thorough assistant in a terminal UI. The current date is: " + currentDate},
 			},
 		},
 		Tools: []*genai.Tool{
@@ -83,5 +83,6 @@ func (c *Client) GenerateChatResponse(ctx context.Context, history []Message, ne
 			}
 		}
 	}()
+
 	return ch, nil
 }

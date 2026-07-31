@@ -30,7 +30,7 @@ func (m Model) View() string {
 		AlignVertical(lipgloss.Center)
 
 	if m.errorMessage != "" {
-		return formatText(tooltipPrefix, "Critical error: ") + m.errorMessage + formatText(tooltipPrefix, "\nPress [ctrl+c] to quit.")
+		return formatText(tooltipPrefix, "critical error: ") + m.errorMessage + formatText(tooltipPrefix, "\nPress [ctrl+c] to quit.")
 	}
 
 	if m.showHelp {
@@ -117,6 +117,7 @@ func (m Model) viewBrowse() string {
 
 	savedChats += formatText(chatQuitStyle,"\nPress [esc] to return")
 	savedChats = chatInfoStyle.Render(savedChats)
+
 	return chatsBoxStyle.Render(chatsHeader + "\n" + savedChats)
 }
 

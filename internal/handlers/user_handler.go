@@ -32,7 +32,7 @@ func (s *Server) HandleCreateUser(w http.ResponseWriter, r *http.Request) {
 
 	err := s.DB.CreateUser(&userToCreate)
 	if err != nil {
-		log.Printf("Database error: %v", err)
+		log.Printf("database error: %v", err)
 		RespondWithError(w, http.StatusInternalServerError, "error couldn't create user")
 		return
 	}

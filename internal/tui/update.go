@@ -107,6 +107,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case clearStatusMsg:
 		m.statusMessage = ""
+
 	case tea.WindowSizeMsg:
 		m.terminalWidth = msg.Width
 		m.terminalHeight = msg.Height
@@ -126,11 +127,13 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.String() {
 		case "ctrl+c":
 			return m, tea.Quit
+
 		case "ctrl+n":
 			if m.cancel != nil {
 				m.cancel()
 				m.cancel = nil
 			}
+
 		case "ctrl+g":
 			m.showHelp = !m.showHelp
 			if m.showHelp {
@@ -223,6 +226,7 @@ func (m Model) updateChat(msg tea.Msg) (tea.Model, tea.Cmd) {
 			} else {
 				m.messageInput.Focus()
 			}
+
 			return m, nil
 
 		case "esc":
@@ -231,8 +235,10 @@ func (m Model) updateChat(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.messageInput.Focus()
         	    return m, nil
         	}
+
 			m.currentState = StateWelcome
 			m.messageInput.Blur()
+
 			return m, nil
 
 		case "ctrl+s":
@@ -245,6 +251,7 @@ func (m Model) updateChat(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.messageInput.Reset()
 				return m, nil
 			}
+
 			userInput := cleanInput
 			m.messageInput.Reset()
 
@@ -261,6 +268,7 @@ func (m Model) updateChat(msg tea.Msg) (tea.Model, tea.Cmd) {
 				} else if title == "" {
 					title = "New Chat"
 				}
+
 				newSessionID := uuid.New()
 				now := time.Now().UTC()
 				newSession := database.Session{
@@ -270,6 +278,7 @@ func (m Model) updateChat(msg tea.Msg) (tea.Model, tea.Cmd) {
 					CreatedAt: now,
 					UpdatedAt: now,
 				}
+
 				err := m.db.CreateSession(&newSession)
 				if err != nil {
 					m.errorMessage = "Failed to create session: %v" + err.Error()
@@ -278,6 +287,7 @@ func (m Model) updateChat(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.selectedSession = newSessionID
 				m.pastSessions = append([]database.Session{newSession}, m.pastSessions...)
 			}
+
 			geminiHistory := make([]gemini.Message, len(m.messages))
 			for i, msg := range m.messages {
 				geminiHistory[i] = gemini.Message{
@@ -285,6 +295,7 @@ func (m Model) updateChat(msg tea.Msg) (tea.Model, tea.Cmd) {
 					Content: msg.Content,
 				}
 			}
+
 			dbMessage := database.Message{
 				ID:        uuid.New(),
 				SessionID: m.selectedSession,
@@ -294,6 +305,7 @@ func (m Model) updateChat(msg tea.Msg) (tea.Model, tea.Cmd) {
 				CreatedAt: time.Now(),
 				UpdatedAt: time.Now(),
 			}
+
 			m.isLoading = true
 			m.messages = append(m.messages, dbMessage)
 			m.messageInput.SetValue("")
@@ -351,6 +363,7 @@ func (m Model) refreshViewportContent() Model {
 		    boxedMessage := messageStyle.Render(renderedMessage)
 			s += lipgloss.JoinHorizontal(lipgloss.Top, boxedPrefix, boxedMessage) + "\n\n"
 		}
+
 		if msg.Role == database.ModelRole {
 			renderedGominiMessage, err := m.renderer.Render(msg.Content)
 			renderedGominiMessage = strings.TrimSpace(renderedGominiMessage)
@@ -364,6 +377,7 @@ func (m Model) refreshViewportContent() Model {
 			s += lipgloss.JoinHorizontal(lipgloss.Top, boxedAiPrefix, boxedAiMessage) + "\n\n"
 		}
 	}
+
 	if m.currentStream != "" {
 		renderedGominiMessage, err := m.renderer.Render(m.currentStream)
 		renderedGominiMessage = strings.TrimSpace(renderedGominiMessage)
@@ -378,6 +392,7 @@ func (m Model) refreshViewportContent() Model {
 	}
 	m.viewport.SetContent(s)
 	m.viewport.GotoBottom()
+
 	return m
 }
 
@@ -392,6 +407,7 @@ func (m Model) updateWelcome(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m.switchToBrowse()
 		}
 	}
+
 	return m, nil
 }
 
@@ -408,12 +424,14 @@ func (m Model) startNewChat() (tea.Model, tea.Cmd) {
 func (m Model) switchToBrowse() (tea.Model, tea.Cmd) {
 	sessions, err := m.db.GetSessionsByUserID(m.currentUser)
 	if err != nil {
-		m.errorMessage = "Failed to fetch session: " + err.Error()
+		m.errorMessage = "failed to fetch session: " + err.Error()
 		return m, nil
 	}
+
 	m.pastSessions = sessions
 	m.browseCursor = 0
 	m.currentState = StateBrowse
+
 	return m, nil
 }
 
@@ -430,23 +448,27 @@ func (m Model) deleteSelectedSession() (tea.Model, tea.Cmd) {
 		}
 		sessionToDelete = m.selectedSession
 	}
+
 	err := m.db.DeleteSessionBySessionID(sessionToDelete)
 	if err != nil {
 		m.errorMessage = "Session deletion failed: " + err.Error()
 		return m, nil
 	}
+
 	if m.currentState == StateBrowse {
 		m.pastSessions = append(m.pastSessions[:m.browseCursor], m.pastSessions[m.browseCursor+1:]...)
 		if m.browseCursor >= len(m.pastSessions) && m.browseCursor > 0 {
 			m.browseCursor--
 		}
 	}
+
 	if sessionToDelete == m.selectedSession {
 		m.selectedSession = uuid.Nil
 		m.messages = nil
 		//return user to menu
 		m.currentState = StateBrowse
 	}
+
 	return m, nil
 }
 
@@ -461,6 +483,7 @@ func (m Model) updateBrowse(msg tea.Msg) (tea.Model, tea.Cmd) {
 			} else {
 				m.messageInput.Focus()
 			}
+
 			return m, nil
 
 		case "up":
@@ -482,14 +505,17 @@ func (m Model) updateBrowse(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.messageInput.Focus()
         	    return m, nil
         	}
+
 			m.currentState = StateWelcome
 			m.messageInput.Blur()
+
 			return m, nil
 
 		case "ctrl+s":
 			if len(m.pastSessions) == 0 {
 			return m, nil
 			}
+
 			selectedSession := m.pastSessions[m.browseCursor]
 			m.selectedSession = selectedSession.ID
 			messagesFromSession, err := m.db.GetMessagesBySessionID(selectedSession.ID)
@@ -497,10 +523,12 @@ func (m Model) updateBrowse(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.errorMessage = "Failed to fetch messages: " + err.Error()
 				return m, nil
 			}
+
 			m.messages = messagesFromSession
 			m = m.refreshViewportContent()
 			m.currentState = StateChat
 			m.messageInput.Focus()
+
 			return m, textinput.Blink
 		}
 	}
@@ -515,6 +543,7 @@ func (m Model) startGeminiStream(ch chan tea.Msg, prompt string, client *gemini.
 		if err != nil {
 			return geminiStreamErrorMsg{err: err}
 		}
+
 		for text := range streamChan {
 			ch <- ArrivingMsg(text)
 		}

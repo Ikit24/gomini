@@ -57,6 +57,7 @@ func (d *DB) GetMessagesBySessionID(sessionID uuid.UUID) ([]Message, error) {
 		}
 		messages = append(messages, m)
 	}
+
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
