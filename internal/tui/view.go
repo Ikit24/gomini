@@ -76,6 +76,8 @@ func (m Model) helpView() string {
 		"[ctrl+n] Start new chat.\n\n" +
 		"[ctrl+y] Copy the latest code block.\n\n" +
 		"[alt+y] Copy the latest LLM message.\n\n" +
+		"[alt+1] Switch to Socratic coding tutor.\n\n" +
+		"[alt+2] Switch to value investor by the rules of B. Graham and W. Buffett.\n\n" +
 		"[ctrl+c] Quit application.\n\n" +
 		"[ctrl+d] Delete selected sessions Warning!!! This is instant and cannot be reversed.\n\n" +
 		"You can use navigation when in a session,for ex. using [ctrl+b] will return you to the session list.\n\n"

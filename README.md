@@ -42,6 +42,8 @@ The project follows a modular Go layout to separate concerns:
 | **Chat** | `ctrl+n` | Start new chat |
 | **Chat** | `ctrl+y` | Copy the latest whole LLM response |
 | **Chat** | `alt+y` | Copy the latest code block from LLM response |
+| **Chat** | `alt+1` | Switch to a Socratic coding tutror |
+| **Chat** | `alt+2` | Switch to value investor persona by the rules of Benjamin Graham and Warren Buffett |
 
 ## 🛠️ Getting Started
 

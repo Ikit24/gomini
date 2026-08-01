@@ -19,6 +19,14 @@ type Message struct {
 	Content string
 }
 
+func (c *Client) SetPersona(personaText string) {
+	if len(c.genaiSysTools.SystemInstruction.Parts) == 1 {
+		c.genaiSysTools.SystemInstruction.Parts = append(c.genaiSysTools.SystemInstruction.Parts, &genai.Part{Text: personaText})
+	} else {
+		c.genaiSysTools.SystemInstruction.Parts[1] = &genai.Part{Text: personaText}
+	}
+}
+
 func NewClient(ctx context.Context, apiKey string) (*Client, error) {
 	c, err := genai.NewClient(ctx, &genai.ClientConfig{
 		APIKey: apiKey,
