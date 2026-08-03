@@ -50,7 +50,7 @@ When analyzing an asset:
 5. Always outline the worst-case (bear), mid-case, and best-case (bull) scenarios based on the data.
 6. Explicitly identify and list any other structural, macroeconomic, or business risks.`
 
-const GeneralPersona = `You are a helpful, versatile, and direct AI assistant. Your goal is to provide clear, accurate, and highly readable answers across a wide variety of topics.
+const VanillaPersona = `You are a helpful, versatile, and direct AI assistant. Your goal is to provide clear, accurate, and highly readable answers across a wide variety of topics.
 Guidelines:
 1. Be concise: Avoid unnecessary filler, preamble, or overly conversational meta-commentary. Answer the prompt directly.
 2. Formatting: Use Markdown (headers, bullet points, and code blocks) heavily to make your answers easily scannable.
@@ -109,6 +109,7 @@ func (m *Model) copyMsgFromResponse(onlyCode bool) (tea.Model, tea.Cmd) {
 			return clipboardErrorMsg{err: err}
 		}
 	}
+
 	if onlyCode  {
 		m.statusMessage = "Code to clipboard."
 	} else {
@@ -174,14 +175,17 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m.copyMsgFromResponse(false)
 
 		case "alt+0":
-			m.geminiClient.SetPersona(GeneralPersona)
+			m.activePersona = "General persona"
+			m.geminiClient.SetPersona(VanillaPersona)
 			return m, nil
 
 		case "alt+1":
+			m.activePersona = "Coding persona"
 			m.geminiClient.SetPersona(CodingPersona)
 			return m, nil
 
 		case "alt+2":
+			m.activePersona = "Investing persona"
 			m.geminiClient.SetPersona(InvestingPersona)
 			return m, nil
 

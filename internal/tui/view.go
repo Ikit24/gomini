@@ -24,11 +24,6 @@ func formatText(style lipgloss.Style, text string) string {
 }
 
 func (m Model) View() string {
-	var statusMsgStyle = lipgloss.NewStyle().
-		Foreground(lipgloss.Color("#18ffa2")).
-		Align(lipgloss.Center).
-		AlignVertical(lipgloss.Center)
-
 	if m.errorMessage != "" {
 		return formatText(tooltipPrefix, "critical error: ") + m.errorMessage + formatText(tooltipPrefix, "\nPress [ctrl+c] to quit.")
 	}
@@ -47,10 +42,6 @@ func (m Model) View() string {
 		currentView = m.viewBrowse()
 	default:
 		currentView = "Unknown application state"
-	}
-
-	if m.statusMessage != "" {
-		currentView = currentView + "\n" + formatText(statusMsgStyle, m.statusMessage)
 	}
 
 	return currentView
@@ -153,23 +144,42 @@ func (m Model) viewWelcome() string {
 }
 
 func (m Model) viewChat() string {
-	var errorStyle = lipgloss.NewStyle().
-		Foreground(lipgloss.Color("9")).
-		Bold(true)
-
-	var chatInputStyle = lipgloss.NewStyle().
-		Width(m.terminalWidth).
-		Align(lipgloss.Center)
-
 	var UI string = m.viewport.View() + "\n"
+
 	if m.isLoading {
 		UI += m.spinner.View() + " Looking for answers...\n\n"
 	}
 
 	if m.errorMessage != "" {
-		UI += errorStyle.Render(m.errorMessage) + "\n"
+		var errorStyle = lipgloss.NewStyle().
+		Foreground(lipgloss.Color("9")).
+		Bold(true)
+	UI += errorStyle.Render(m.errorMessage) + "\n"
 	}
-	UI += chatInputStyle.Render(m.messageInput.View())
 
-	return UI
+	var chatInputStyle = lipgloss.NewStyle().
+        Width(m.terminalWidth).
+        Align(lipgloss.Center)
+    UI += chatInputStyle.Render(m.messageInput.View()) + "\n"
+
+	halfWidth := m.terminalWidth / 2
+
+    centerStyle := lipgloss.NewStyle().
+        Width(halfWidth).
+        Align(lipgloss.Center).
+        Foreground(lipgloss.Color("#18ffa2"))
+
+    rightStyle := lipgloss.NewStyle().
+        Width(halfWidth).
+        Align(lipgloss.Left).
+        Foreground(lipgloss.Color("#18ffa2"))
+
+    personaText := centerStyle.Render(m.activePersona)
+    statusMsgText := rightStyle.Render(m.statusMessage)
+
+    statusBar := lipgloss.JoinHorizontal(lipgloss.Center, personaText, statusMsgText)
+
+    UI += statusBar
+
+    return UI
 }

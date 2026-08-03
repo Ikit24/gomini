@@ -30,6 +30,7 @@ type Model struct {
 	terminalHeight  int
 	viewport        viewport.Model
 	statusMessage   string
+	activePersona   string
 	errorMessage    string
 	currentState    appState
 	pastSessions    []database.Session
