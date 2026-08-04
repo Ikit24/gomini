@@ -164,20 +164,20 @@ func (m Model) viewChat() string {
 
 	halfWidth := m.terminalWidth / 2
 
-    centerStyle := lipgloss.NewStyle().
-        Width(halfWidth).
+    personaStyle := lipgloss.NewStyle().
+        Width(halfWidth - 10).
         Align(lipgloss.Center).
-        Foreground(lipgloss.Color("#18ffa2"))
+        Foreground(lipgloss.Color("#874BFD"))
 
-    rightStyle := lipgloss.NewStyle().
+    statusStyle := lipgloss.NewStyle().
         Width(halfWidth).
         Align(lipgloss.Left).
         Foreground(lipgloss.Color("#18ffa2"))
 
-    personaText := centerStyle.Render(m.activePersona)
-    statusMsgText := rightStyle.Render(m.statusMessage)
+    personaText := personaStyle.Render(m.activePersona)
+    statusMsgText := statusStyle.Render(m.statusMessage)
 
-    statusBar := lipgloss.JoinHorizontal(lipgloss.Center, personaText, statusMsgText)
+    statusBar := lipgloss.JoinHorizontal(lipgloss.Top, personaText, statusMsgText)
 
     UI += statusBar
 

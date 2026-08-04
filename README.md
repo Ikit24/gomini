@@ -15,6 +15,14 @@ Gomini is a production-ready, terminal-based AI chat application written in Go. 
 - **Interactive History Browser:** Scroll through past sessions and resume conversations instantly.
 - **Live AI Streaming:** Real-time streaming of Gemini AI responses directly to the terminal viewport.
 
+## 🛠️ Built With
+
+* [Go](https://go.dev/) - Core language
+* [Bubble Tea](https://github.com/charmbracelet/bubbletea) - TUI framework (Elm architecture)
+* [Lip Gloss](https://github.com/charmbracelet/lipgloss) - Terminal styling and layout engine
+* [Bubbles](https://github.com/charmbracelet/bubbles) - TUI components (viewport, text input, spinner)
+* [Google GenAI SDK](https://github.com/google/generative-ai-go) - Gemini API integration
+
 ## 📁 Project Structure
 
 The project follows a modular Go layout to separate concerns:
@@ -43,7 +51,7 @@ The project follows a modular Go layout to separate concerns:
 | **Chat** | `ctrl+y` | Copy the latest whole LLM response |
 | **Chat** | `alt+y` | Copy the latest code block from LLM response |
 | **Chat** | `alt+0` | Switch to general-purpose persona, concise, highly readable answers |
-| **Chat** | `alt+1` | Switch to a Socratic coding tutror |
+| **Chat** | `alt+1` | Switch to a Socratic coding tutor |
 | **Chat** | `alt+2` | Switch to value investor persona by the rules of Benjamin Graham and Warren Buffett |
 
 ## 🛠️ Getting Started
