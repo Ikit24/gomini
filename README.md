@@ -14,6 +14,11 @@ Gomini is a production-ready, terminal-based AI chat application written in Go. 
 - **Local Session Management:** Automatically saves and organizes all past chats in a local SQLite database.
 - **Interactive History Browser:** Scroll through past sessions and resume conversations instantly.
 - **Live AI Streaming:** Real-time streaming of Gemini AI responses directly to the terminal viewport.
+- **File Context Attachment:** You can attach a local file as background context for Gemini when starting the application by using the `--file` flag:
+
+```bash
+go run ./cmd/gomini --file path/to/your/document.txt
+```
 
 ## 🛠️ Built With
 

@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"time"
+	"flag"
 
 	"github.com/Ikit24/gomini/internal/database"
 	"github.com/Ikit24/gomini/internal/gemini"
@@ -26,7 +27,19 @@ func main() {
 
 	ctx := context.Background()
 
-	aiClient, err := gemini.NewClient(ctx, geminiKey)
+	var fileFlag = flag.String("file", "", "path to a file to attach as a context")
+	flag.Parse()
+
+	var fileContent string
+	if *fileFlag != "" {
+		data, err := os.ReadFile(*fileFlag)
+		if err != nil {
+			log.Fatal("couldn't open file", err)
+		}
+		fileContent = string(data)
+	}
+
+	aiClient, err := gemini.NewClient(ctx, geminiKey, fileContent)
 	if err != nil {
 		log.Fatal("couldn't initialize gemini client", err)
 	}

@@ -10,8 +10,11 @@ import (
 
 type Client struct {
 	genaiClient   *genai.Client
-	model         string
 	genaiSysTools *genai.GenerateContentConfig
+	model         string
+	basePrompt    string
+	personaPrompt string
+	filePrompt    string
 }
 
 type Message struct {
@@ -19,15 +22,33 @@ type Message struct {
 	Content string
 }
 
-func (c *Client) SetPersona(personaText string) {
-	if len(c.genaiSysTools.SystemInstruction.Parts) == 1 {
-		c.genaiSysTools.SystemInstruction.Parts = append(c.genaiSysTools.SystemInstruction.Parts, &genai.Part{Text: personaText})
-	} else {
-		c.genaiSysTools.SystemInstruction.Parts[1] = &genai.Part{Text: personaText}
+func(c *Client) rebuildSystemInstruction() {
+	c.genaiSysTools.SystemInstruction.Parts = []*genai.Part{}
+	if c.basePrompt != "" {
+		c.genaiSysTools.SystemInstruction.Parts = append(
+			c.genaiSysTools.SystemInstruction.Parts,
+			&genai.Part{Text: c.basePrompt})
+	}
+
+	if c.personaPrompt != "" {
+		c.genaiSysTools.SystemInstruction.Parts = append(
+			c.genaiSysTools.SystemInstruction.Parts,
+			&genai.Part{Text: c.personaPrompt})
+	}
+
+	if c.filePrompt != "" {
+		c.genaiSysTools.SystemInstruction.Parts = append(
+			c.genaiSysTools.SystemInstruction.Parts,
+			&genai.Part{Text: c.filePrompt})
 	}
 }
 
-func NewClient(ctx context.Context, apiKey string) (*Client, error) {
+func (c *Client) SetPersona(personaText string) {
+	c.personaPrompt = personaText
+	c.rebuildSystemInstruction()
+}
+
+func NewClient(ctx context.Context, apiKey string, fileContent string) (*Client, error) {
 	c, err := genai.NewClient(ctx, &genai.ClientConfig{
 		APIKey: apiKey,
 	})
@@ -36,22 +57,23 @@ func NewClient(ctx context.Context, apiKey string) (*Client, error) {
 	}
 	//date&time hallucination
 	currentDate := time.Now().Format("01-02-2006")
-	config := &genai.GenerateContentConfig{
-		SystemInstruction: &genai.Content{
-			Parts: []*genai.Part{
-				{Text:"You are a helfpul and thorough assistant in a terminal UI. The current date is: " + currentDate},
-			},
-		},
-		Tools: []*genai.Tool{
-			{GoogleSearch: &genai.GoogleSearch{}},
-		},
-	}
 
-	return &Client{
-		genaiClient:   c,
-		model:         "gemini-2.5-flash",
-		genaiSysTools: config,
-	}, nil
+	client := &Client{
+			genaiClient: c,
+			model:       "gemini-2.5-flash",
+			genaiSysTools: &genai.GenerateContentConfig{
+				SystemInstruction: &genai.Content{},
+				Tools: []*genai.Tool{
+					{GoogleSearch: &genai.GoogleSearch{}},
+				},
+			},
+			basePrompt:  "You are a helpful and thorough assistant in a terminal UI. The current date is: " + currentDate,
+			filePrompt:  fileContent,
+		}
+
+	client.rebuildSystemInstruction()
+
+	return client, nil
 }
 
 func (c *Client) GenerateChatResponse(ctx context.Context, history []Message, newPrompt string) (<-chan string, error) {

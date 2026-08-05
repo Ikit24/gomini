@@ -40,6 +40,7 @@ type Model struct {
 	isThinking      bool
 	showHelp        bool
 	renderer        *glamour.TermRenderer
+	fileContext     string
 }
 
 type appState int
@@ -57,7 +58,7 @@ func InitialModel(db *database.DB, client *gemini.Client, userID uuid.UUID, sess
 
 	ch := make(chan tea.Msg)
 	ta := textarea.New()
-	ta.Placeholder = "Please enter your message or press [ctrl+g] for help"
+	ta.Placeholder = "Ask gomini or press [ctrl+g] for help"
 	ta.Focus()
 	ta.Prompt = ""
 	ta.SetHeight(3)
