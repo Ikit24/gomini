@@ -83,12 +83,12 @@ func (m Model) viewBrowse() string {
 	var chatsHeader, savedChats string
 
 	var chatQuitStyle = lipgloss.NewStyle().
-		Width(40).
+		Width(45).
 		Align(lipgloss.Center).Bold(true)
 
 	var chatInfoStyle = lipgloss.NewStyle().
-		Width(50).
-		Align(lipgloss.Left)
+		Width(70).
+		Align(lipgloss.Center)
 
 	var chatsBoxStyle = lipgloss.NewStyle().
 		Border(lipgloss.RoundedBorder()).
@@ -103,9 +103,9 @@ func (m Model) viewBrowse() string {
 
 	for i, session := range m.pastSessions {
 		if i == m.browseCursor {
-			savedChats += selectedStyle.Render(fmt.Sprintf("->[CreatedAt: %s] Title: %s", session.CreatedAt.Format("02/01/2006"), session.Title)) + "\n"
+			savedChats += selectedStyle.Render(fmt.Sprintf("-> [CreatedAt: %s] Title: %s", session.CreatedAt.Format("02/01/2006"), session.Title)) + "\n"
 		} else {
-			savedChats += unselectedStyle.Render(fmt.Sprintf("  [CreatedAt: %s] Title: %s", session.CreatedAt.Format("02/01/2006"), session.Title)) + "\n"
+			savedChats += unselectedStyle.Render(fmt.Sprintf("   [CreatedAt: %s] Title: %s", session.CreatedAt.Format("02/01/2006"), session.Title)) + "\n"
 		}
 	}
 
@@ -128,6 +128,7 @@ func (m Model) viewWelcome() string {
 		AlignVertical(lipgloss.Center)
 
 	title += formatText(tooltipPrefix, "Welcome to Gomini!\n")
+
 	s += formatText(tooltipPrefix,
 		"Press [ctrl+g] for help.\n\n" +
 		"Press [ctrl+n] to start new chat.\n\n" +
@@ -135,8 +136,6 @@ func (m Model) viewWelcome() string {
 
 	if len(m.pastSessions) > 0 {
 		sessList += formatText(sessListPrefix,"You have " + fmt.Sprint(len(m.pastSessions)) + " previous conversations.")
-	} else {
-		s += formatText(tooltipPrefix, "Press [ctrl+n] to start new chat.")
 	}
 	s += formatText(tooltipPrefix, "\nPress [ctrl+c] to quit.")
 

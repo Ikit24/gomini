@@ -36,11 +36,11 @@ type Model struct {
 	pastSessions    []database.Session
 	browseCursor    int
 	spinner         spinner.Model
+	renderer        *glamour.TermRenderer
+	fileContext     string
 	isLoading       bool
 	isThinking      bool
 	showHelp        bool
-	renderer        *glamour.TermRenderer
-	fileContext     string
 }
 
 type appState int
