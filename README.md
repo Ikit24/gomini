@@ -8,17 +8,22 @@ ____                 _       _
 
 Gomini is a production-ready, terminal-based AI chat application written in Go. It provides a seamless, keyboard-driven interface for conversing with the Gemini AI, with all chat history and sessions persisted locally using SQLite.
 
+## 💡 Motivation
+
+Ever since I learned Go and SQL/SQLite, I became passionate about mastering them while deepening my experience in backend technologies and database management. To push these skills further, I wanted to combine that data foundation with a Terminal User Interface (TUI) to build a faster, keyboard-driven way to interact with an LLM without constantly switching to a browser.
+
 ## 🚀 Features
 
-- **Terminal User Interface (TUI):** Fully interactive, state-driven command-line interface.
-- **Local Session Management:** Automatically saves and organizes all past chats in a local SQLite database.
-- **Interactive History Browser:** Scroll through past sessions and resume conversations instantly.
-- **Live AI Streaming:** Real-time streaming of Gemini AI responses directly to the terminal viewport.
-- **File Context Attachment:** You can attach a local file as background context for Gemini when starting the application by using the `--file` flag:
+ - **Terminal User Interface (TUI):** Fully interactive, state-driven command-line interface.
+ - **Local Session Management:** Automatically saves and organizes all past chats in a local SQLite database.
+ - **Interactive History Browser:** Scroll through past sessions and resume conversations instantly.
+ - **Live AI Streaming:** Real-time streaming of Gemini AI responses directly to the terminal viewport.
+ - **Different Personas:** Choose from different personas: investing, coding & general use.
+ - **File Context Attachment:** You can attach a local file as background context for Gemini when starting the application by using the `--file` flag:
 
-```bash
-go run ./cmd/gomini --file path/to/your/document.txt
-```
+ ```bash
+ go run ./cmd/gomini --file path/to/your/document.txt
+ ```
 
 ## 🛠️ Built With
 
@@ -63,10 +68,10 @@ The project follows a modular Go layout to separate concerns:
 
 ### Installation
 ```bash
-go install [github.com/Ikit24/gomini@latest](https://github.com/Ikit24/gomini@latest)
+go install github.com/Ikit24/gomini@latest
 ```
 
-Running Locally
+### Running Locally
 
 Ensure you have your Gemini API key set in your environment variables, then run:
 ```bash
