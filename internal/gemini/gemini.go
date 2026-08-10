@@ -11,7 +11,8 @@ import (
 type Client struct {
 	genaiClient   *genai.Client
 	genaiSysTools *genai.GenerateContentConfig
-	model         string
+	models        []string
+	modelIndex    int
 	basePrompt    string
 	personaPrompt string
 	filePrompt    string
@@ -48,6 +49,17 @@ func (c *Client) SetPersona(personaText string) {
 	c.rebuildSystemInstruction()
 }
 
+func (c *Client) CycleModel() {
+	c.modelIndex++
+	if c.modelIndex == len(c.models) {
+		c.modelIndex = 0
+	}
+}
+
+func (c *Client) CurrentModel() string {
+	return c.models[c.modelIndex]
+}
+
 func NewClient(ctx context.Context, apiKey string, fileContent string) (*Client, error) {
 	c, err := genai.NewClient(ctx, &genai.ClientConfig{
 		APIKey: apiKey,
@@ -59,8 +71,9 @@ func NewClient(ctx context.Context, apiKey string, fileContent string) (*Client,
 	currentDate := time.Now().Format("01-02-2006")
 
 	client := &Client{
-			genaiClient: c,
-			model:       "gemini-2.5-flash",
+			genaiClient:   c,
+			models:        []string{"gemini-2.5-flash", "gemini-2.5-pro", "gemini-2.5-flash-lite"},
+			modelIndex:    0,
 			genaiSysTools: &genai.GenerateContentConfig{
 				SystemInstruction: &genai.Content{},
 				Tools: []*genai.Tool{
@@ -95,7 +108,7 @@ func (c *Client) GenerateChatResponse(ctx context.Context, history []Message, ne
 	}
 	sdkHistory = append(sdkHistory, newMsg)
 	
-	iter := c.genaiClient.Models.GenerateContentStream(ctx, c.model, sdkHistory, c.genaiSysTools)
+	iter := c.genaiClient.Models.GenerateContentStream(ctx, c.CurrentModel(), sdkHistory, c.genaiSysTools)
 	ch := make(chan string)
 	go func() {
 		defer close(ch)

@@ -20,6 +20,7 @@ Ever since I learned Go and SQL/SQLite, I became passionate about mastering them
  - **Live AI Streaming:** Real-time streaming of Gemini AI responses directly to the terminal viewport.
  - **Different Personas:** Choose from different personas: investing, coding & general use.
  - **File Context Attachment:** You can attach a local file as background context for Gemini when starting the application by using the `--file` flag:
+ - **Dynamic Model Switching:** Cycle through Gemini models (`gemini-2.5-flash`, `gemini-2.5-pro`, etc.) on the fly during an active conversation without resetting chat history.
 
  ```bash
  go run ./cmd/gomini --file path/to/your/document.txt
@@ -63,6 +64,7 @@ The project follows a modular Go layout to separate concerns:
 | **Chat** | `alt+0` | Switch to general-purpose persona, concise, highly readable answers |
 | **Chat** | `alt+1` | Switch to a Socratic coding tutor |
 | **Chat** | `alt+2` | Switch to value investor persona by the rules of Benjamin Graham and Warren Buffett |
+| **Chat** | `ctrl+t` | Cycle through available Gemini models |
 
 ## 🛠️ Getting Started
 

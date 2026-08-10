@@ -173,10 +173,11 @@ func (m Model) viewChat() string {
         Align(lipgloss.Left).
         Foreground(lipgloss.Color("#18ffa2"))
 
-    personaText := personaStyle.Render(m.activePersona)
     statusMsgText := statusStyle.Render(m.statusMessage)
+	combinedLeft := fmt.Sprintf("%s | %s", m.activePersona, m.geminiClient.CurrentModel())
+	combinedLeftText := personaStyle.Render(combinedLeft)
 
-    statusBar := lipgloss.JoinHorizontal(lipgloss.Top, personaText, statusMsgText)
+    statusBar := lipgloss.JoinHorizontal(lipgloss.Top, combinedLeftText, statusMsgText)
 
     UI += statusBar
 

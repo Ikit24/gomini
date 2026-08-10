@@ -166,6 +166,10 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 			return m, nil
 
+		case "ctrl+t":
+			m.geminiClient.CycleModel()
+			return m, nil
+
 		case "ctrl+y":
 			//extract code only
 			return m.copyMsgFromResponse(true)
