@@ -1,6 +1,7 @@
 package gemini
 
 import (
+	"errors"
 	"strings"
 	"time"
 	"context"
@@ -67,6 +68,7 @@ func NewClient(ctx context.Context, apiKey string, fileContent string) (*Client,
 	if err != nil {
 		return nil, err
 	}
+
 	//date&time hallucination
 	currentDate := time.Now().Format("01-02-2006")
 
@@ -90,6 +92,7 @@ func NewClient(ctx context.Context, apiKey string, fileContent string) (*Client,
 }
 
 func (c *Client) GenerateChatResponse(ctx context.Context, history []Message, newPrompt string) (<-chan string, error) {
+	var apiErr *genai.APIError
 	sdkHistory := make([]*genai.Content, 0, len(history)+1)
 	for _, msg := range history {
 		if strings.TrimSpace(msg.Content) == "" {
@@ -115,6 +118,26 @@ func (c *Client) GenerateChatResponse(ctx context.Context, history []Message, ne
 		for resp, err := range iter {
 			if err != nil {
 				fmt.Println("couldn't stream data", err)
+				//fallback model logic
+				if errors.As(err, &apiErr) {
+					if apiErr.Code == 429 || apiErr.Code == 503 {
+						c.modelIndex = 0
+						newIter := c.genaiClient.Models.GenerateContentStream(ctx, c.CurrentModel(), sdkHistory, c.genaiSysTools)
+						for newResp, err := range newIter {
+							if err != nil {
+								fmt.Println("couldn't stream data", err)
+								return
+							}
+							if len(newResp.Candidates) > 0 && newResp.Candidates[0].Content != nil {
+								for _, part := range newResp.Candidates[0].Content.Parts {
+									if part.Text != "" {
+										ch <- part.Text
+									}
+								}
+							}
+						}
+					}
+				}
 				return
 			}
 			if len(resp.Candidates) > 0 && resp.Candidates[0].Content != nil {

@@ -72,6 +72,7 @@ func (m Model) helpView() string {
 		"[alt+2] Switch to value investor by the rules of B. Graham and W. Buffett.\n\n" +
 		"[ctrl+c] Quit application.\n\n" +
 		"[ctrl+d] Delete selected sessions Warning!!! This is instant and cannot be reversed.\n\n" +
+		"[ctrl+t] Cycle through models.\n\n" +
 		"You can use navigation when in a session,for ex. using [ctrl+b] will return you to the session list.\n\n"
 
 	help = helpInfoStyle.Render(help)
