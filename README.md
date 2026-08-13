@@ -78,5 +78,15 @@ go install github.com/Ikit24/gomini@latest
 Ensure you have your Gemini API key set in your environment variables, then run:
 ```bash
 export GEMINI_API_KEY="your_api_key_here"
-go run ./cmd/gomini/main.go
+```
+Setup your .env file based on your OS:
+- Linux: ~/.config/gomini/.env
+
+- macOS: ~/Library/Application Support/gomini/.env
+
+- Windows: %APPDATA%\gomini\.env
+
+- In the terminal type:
+```bash
+gomini
 ```

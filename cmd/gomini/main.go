@@ -8,6 +8,7 @@ import (
 	"os"
 	"time"
 	"flag"
+	"path/filepath"
 
 	"github.com/Ikit24/gomini/internal/database"
 	"github.com/Ikit24/gomini/internal/gemini"
@@ -18,11 +19,26 @@ import (
 )
 
 func main() {
-	_ = godotenv.Load()
+	// 1. Try to find the OS-specific config folder
+	configDir, err := os.UserConfigDir()
+	if err != nil {
+		log.Fatalf("Could not find user config directory: %v", err)
+	}
 
+	// 2. Define the app's config directory and ensure it exists
+	appConfigDir := filepath.Join(configDir, "gomini")
+	if err := os.MkdirAll(appConfigDir, 0755); err != nil {
+		log.Fatalf("Failed to create config directory: %v", err)
+	}
+
+	// 3. Construct path for the .env file and attempt to load it
+	envPath := filepath.Join(appConfigDir, ".env")
+	_ = godotenv.Load(envPath)
+
+	// 4. Now grab the key, whether it came from the .env file or the system environment
 	geminiKey := os.Getenv("GEMINI_API_KEY")
 	if geminiKey == "" {
-		log.Fatal("GEMINI_API_KEY missing")
+		log.Fatal("GEMINI_API_KEY missing. Please set it in your environment or ~/.config/gomini/.env")
 	}
 
 	ctx := context.Background()
@@ -44,7 +60,7 @@ func main() {
 		log.Fatal("couldn't initialize gemini client", err)
 	}
 
-	const dbPath = "gomini.db"
+	dbPath := filepath.Join(appConfigDir, "gomini.db")
 	db, err := database.Open(dbPath)
 	if err != nil {
 		log.Fatal("couldn't open database", err)
@@ -52,7 +68,7 @@ func main() {
 	defer db.Close()
 
 	if err := db.PurgeEmptyMessages(); err != nil {
-		log.Printf("warning: Failed to auto-purge empty messages from the database: v%", err)
+		log.Printf("warning: Failed to auto-purge empty messages from the database: %v", err)
 	}
 
 	servr := handlers.NewServer(db, aiClient)
