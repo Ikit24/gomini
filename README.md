@@ -12,6 +12,37 @@ Gomini is a production-ready, terminal-based AI chat application written in Go. 
 
 Ever since I learned Go and SQL/SQLite, I became passionate about mastering them while deepening my experience in backend technologies and database management. To push these skills further, I wanted to combine that data foundation with a Terminal User Interface (TUI) to build a faster, keyboard-driven way to interact with an LLM without constantly switching to a browser.
 
+## 🛠️ Getting Started
+
+### Installation
+ ```bash
+ go install github.com/Ikit24/gomini@latest
+ ```
+
+### Running Locally
+
+ Ensure you have your Gemini API key set in your environment variables, then run:
+ ```bash
+ export GEMINI_API_KEY="your_api_key_here"
+ ```
+ Setup your .env file based on your OS:
+ - Linux:
+ ```bash
+ ~/.config/gomini/.env
+ ```
+ - macOS:
+ ```bash
+ ~/Library/Application Support/gomini/.env
+ ```
+ - Windows:
+ ```bash
+ %APPDATA%\gomini\.env
+ ```
+ - In the terminal type:
+ ```bash
+ gomini
+ ```
+
 ## 🚀 Features
 
  - **Terminal User Interface (TUI):** Fully interactive, state-driven command-line interface.
@@ -25,14 +56,6 @@ Ever since I learned Go and SQL/SQLite, I became passionate about mastering them
  ```bash
  go run ./cmd/gomini --file path/to/your/document.txt
  ```
-
-## 🛠️ Built With
-
-* [Go](https://go.dev/) - Core language
-* [Bubble Tea](https://github.com/charmbracelet/bubbletea) - TUI framework (Elm architecture)
-* [Lip Gloss](https://github.com/charmbracelet/lipgloss) - Terminal styling and layout engine
-* [Bubbles](https://github.com/charmbracelet/bubbles) - TUI components (viewport, text input, spinner)
-* [Google GenAI SDK](https://github.com/google/generative-ai-go) - Gemini API integration
 
 ## 📁 Project Structure
 
@@ -66,27 +89,10 @@ The project follows a modular Go layout to separate concerns:
 | **Chat** | `alt+2` | Switch to value investor persona by the rules of Benjamin Graham and Warren Buffett |
 | **Chat** | `ctrl+t` | Cycle through available Gemini models |
 
-## 🛠️ Getting Started
+## 🛠️ Built With
 
-### Installation
-```bash
-go install github.com/Ikit24/gomini@latest
-```
-
-### Running Locally
-
-Ensure you have your Gemini API key set in your environment variables, then run:
-```bash
-export GEMINI_API_KEY="your_api_key_here"
-```
-Setup your .env file based on your OS:
-- Linux: ~/.config/gomini/.env
-
-- macOS: ~/Library/Application Support/gomini/.env
-
-- Windows: %APPDATA%\gomini\.env
-
-- In the terminal type:
-```bash
-gomini
-```
+* [Go](https://go.dev/) - Core language
+* [Bubble Tea](https://github.com/charmbracelet/bubbletea) - TUI framework (Elm architecture)
+* [Lip Gloss](https://github.com/charmbracelet/lipgloss) - Terminal styling and layout engine
+* [Bubbles](https://github.com/charmbracelet/bubbles) - TUI components (viewport, text input, spinner)
+* [Google GenAI SDK](https://github.com/google/generative-ai-go) - Gemini API integration
