@@ -1,7 +1,6 @@
 <div align="center">
   <img src="assets/logo.svg" alt="gomini logo" width="120" height="auto" />
   <h1>gomini</h1>
-  <p>A location-agnostic Go CLI application</p>
   <br />
 </div>
 
