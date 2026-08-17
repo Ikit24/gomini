@@ -10,14 +10,14 @@ Gomini is a production-ready, terminal-based AI chat application written in Go. 
 
 Ever since I learned Go and SQL/SQLite, I became passionate about mastering them while deepening my experience in backend technologies and database management. To push these skills further, I wanted to combine that data foundation with a Terminal User Interface (TUI) to build a faster, keyboard-driven way to interact with an LLM without constantly switching to a browser.
 
-## 🛠️ Getting Started
+## 🛠️ Quickstart
 
 ### Installation
  ```bash
  go install github.com/Ikit24/gomini@latest
  ```
 
-### Running Locally
+### Usage
 
  Ensure you have your Gemini API key set in your environment variables, then run:
  ```bash
@@ -87,7 +87,7 @@ The project follows a modular Go layout to separate concerns:
 | **Chat** | `alt+2` | Switch to value investor persona by the rules of Benjamin Graham and Warren Buffett |
 | **Chat** | `ctrl+t` | Cycle through available Gemini models |
 
-## 🛠️ Built With
+## 🛠️ Contributing
 
 * [Go](https://go.dev/) - Core language
 * [Bubble Tea](https://github.com/charmbracelet/bubbletea) - TUI framework (Elm architecture)
