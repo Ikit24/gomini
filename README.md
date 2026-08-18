@@ -10,7 +10,7 @@ Gomini is a production-ready, terminal-based AI chat application written in Go. 
 
 Ever since I learned Go and SQL/SQLite, I became passionate about mastering them while deepening my experience in backend technologies and database management. To push these skills further, I wanted to combine that data foundation with a Terminal User Interface (TUI) to build a faster, keyboard-driven way to interact with an LLM without constantly switching to a browser.
 
-## 🛠️ Quickstart
+## 🛠️ Quick Start
 
 ### Installation
  ```bash
