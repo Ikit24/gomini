@@ -5,7 +5,6 @@ import (
 	"strings"
 	"time"
 	"context"
-	"fmt"
 	"google.golang.org/genai"
 )
 
@@ -117,7 +116,7 @@ func (c *Client) GenerateChatResponse(ctx context.Context, history []Message, ne
 		defer close(ch)
 		for resp, err := range iter {
 			if err != nil {
-				fmt.Println("couldn't stream data", err)
+				ch <- err.Error()
 				//fallback model logic
 				if errors.As(err, &apiErr) {
 					if apiErr.Code == 429 || apiErr.Code == 503 {
@@ -125,8 +124,8 @@ func (c *Client) GenerateChatResponse(ctx context.Context, history []Message, ne
 						newIter := c.genaiClient.Models.GenerateContentStream(ctx, c.CurrentModel(), sdkHistory, c.genaiSysTools)
 						for newResp, err := range newIter {
 							if err != nil {
-								fmt.Println("couldn't stream data", err)
-								return
+								ch <- err.Error()
+								return err
 							}
 							if len(newResp.Candidates) > 0 && newResp.Candidates[0].Content != nil {
 								for _, part := range newResp.Candidates[0].Content.Parts {
