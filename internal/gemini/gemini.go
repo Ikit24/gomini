@@ -125,7 +125,7 @@ func (c *Client) GenerateChatResponse(ctx context.Context, history []Message, ne
 						for newResp, err := range newIter {
 							if err != nil {
 								ch <- err.Error()
-								return err
+								return
 							}
 							if len(newResp.Candidates) > 0 && newResp.Candidates[0].Content != nil {
 								for _, part := range newResp.Candidates[0].Content.Parts {
@@ -133,6 +133,8 @@ func (c *Client) GenerateChatResponse(ctx context.Context, history []Message, ne
 										ch <- part.Text
 									}
 								}
+							} else if len(newResp.Candidates) > 0 {
+								ch <- fmt.Sprintf("%v", newResp.Candidates[0].FinishReason)
 							}
 						}
 					}
@@ -143,7 +145,10 @@ func (c *Client) GenerateChatResponse(ctx context.Context, history []Message, ne
 				for _, part := range resp.Candidates[0].Content.Parts {
 					if part.Text != "" {
 						ch <- part.Text
+					} else if len(resp.Candidates) > 0 && resp.Candidates[0].Content == nil{
+						ch <- fmt.Sprintf("%v", resp.Candidates[0].FinishReason)
 					}
+
 				}
 			}
 		}
