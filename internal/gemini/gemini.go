@@ -1,6 +1,7 @@
 package gemini
 
 import (
+	"os"
 	"fmt"
 	"errors"
 	"strings"
@@ -74,7 +75,7 @@ func NewClient(ctx context.Context, apiKey string, fileContent string) (*Client,
 
 	client := &Client{
 			genaiClient:   c,
-			models:        []string{"gemini-2.5-flash", "gemini-2.5-pro", "gemini-2.5-flash-lite"},
+			models:        []string{"gemini-2.5-flash", "gemini-3.1-pro-preview", "gemini-3.5-flash-lite"},
 			modelIndex:    0,
 			genaiSysTools: &genai.GenerateContentConfig{
 				SystemInstruction: &genai.Content{},
@@ -89,6 +90,18 @@ func NewClient(ctx context.Context, apiKey string, fileContent string) (*Client,
 	client.rebuildSystemInstruction()
 
 	return client, nil
+}
+
+func processResponse (ch chan string, resp *genai.GenerateContentResponse) {
+	if len(resp.Candidates) > 0 && resp.Candidates[0].Content != nil {
+		for _, part := range resp.Candidates[0].Content.Parts {
+			if part.Text != "" {
+				ch <- part.Text
+			}
+		}
+	} else if len(resp.Candidates) > 0 && resp.Candidates[0].Content == nil{
+		ch <- fmt.Sprintf("%v", resp.Candidates[0].FinishReason)
+	}
 }
 
 func (c *Client) GenerateChatResponse(ctx context.Context, history []Message, newPrompt string) (<-chan string, error) {
@@ -117,41 +130,27 @@ func (c *Client) GenerateChatResponse(ctx context.Context, history []Message, ne
 		defer close(ch)
 		for resp, err := range iter {
 			if err != nil {
-				ch <- err.Error()
+				f, _ := os.OpenFile("debug.log", os.O_APPEND | os.O_CREATE | os.O_WRONLY, 0644)
+				f.WriteString(err.Error() + "\n")
+				f.Close()
+
 				//fallback model logic
-				if errors.As(err, &apiErr) {
-					if apiErr.Code == 429 || apiErr.Code == 503 {
-						c.modelIndex = 0
-						newIter := c.genaiClient.Models.GenerateContentStream(ctx, c.CurrentModel(), sdkHistory, c.genaiSysTools)
-						for newResp, err := range newIter {
-							if err != nil {
-								ch <- err.Error()
-								return
-							}
-							if len(newResp.Candidates) > 0 && newResp.Candidates[0].Content != nil {
-								for _, part := range newResp.Candidates[0].Content.Parts {
-									if part.Text != "" {
-										ch <- part.Text
-									}
-								}
-							} else if len(newResp.Candidates) > 0 {
-								ch <- fmt.Sprintf("%v", newResp.Candidates[0].FinishReason)
-							}
+				if errors.As(err, &apiErr) && (apiErr.Code == 429 || apiErr.Code == 503 || apiErr.Code == 404) {
+					c.modelIndex = 0
+					newIter := c.genaiClient.Models.GenerateContentStream(ctx, c.CurrentModel(), sdkHistory, c.genaiSysTools)
+					for newResp, err := range newIter {
+						if err != nil {
+							ch <- err.Error()
+							return
 						}
+						processResponse(ch, newResp)
 					}
+				} else {
+					ch <- err.Error()
 				}
 				return
 			}
-			if len(resp.Candidates) > 0 && resp.Candidates[0].Content != nil {
-				for _, part := range resp.Candidates[0].Content.Parts {
-					if part.Text != "" {
-						ch <- part.Text
-					} else if len(resp.Candidates) > 0 && resp.Candidates[0].Content == nil{
-						ch <- fmt.Sprintf("%v", resp.Candidates[0].FinishReason)
-					}
-
-				}
-			}
+			processResponse(ch, resp)
 		}
 	}()
 
