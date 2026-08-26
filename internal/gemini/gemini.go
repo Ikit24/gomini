@@ -75,7 +75,7 @@ func NewClient(ctx context.Context, apiKey string, fileContent string) (*Client,
 
 	client := &Client{
 			genaiClient:   c,
-			models:        []string{"gemini-2.5-flash", "gemini-3.1-pro-preview", "gemini-3.5-flash-lite"},
+			models:        []string{"gemini-2.5-flash", "gemini-3.5-flash-lite", "gemini-3.1-pro-preview"},
 			modelIndex:    0,
 			genaiSysTools: &genai.GenerateContentConfig{
 				SystemInstruction: &genai.Content{},
@@ -106,6 +106,7 @@ func processResponse (ch chan string, resp *genai.GenerateContentResponse) {
 
 func (c *Client) GenerateChatResponse(ctx context.Context, history []Message, newPrompt string) (<-chan string, error) {
 	var apiErr *genai.APIError
+
 	sdkHistory := make([]*genai.Content, 0, len(history)+1)
 	for _, msg := range history {
 		if strings.TrimSpace(msg.Content) == "" {
@@ -124,34 +125,36 @@ func (c *Client) GenerateChatResponse(ctx context.Context, history []Message, ne
 	}
 	sdkHistory = append(sdkHistory, newMsg)
 	
-	iter := c.genaiClient.Models.GenerateContentStream(ctx, c.CurrentModel(), sdkHistory, c.genaiSysTools)
 	ch := make(chan string)
 	go func() {
 		defer close(ch)
-		for resp, err := range iter {
-			if err != nil {
-				f, _ := os.OpenFile("debug.log", os.O_APPEND | os.O_CREATE | os.O_WRONLY, 0644)
-				f.WriteString(err.Error() + "\n")
-				f.Close()
-
-				//fallback model logic
-				if errors.As(err, &apiErr) && (apiErr.Code == 429 || apiErr.Code == 503 || apiErr.Code == 404) {
-					c.modelIndex = 0
-					newIter := c.genaiClient.Models.GenerateContentStream(ctx, c.CurrentModel(), sdkHistory, c.genaiSysTools)
-					for newResp, err := range newIter {
-						if err != nil {
-							ch <- err.Error()
-							return
-						}
-						processResponse(ch, newResp)
-					}
-				} else {
-					ch <- err.Error()
+		var streamErr error
+		for attempt := 0; attempt < len(c.models); attempt++ {
+			iter := c.genaiClient.Models.GenerateContentStream(ctx, c.CurrentModel(), sdkHistory, c.genaiSysTools)
+	
+			for resp, err := range iter {
+				if err != nil {
+					f, _ := os.OpenFile("debug.log", os.O_APPEND | os.O_CREATE | os.O_WRONLY, 0644)
+					f.WriteString(err.Error() + "\n")
+					f.Close()
+					streamErr = err
+					break
 				}
+				processResponse(ch, resp)
+			}
+			if streamErr == nil {
+				//whole response streamed successfully
 				return
 			}
-			processResponse(ch, resp)
+			//fallback model logic
+			if errors.As(streamErr, &apiErr) && (apiErr.Code == 429 || apiErr.Code == 503 || apiErr.Code == 404) {
+				c.CycleModel()
+			} else {
+				ch <- streamErr.Error()
+				return
+			}
 		}
+		ch <- streamErr.Error()
 	}()
 
 	return ch, nil
