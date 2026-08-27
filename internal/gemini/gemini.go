@@ -75,7 +75,7 @@ func NewClient(ctx context.Context, apiKey string, fileContent string) (*Client,
 
 	client := &Client{
 			genaiClient:   c,
-			models:        []string{"gemini-2.5-flash", "gemini-3.5-flash-lite", "gemini-3.1-pro-preview"},
+			models:        []string{"gemini-3.6-flash", "gemini-3.5-flash-lite", "gemini-3.1-pro-preview"},
 			modelIndex:    0,
 			genaiSysTools: &genai.GenerateContentConfig{
 				SystemInstruction: &genai.Content{},
@@ -128,22 +128,27 @@ func (c *Client) GenerateChatResponse(ctx context.Context, history []Message, ne
 	ch := make(chan string)
 	go func() {
 		defer close(ch)
+
 		var streamErr error
 		for attempt := 0; attempt < len(c.models); attempt++ {
+			streamErr = nil
+
 			iter := c.genaiClient.Models.GenerateContentStream(ctx, c.CurrentModel(), sdkHistory, c.genaiSysTools)
 	
 			for resp, err := range iter {
 				if err != nil {
-					f, _ := os.OpenFile("debug.log", os.O_APPEND | os.O_CREATE | os.O_WRONLY, 0644)
-					f.WriteString(err.Error() + "\n")
-					f.Close()
 					streamErr = err
+					f, _ := os.OpenFile("debug.log", os.O_APPEND | os.O_CREATE | os.O_WRONLY, 0644)
+					f.WriteString(fmt.Sprintf("Error Type: %T | Error: %v\n", streamErr, streamErr))
+					f.Close()
+
 					break
 				}
 				processResponse(ch, resp)
 			}
 			if streamErr == nil {
 				//whole response streamed successfully
+				c.modelIndex = 0
 				return
 			}
 			//fallback model logic
@@ -154,7 +159,9 @@ func (c *Client) GenerateChatResponse(ctx context.Context, history []Message, ne
 				return
 			}
 		}
-		ch <- streamErr.Error()
+		if streamErr != nil {
+			ch <- streamErr.Error()
+		}
 	}()
 
 	return ch, nil
