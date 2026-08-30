@@ -75,7 +75,7 @@ func NewClient(ctx context.Context, apiKey string, fileContent string) (*Client,
 
 	client := &Client{
 			genaiClient:   c,
-			models:        []string{"gemini-3.6-flash", "gemini-3.5-flash-lite", "gemini-3.1-pro-preview"},
+			models:        []string{"gemini-2.5-flash", "gemini-3.5-flash-lite"},
 			modelIndex:    0,
 			genaiSysTools: &genai.GenerateContentConfig{
 				SystemInstruction: &genai.Content{},
@@ -105,7 +105,7 @@ func processResponse (ch chan string, resp *genai.GenerateContentResponse) {
 }
 
 func (c *Client) GenerateChatResponse(ctx context.Context, history []Message, newPrompt string) (<-chan string, error) {
-	var apiErr *genai.APIError
+	var apiErr genai.APIError
 
 	sdkHistory := make([]*genai.Content, 0, len(history)+1)
 	for _, msg := range history {
@@ -139,7 +139,7 @@ func (c *Client) GenerateChatResponse(ctx context.Context, history []Message, ne
 				if err != nil {
 					streamErr = err
 					f, _ := os.OpenFile("debug.log", os.O_APPEND | os.O_CREATE | os.O_WRONLY, 0644)
-					f.WriteString(fmt.Sprintf("Error Type: %T | Error: %v\n", streamErr, streamErr))
+					f.WriteString(fmt.Sprintf("Model: %s | Error Type: %T | Error: %v\n", c.CurrentModel, streamErr, streamErr))
 					f.Close()
 
 					break
