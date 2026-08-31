@@ -153,6 +153,7 @@ func (c *Client) GenerateChatResponse(ctx context.Context, history []Message, ne
 			}
 			//fallback model logic
 			if errors.As(streamErr, &apiErr) && (apiErr.Code == 429 || apiErr.Code == 503 || apiErr.Code == 404) {
+				time.Sleep(2 * time.Second)
 				c.CycleModel()
 			} else {
 				ch <- streamErr.Error()
