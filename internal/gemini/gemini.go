@@ -138,9 +138,11 @@ func (c *Client) GenerateChatResponse(ctx context.Context, history []Message, ne
 			for resp, err := range iter {
 				if err != nil {
 					streamErr = err
-					f, _ := os.OpenFile("debug.log", os.O_APPEND | os.O_CREATE | os.O_WRONLY, 0644)
-					f.WriteString(fmt.Sprintf("Model: %s | Error Type: %T | Error: %v\n", c.CurrentModel, streamErr, streamErr))
-					f.Close()
+					f, err := os.OpenFile("debug.log", os.O_APPEND | os.O_CREATE | os.O_WRONLY, 0644)
+					if err == nil {
+						f.WriteString(fmt.Sprintf("Model: %s | Error Type: %T | Error: %v\n", c.CurrentModel(), streamErr, streamErr))
+						f.Close()
+					}
 
 					break
 				}
