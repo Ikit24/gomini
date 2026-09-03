@@ -75,7 +75,11 @@ func NewClient(ctx context.Context, apiKey string, fileContent string) (*Client,
 
 	client := &Client{
 			genaiClient:   c,
-			models:        []string{"gemini-2.5-flash", "gemini-3.5-flash-lite"},
+			models:        []string{
+				"gemini-2.5-flash",
+				"gemini-3.5-flash-lite",
+				"gemini-3.1-pro-preview",
+			},
 			modelIndex:    0,
 			genaiSysTools: &genai.GenerateContentConfig{
 				SystemInstruction: &genai.Content{},
