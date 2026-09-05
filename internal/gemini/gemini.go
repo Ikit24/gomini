@@ -69,6 +69,14 @@ func NewClient(ctx context.Context, apiKey string, fileContent string) (*Client,
 	if err != nil {
 		return nil, err
 	}
+	// Temporary check to inspect what your specific API key can see
+    //resp, err := c.Models.List(ctx, nil)
+    //if err != nil {
+    //    return nil, fmt.Errorf("failed to list models: %w", err)
+    //}
+    //for _, m := range resp.Items {
+    //   fmt.Printf("Authorized Model -> Name: %s\n", m.Name)
+    //}
 
 	//date&time hallucination
 	currentDate := time.Now().Format("01-02-2006")
@@ -77,15 +85,15 @@ func NewClient(ctx context.Context, apiKey string, fileContent string) (*Client,
 			genaiClient:   c,
 			models:        []string{
 				"gemini-2.5-flash",
-				"gemini-3.5-flash-lite",
-				"gemini-3.1-pro-preview",
+				"gemini-3.1-flash-lite",
+				"gemini-3.8-flash",
 			},
 			modelIndex:    0,
 			genaiSysTools: &genai.GenerateContentConfig{
 				SystemInstruction: &genai.Content{},
-				Tools: []*genai.Tool{
-					{GoogleSearch: &genai.GoogleSearch{}},
-				},
+				//Tools: []*genai.Tool{
+				//	{GoogleSearch: &genai.GoogleSearch{}},
+				//},
 			},
 			basePrompt:  "You are a helpful and thorough assistant in a terminal UI. The current date is: " + currentDate,
 			filePrompt:  fileContent,
@@ -147,7 +155,6 @@ func (c *Client) GenerateChatResponse(ctx context.Context, history []Message, ne
 						f.WriteString(fmt.Sprintf("Model: %s | Error Type: %T | Error: %v\n", c.CurrentModel(), streamErr, streamErr))
 						f.Close()
 					}
-
 					break
 				}
 				processResponse(ch, resp)
