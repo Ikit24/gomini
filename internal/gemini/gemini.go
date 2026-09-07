@@ -8,16 +8,19 @@ import (
 	"time"
 	"context"
 	"google.golang.org/genai"
+	"sync"
 )
 
 type Client struct {
-	genaiClient   *genai.Client
-	genaiSysTools *genai.GenerateContentConfig
-	models        []string
-	modelIndex    int
-	basePrompt    string
-	personaPrompt string
-	filePrompt    string
+	genaiClient     *genai.Client
+	mu              sync.RWMutex
+	genaiSysTools   *genai.GenerateContentConfig
+	models          []string
+	preferredModel  string
+	fallbackChain   []string
+	basePrompt      string
+	personaPrompt   string
+	filePrompt      string
 }
 
 type Message struct {
@@ -51,6 +54,18 @@ func (c *Client) SetPersona(personaText string) {
 	c.rebuildSystemInstruction()
 }
 
+func (c *Client) SetModel(model string) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	c.preferredModel = model
+}
+
+func (c *Client) CurrentModel() string {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	return c.preferredModel
+}
+//fix manual model cycling
 func (c *Client) CycleModel() {
 	c.modelIndex++
 	if c.modelIndex == len(c.models) {
@@ -58,8 +73,18 @@ func (c *Client) CycleModel() {
 	}
 }
 
-func (c *Client) CurrentModel() string {
-	return c.models[c.modelIndex]
+func (c *Client) attemptOrder() []string {
+	c.mu.RLock()
+	preferred := c.preferredModel
+	c.mu.RUnlock()
+
+	order := []string{preferred}
+	for _, m := range c.fallbackChain {
+		if m != preferred {
+			order = append(order, m)
+		}
+	}
+	return order
 }
 
 func NewClient(ctx context.Context, apiKey string, fileContent string) (*Client, error) {
@@ -83,17 +108,13 @@ func NewClient(ctx context.Context, apiKey string, fileContent string) (*Client,
 
 	client := &Client{
 			genaiClient:   c,
-			models:        []string{
-				"gemini-2.5-flash",
-				"gemini-3.1-flash-lite",
-				"gemini-3.8-flash",
-			},
-			modelIndex:    0,
+			preferredModel: "gemini-2.5-flash",
+			fallbackChain: []string{"gemini-3.1-flash-lite", "gemini-3.8-flash"},
 			genaiSysTools: &genai.GenerateContentConfig{
 				SystemInstruction: &genai.Content{},
-				//Tools: []*genai.Tool{
-				//	{GoogleSearch: &genai.GoogleSearch{}},
-				//},
+				Tools: []*genai.Tool{
+					{GoogleSearch: &genai.GoogleSearch{}},
+				},
 			},
 			basePrompt:  "You are a helpful and thorough assistant in a terminal UI. The current date is: " + currentDate,
 			filePrompt:  fileContent,
@@ -140,37 +161,40 @@ func (c *Client) GenerateChatResponse(ctx context.Context, history []Message, ne
 	ch := make(chan string)
 	go func() {
 		defer close(ch)
-
+		order := c.attemptOrder()
 		var streamErr error
-		for attempt := 0; attempt < len(c.models); attempt++ {
-			streamErr = nil
 
-			iter := c.genaiClient.Models.GenerateContentStream(ctx, c.CurrentModel(), sdkHistory, c.genaiSysTools)
+		for attempt := 0; attempt < len(order); attempt++ {
+			model := order[attempt]
+			streamErr = nil
+			iter := c.genaiClient.Models.GenerateContentStream(ctx, model, sdkHistory, c.genaiSysTools)
 	
 			for resp, err := range iter {
 				if err != nil {
 					streamErr = err
-					f, err := os.OpenFile("debug.log", os.O_APPEND | os.O_CREATE | os.O_WRONLY, 0644)
-					if err == nil {
-						f.WriteString(fmt.Sprintf("Model: %s | Error Type: %T | Error: %v\n", c.CurrentModel(), streamErr, streamErr))
+					f, ferr := os.OpenFile("debug.log", os.O_APPEND | os.O_CREATE | os.O_WRONLY, 0644)
+					//check on this ferr
+					if ferr == nil {
+						f.WriteString(fmt.Sprintf("Model: %s | Error Type: %T | Error: %v\n", model, streamErr, streamErr))
 						f.Close()
 					}
 					break
 				}
 				processResponse(ch, resp)
 			}
+
 			if streamErr == nil {
 				//whole response streamed successfully
-				c.modelIndex = 0
 				return
 			}
+
 			//fallback model logic
 			if errors.As(streamErr, &apiErr) && (apiErr.Code == 429 || apiErr.Code == 503 || apiErr.Code == 404) {
 				select {
 				case <- ctx.Done():
 					return
 				case <- time.After(2 * time.Second):
-					c.CycleModel()
+					fmt.Sprintf("falling back from %s to %s after error: %v", model, order[attempt+1], streamErr)
 				}
 			} else {
 				ch <- streamErr.Error()
