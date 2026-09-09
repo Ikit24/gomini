@@ -16,6 +16,7 @@ type Client struct {
 	mu              sync.RWMutex
 	genaiSysTools   *genai.GenerateContentConfig
 	models          []string
+	modelIndex      int
 	preferredModel  string
 	fallbackChain   []string
 	basePrompt      string
@@ -54,23 +55,33 @@ func (c *Client) SetPersona(personaText string) {
 	c.rebuildSystemInstruction()
 }
 
-func (c *Client) SetModel(model string) {
+func (c *Client) setModel(model string) {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	c.preferredModel = model
 }
 
 func (c *Client) CurrentModel() string {
-	c.mu.Lock()
-	defer c.mu.Unlock()
+	c.mu.RLock()
+	defer c.mu.RUnlock()
 	return c.preferredModel
 }
-//fix manual model cycling
+
 func (c *Client) CycleModel() {
-	c.modelIndex++
-	if c.modelIndex == len(c.models) {
-		c.modelIndex = 0
+	//c.mu.RLock()
+	current := c.preferredModel
+	//defer c.mu.RUnlock()
+
+	currentIndex := -1
+	for i, m := range c.models {
+		if m == current {
+			currentIndex = i
+			break
+		}
 	}
+
+	nextIndex := (currentIndex + 1) % len(c.models)
+	c.setModel(c.models[nextIndex])
 }
 
 func (c *Client) attemptOrder() []string {
@@ -107,10 +118,11 @@ func NewClient(ctx context.Context, apiKey string, fileContent string) (*Client,
 	currentDate := time.Now().Format("01-02-2006")
 
 	client := &Client{
-			genaiClient:   c,
+			genaiClient:    c,
 			preferredModel: "gemini-2.5-flash",
-			fallbackChain: []string{"gemini-3.1-flash-lite", "gemini-3.8-flash"},
-			genaiSysTools: &genai.GenerateContentConfig{
+			models:         []string{"gemini-3.8-flash", "gemini-3.1-flash-lite", "gemini-2.5-flash"},
+			fallbackChain:  []string{"gemini-3.1-flash-lite", "gemini-3.8-flash"},
+			genaiSysTools:  &genai.GenerateContentConfig{
 				SystemInstruction: &genai.Content{},
 				Tools: []*genai.Tool{
 					{GoogleSearch: &genai.GoogleSearch{}},
