@@ -195,8 +195,8 @@ func (c *Client) GenerateChatResponse(ctx context.Context, history []Message, ne
 				processResponse(ch, resp)
 			}
 
+			//whole response streamed successfully
 			if streamErr == nil {
-				//whole response streamed successfully
 				return
 			}
 
@@ -206,8 +206,12 @@ func (c *Client) GenerateChatResponse(ctx context.Context, history []Message, ne
 				case <- ctx.Done():
 					return
 				case <- time.After(2 * time.Second):
-					fmt.Sprintf("falling back from %s to %s after error: %v", model, order[attempt+1], streamErr)
-				}
+					if attempt+1 < len(order) {
+						fmt.Sprintf("falling back from %s to %s after error: %v", model, order[attempt+1], streamErr)
+					} else {
+						fmt.Sprintf("out of fallback models, giving up after error: %v", streamErr)
+					}
+			}
 			} else {
 				ch <- streamErr.Error()
 				return
