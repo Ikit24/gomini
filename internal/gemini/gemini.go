@@ -90,7 +90,7 @@ func (c *Client) attemptOrder() []string {
 	c.mu.RUnlock()
 
 	order := []string{preferred}
-	for _, m := range c.fallbackChain {
+	for _, m := range c.models {
 		if m != preferred {
 			order = append(order, m)
 		}
@@ -211,7 +211,7 @@ func (c *Client) GenerateChatResponse(ctx context.Context, history []Message, ne
 					} else {
 						fmt.Sprintf("out of fallback models, giving up after error: %v", streamErr)
 					}
-			}
+				}
 			} else {
 				ch <- streamErr.Error()
 				return
