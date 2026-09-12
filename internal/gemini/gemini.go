@@ -105,7 +105,8 @@ func NewClient(ctx context.Context, apiKey string, fileContent string) (*Client,
 	if err != nil {
 		return nil, err
 	}
-	// Temporary check to inspect what your specific API key can see
+
+	// Uncomment lines below to see what your API key can see
     //resp, err := c.Models.List(ctx, nil)
     //if err != nil {
     //    return nil, fmt.Errorf("failed to list models: %w", err)

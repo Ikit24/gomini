@@ -19,13 +19,13 @@ import (
 )
 
 func main() {
-	// 1. Try to find the OS-specific config folder
+	//Try to find the OS-specific config folder
 	configDir, err := os.UserConfigDir()
 	if err != nil {
 		log.Fatalf("Could not find user config directory: %v", err)
 	}
 
-	// 2. Define the app's config directory and ensure it exists
+	//Define the app config directory and ensure it exists
 	appConfigDir := filepath.Join(configDir, "gomini")
 	if err := os.MkdirAll(appConfigDir, 0755); err != nil {
 		log.Fatalf("Failed to create config directory: %v", err)
