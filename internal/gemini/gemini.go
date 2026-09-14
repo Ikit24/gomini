@@ -18,7 +18,6 @@ type Client struct {
 	models          []string
 	modelIndex      int
 	preferredModel  string
-	fallbackChain   []string
 	basePrompt      string
 	personaPrompt   string
 	filePrompt      string
@@ -122,9 +121,11 @@ func NewClient(ctx context.Context, apiKey string, fileContent string) (*Client,
 			genaiClient:    c,
 			preferredModel: "gemini-2.5-flash",
 			models:         []string{"gemini-3.8-flash", "gemini-3.1-flash-lite", "gemini-2.5-flash"},
-			fallbackChain:  []string{"gemini-3.1-flash-lite", "gemini-3.8-flash"},
 			genaiSysTools:  &genai.GenerateContentConfig{
 				SystemInstruction: &genai.Content{},
+				Temperature: genai.Ptr[float32](0.7),
+				TopP:        genai.Ptr[float32](0.95),
+				TopK:        genai.Ptr[float32](40),
 				Tools: []*genai.Tool{
 					{GoogleSearch: &genai.GoogleSearch{}},
 				},
