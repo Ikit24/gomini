@@ -47,6 +47,12 @@ func(c *Client) rebuildSystemInstruction() {
 			c.genaiSysTools.SystemInstruction.Parts,
 			&genai.Part{Text: c.filePrompt})
 	}
+
+	if c.tuningSetup != "" {
+		c.genaiSysTools.SystemInstruction.Parts = append (
+			c.genaiSysTools.SystemInstruction.Parts,
+			&genai.Part{})
+	}
 }
 
 func (c *Client) SetPersona(personaText string) {
@@ -67,9 +73,7 @@ func (c *Client) CurrentModel() string {
 }
 
 func (c *Client) CycleModel() {
-	//c.mu.RLock()
 	current := c.preferredModel
-	//defer c.mu.RUnlock()
 
 	currentIndex := -1
 	for i, m := range c.models {
