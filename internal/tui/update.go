@@ -23,9 +23,11 @@ var (
 type geminiStreamErrorMsg struct {
 	err error
 }
+
 type clipboardErrorMsg struct {
     err error
 }
+
 type ArrivingMsg string
 type StreamFinish struct{}
 type ChunkChan chan tea.Msg
@@ -34,6 +36,13 @@ type dbSaveErrorMsg struct {
 	err error
 }
 type clearStatusMsg struct{}
+
+type Persona struct {
+	Prompt       string
+    Temperature: float32
+    TopP:        float32
+    TopK:        float32
+}
 
 var CodingPersona = Persona{
     Prompt:      `You are a strict, Socratic coding tutor. Your primary goal is to make the user understand the concepts, not to write code for them. When asked a question, do not provide the immediate solution. Instead, point them to the correct documentation, explain the underlying theory, and ask a specific follow-up question to test their logic.

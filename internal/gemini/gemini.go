@@ -55,8 +55,11 @@ func(c *Client) rebuildSystemInstruction() {
 	}
 }
 
-func (c *Client) SetPersona(personaText string) {
-	c.personaPrompt = personaText
+func (c *Client) SetPersona(persona Persona) {
+	c.personaPrompt = persona.Prompt
+	c.genaiSysTools.Temperature = genai.Ptr[float32](persona.Temperature)
+	c.genaiSysTools.TopP = genai.Ptr[float32](persona.TopP)
+	c.genaiSysTools.TopK = genai.Ptr[float32](persona.TopK)
 	c.rebuildSystemInstruction()
 }
 
@@ -74,6 +77,7 @@ func (c *Client) CurrentModel() string {
 
 func (c *Client) CycleModel() {
 	current := c.preferredModel
+	//defer c.mu.RUnlock()
 
 	currentIndex := -1
 	for i, m := range c.models {
