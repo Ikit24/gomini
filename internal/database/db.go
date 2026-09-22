@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"embed"
 
-	_ "github.com/mattn/go-sqlite3"
+	_ "modernc.org/sqlite"
 	"github.com/pressly/goose/v3"
 )
 
@@ -25,13 +25,15 @@ func (d *DB) Ping() error {
 var embedMigrations embed.FS
 
 func Open(path string) (*DB, error) {
-	dsn := path + "?_foreign_keys=on"
+	dsn := path + "?_pragma=foreign_keys(on)"
 
-	conn, err := sql.Open("sqlite3", dsn)
+	conn, err := sql.Open("sqlite", dsn)
 	if err != nil {
 		return nil, err
 	}
-
+	var fkStatus int
+	err = conn.QueryRow("PRAGMA foreign_keys").Scan(&fkStatus)
+	// fkStatus should be 1 if it's working
 	conn.SetMaxOpenConns(1)
 
 	if err = conn.Ping(); err != nil {
@@ -40,7 +42,7 @@ func Open(path string) (*DB, error) {
 
 	goose.SetBaseFS(embedMigrations)
 
-	if err := goose.SetDialect("sqlite3"); err != nil {
+	if err := goose.SetDialect("sqlite"); err != nil {
 		return nil, err
 	}
 	
