@@ -23,23 +23,21 @@ var (
 type geminiStreamErrorMsg struct {
 	err error
 }
-
 type clipboardErrorMsg struct {
     err error
 }
-
+type dbSaveErrorMsg struct {
+	err error
+}
 type ArrivingMsg string
 type StreamFinish struct{}
 type ChunkChan chan tea.Msg
 type dbSaveSuccessMsg struct{}
-type dbSaveErrorMsg struct {
-	err error
-}
 type clearStatusMsg struct{}
 type StateBrowse struct {
-	searchInput textinput.Model
-	allChats []ChatSession
-	filteredChats []ChatSession
+	searchInput   textinput.Model
+	allChats      []database.Session
+	filteredChats []database.Session
 }
 
 func waitForChunk(ch ChunkChan) tea.Cmd {
@@ -456,6 +454,12 @@ func (m Model) switchToBrowse() (tea.Model, tea.Cmd) {
 		return m, nil
 	}
 
+	chatSearch := textinput.New()
+	chatSearch.Focus()
+	chatSearch.Placeholder = "Search chats..."
+
+	m.browseInput = chatSearch
+	m.filteredSessions = sessions
 	m.pastSessions = sessions
 	m.browseCursor = 0
 	m.currentState = StateBrowse
