@@ -36,6 +36,11 @@ type dbSaveErrorMsg struct {
 	err error
 }
 type clearStatusMsg struct{}
+type StateBrowse struct {
+	searchInput textinput.Model
+	allChats []ChatSession
+	filteredChats []ChatSession
+}
 
 func waitForChunk(ch ChunkChan) tea.Cmd {
 	return func() tea.Msg {

@@ -16,31 +16,33 @@ import (
 )
 
 type Model struct {
-	currentUser     uuid.UUID
-	sessions        []database.Session
-	messages        []database.Message
-	selectedSession uuid.UUID
-	messageInput    textarea.Model
-	db              *database.DB
-	geminiClient    *gemini.Client
-	cancel          context.CancelFunc
-	currentStream   string
-	channel         chan tea.Msg
-	terminalWidth   int
-	terminalHeight  int
-	viewport        viewport.Model
-	statusMessage   string
-	activePersona   string
-	errorMessage    string
-	currentState    appState
-	pastSessions    []database.Session
-	browseCursor    int
-	spinner         spinner.Model
-	renderer        *glamour.TermRenderer
-	fileContext     string
-	isLoading       bool
-	isThinking      bool
-	showHelp        bool
+	currentUser      uuid.UUID
+	sessions         []database.Session
+	messages         []database.Message
+	pastSessions     []database.Session
+	filteredSessions []databse.Session
+	selectedSession  uuid.UUID
+	messageInput     textarea.Model
+	browseInput      textinput.Model
+	db               *database.DB
+	geminiClient     *gemini.Client
+	cancel           context.CancelFunc
+	currentStream    string
+	channel          chan tea.Msg
+	terminalWidth    int
+	terminalHeight   int
+	viewport         viewport.Model
+	statusMessage    string
+	activePersona    string
+	errorMessage     string
+	currentState     appState
+	browseCursor     int
+	spinner          spinner.Model
+	renderer         *glamour.TermRenderer
+	fileContext      string
+	isLoading        bool
+	isThinking       bool
+	showHelp         bool
 }
 
 type appState int
