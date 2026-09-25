@@ -564,7 +564,10 @@ func (m Model) updateBrowse(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, textinput.Blink
 		}
 	}
-	return m, nil
+	var browseCmd tea.Cmd
+	m.browseInput, browseCmd = m.browseInput.Update(msg)
+
+	return m, browseCmd
 }
 
 func (m Model) startGeminiStream(ch chan tea.Msg, prompt string, client *gemini.Client, history []gemini.Message) (Model, tea.Cmd) {
