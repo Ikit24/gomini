@@ -545,7 +545,7 @@ func (m Model) updateBrowse(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case "ctrl+s":
 			if len(m.pastSessions) == 0 {
-			return m, nil
+				return m, nil
 			}
 
 			selectedSession := m.pastSessions[m.browseCursor]
