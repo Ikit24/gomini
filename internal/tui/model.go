@@ -20,7 +20,7 @@ type Model struct {
 	sessions         []database.Session
 	messages         []database.Message
 	pastSessions     []database.Session
-	filteredSessions []databse.Session
+	filteredSessions []database.Session
 	selectedSession  uuid.UUID
 	messageInput     textarea.Model
 	browseInput      textinput.Model

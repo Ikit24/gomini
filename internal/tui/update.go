@@ -567,6 +567,15 @@ func (m Model) updateBrowse(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var browseCmd tea.Cmd
 	m.browseInput, browseCmd = m.browseInput.Update(msg)
 
+	//empty display list
+	m.filteredSessions = []database.Session{}
+
+	for _, session := range m.pastSessions {
+		if strings.Contains(strings.ToLower(session.Title), strings.ToLower(m.browseInput.Value())) {
+			m.filteredSessions = append(m.filteredSessions, session)
+		}
+	}
+
 	return m, browseCmd
 }
 
