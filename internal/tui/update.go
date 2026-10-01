@@ -34,11 +34,6 @@ type StreamFinish struct{}
 type ChunkChan chan tea.Msg
 type dbSaveSuccessMsg struct{}
 type clearStatusMsg struct{}
-type StateBrowse struct {
-	searchInput   textinput.Model
-	allChats      []database.Session
-	filteredChats []database.Session
-}
 
 func waitForChunk(ch ChunkChan) tea.Cmd {
 	return func() tea.Msg {
@@ -524,7 +519,7 @@ func (m Model) updateBrowse(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 
 		case "down":
-			if m.browseCursor < len(m.pastSessions)-1 {
+			if m.browseCursor < len(m.filteredSessions)-1 {
 				m.browseCursor++
 			}
 		
@@ -544,11 +539,11 @@ func (m Model) updateBrowse(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, nil
 
 		case "ctrl+s":
-			if len(m.pastSessions) == 0 {
+			if len(m.filteredSessions) == 0 {
 				return m, nil
 			}
 
-			selectedSession := m.pastSessions[m.browseCursor]
+			selectedSession := m.filteredSessions[m.browseCursor]
 			m.selectedSession = selectedSession.ID
 			messagesFromSession, err := m.db.GetMessagesBySessionID(selectedSession.ID)
 			if err != nil {
@@ -569,6 +564,8 @@ func (m Model) updateBrowse(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	//empty display list
 	m.filteredSessions = []database.Session{}
+
+	m.browseCursor = 0
 
 	for _, session := range m.pastSessions {
 		if strings.Contains(strings.ToLower(session.Title), strings.ToLower(m.browseInput.Value())) {

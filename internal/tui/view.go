@@ -100,9 +100,9 @@ func (m Model) viewBrowse() string {
 		Align(lipgloss.Center).
 		AlignVertical(lipgloss.Center)
 
-	chatsHeader += formatText(tooltipPrefix, "Previous chats:") + "\n"
+	chatsHeader += formatText(tooltipPrefix, "Previous chats:") + "\n" + m.browseInput.View() + "\n"
 
-	for i, session := range m.pastSessions {
+	for i, session := range m.filteredSessions {
 		if i == m.browseCursor {
 			savedChats += selectedStyle.Render(fmt.Sprintf("-> [CreatedAt: %s] Title: %s", session.CreatedAt.Format("02/01/2006"), session.Title)) + "\n"
 		} else {
