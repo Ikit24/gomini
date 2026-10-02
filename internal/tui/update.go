@@ -559,13 +559,17 @@ func (m Model) updateBrowse(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, textinput.Blink
 		}
 	}
+
+	previousSearch := m.browseInput.Value()
 	var browseCmd tea.Cmd
 	m.browseInput, browseCmd = m.browseInput.Update(msg)
 
+	if previousSearch != m.browseInput.Value() {
+		m.browseCursor = 0
+	}
+
 	//empty display list
 	m.filteredSessions = []database.Session{}
-
-	m.browseCursor = 0
 
 	for _, session := range m.pastSessions {
 		if strings.Contains(strings.ToLower(session.Title), strings.ToLower(m.browseInput.Value())) {
