@@ -513,6 +513,9 @@ func (m Model) updateBrowse(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 			return m, nil
 
+		case "ctrl+n":
+			return m.startNewChat()
+
 		case "up":
 			if m.browseCursor > 0 {
 				m.browseCursor--
