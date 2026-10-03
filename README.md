@@ -14,7 +14,7 @@ Ever since I learned Go and SQL/SQLite, I became passionate about mastering them
 
 ### Installation
  ```bash
- go install github.com/Ikit24/gomini@latest
+ go install github.com/Ikit24/gomini/cmd/gomini@latest
  ```
 
 ### Usage
