@@ -9,6 +9,7 @@ import (
 	"context"
 	"google.golang.org/genai"
 	"sync"
+	"https://github.com/Ikit24/gomini/internal/llm"
 )
 
 type Client struct {
@@ -20,18 +21,6 @@ type Client struct {
 	basePrompt      string
 	personaPrompt   string
 	filePrompt      string
-}
-
-type Message struct {
-	Role    string
-	Content string
-}
-
-type Persona struct {
-	Prompt      string
-    Temperature float32
-    TopP        float32
-    TopK        float32
 }
 
 var CodingPersona = Persona{
@@ -196,7 +185,7 @@ func processResponse (ch chan string, resp *genai.GenerateContentResponse) {
 	}
 }
 
-func (c *Client) GenerateChatResponse(ctx context.Context, history []Message, newPrompt string) (<-chan string, error) {
+func (c *Client) GenerateChatResponse(ctx context.Context, history []llm.Message, newPrompt string) (<-chan string, error) {
 	var apiErr genai.APIError
 
 	sdkHistory := make([]*genai.Content, 0, len(history)+1)
