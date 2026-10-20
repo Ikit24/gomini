@@ -146,7 +146,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case "ctrl+t":
 			//cycle model
-			m.geminiClient.CycleModel()
+			m.chatProvider.CycleModel()
 			return m, nil
 
 		case "ctrl+y":
@@ -159,17 +159,17 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		case "alt+0":
 			m.activePersona = "VanillaPersona"
-			m.geminiClient.SetPersona(gemini.VanillaPersona)
+			m.chatProvider.SetPersona(llm.VanillaPersona)
 			return m, nil
 
 		case "alt+1":
 			m.activePersona = "Coding persona"
-			m.geminiClient.SetPersona(gemini.CodingPersona)
+			m.chatProvider.SetPersona(llm.CodingPersona)
 			return m, nil
 
 		case "alt+2":
 			m.activePersona = "Investing persona"
-			m.geminiClient.SetPersona(gemini.InvestingPersona)
+			m.chatProvider.SetPersona(llm.InvestingPersona)
 			return m, nil
 
 		case "esc":
@@ -334,7 +334,7 @@ func (m Model) updateChat(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 			cmd = waitForChunk(m.channel)
 			dbSave := saveMessageToDB(m.db, dbMessage)
-			m, geminiCmd = m.startGeminiStream(m.channel, userInput, m.geminiClient, geminiHistory)
+			m, geminiCmd = m.startGeminiStream(m.channel, userInput, m.chatProvider, geminiHistory)
 			cmd = tea.Batch(cmd, dbSave, geminiCmd, inputCmd, m.spinner.Tick)
 			contentChanged = true
 
@@ -583,7 +583,7 @@ func (m Model) updateBrowse(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, browseCmd
 }
 
-func (m Model) startGeminiStream(ch chan tea.Msg, prompt string, client *gemini.Client, history []gemini.Message) (Model, tea.Cmd) {
+func (m Model) startGeminiStream(ch chan tea.Msg, prompt string, client llm.ChatProvider, history []llm.Message) (Model, tea.Cmd) {
 	ctx, cancel := context.WithCancel(context.Background())
 	m.cancel = cancel
 	return m, func() tea.Msg {

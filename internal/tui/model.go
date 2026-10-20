@@ -14,6 +14,7 @@ import (
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/bubbles/spinner"
 	"github.com/google/uuid"
+	"github.com/Ikit24/gomini/internal/llm"
 )
 
 type Model struct {
@@ -26,7 +27,7 @@ type Model struct {
 	messageInput     textarea.Model
 	browseInput      textinput.Model
 	db               *database.DB
-	geminiClient     *gemini.Client
+	chatProvider     llm.ChatProvider
 	cancel           context.CancelFunc
 	currentStream    string
 	channel          chan tea.Msg
@@ -54,7 +55,7 @@ const (
 	StateBrowse
 )
 
-func InitialModel(db *database.DB, client *gemini.Client, userID uuid.UUID, sessions []database.Session) Model {
+func InitialModel(db *database.DB, client llm.ChatProvider, userID uuid.UUID, sessions []database.Session) Model {
 	s := spinner.New()
 	s.Spinner = spinner.Dot
 	s.Style = lipgloss.NewStyle().Foreground(lipgloss.Color("205"))
@@ -69,7 +70,7 @@ func InitialModel(db *database.DB, client *gemini.Client, userID uuid.UUID, sess
 	return Model {
 		messageInput:    ta,
 		db:              db,
-		geminiClient:    client,
+		chatProvider:    client,
 		channel:         ch,
 		currentUser:     userID,
 		selectedSession: uuid.Nil,
