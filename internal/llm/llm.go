@@ -20,4 +20,5 @@ type ChatProvider interface {
 	GenerateChatResponse(ctx context.Context, history []Message, newPrompt string) (<-chan string, error)
 	CycleModel()
 	SetPersona(p Persona)
+	CurrentModel() string
 }

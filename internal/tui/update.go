@@ -20,7 +20,7 @@ var (
 	gominiPrefixColor = lipgloss.NewStyle().Foreground(lipgloss.Color("39")).Bold(true)
 )
 
-type geminiStreamErrorMsg struct {
+type llmStreamErrorMsg struct {
 	err error
 }
 type clipboardErrorMsg struct {
@@ -195,7 +195,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m Model) updateChat(msg tea.Msg) (tea.Model, tea.Cmd) {
-	var cmd, inputCmd, viewportCmd, geminiCmd tea.Cmd
+	var cmd, inputCmd, viewportCmd, llmCmd tea.Cmd
 	
 	contentChanged := false
 
@@ -234,7 +234,7 @@ func (m Model) updateChat(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	case dbSaveSuccessMsg:
 
-	case geminiStreamErrorMsg:
+	case llmStreamErrorMsg:
 		m.isLoading = false
 		m.errorMessage = msg.err.Error()
 
@@ -309,9 +309,9 @@ func (m Model) updateChat(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.pastSessions = append([]database.Session{newSession}, m.pastSessions...)
 			}
 
-			geminiHistory := make([]gemini.Message, len(m.messages))
+			llmHistory := make([]llm.Message, len(m.messages))
 			for i, msg := range m.messages {
-				geminiHistory[i] = gemini.Message{
+				llmHistory[i] = llm.Message{
 					Role:    string(msg.Role),
 					Content: msg.Content,
 				}
@@ -334,8 +334,8 @@ func (m Model) updateChat(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 			cmd = waitForChunk(m.channel)
 			dbSave := saveMessageToDB(m.db, dbMessage)
-			m, geminiCmd = m.startGeminiStream(m.channel, userInput, m.chatProvider, geminiHistory)
-			cmd = tea.Batch(cmd, dbSave, geminiCmd, inputCmd, m.spinner.Tick)
+			m, llmCmd = m.startGominiStream(m.channel, userInput, m.chatProvider, llmHistory)
+			cmd = tea.Batch(cmd, dbSave, llmCmd, inputCmd, m.spinner.Tick)
 			contentChanged = true
 
 		case "up", "down", "pgup", "pgdn":
@@ -389,10 +389,10 @@ func (m Model) refreshViewportContent() Model {
 			renderedGominiMessage, err := m.renderer.Render(msg.Content)
 			renderedGominiMessage = strings.TrimSpace(renderedGominiMessage)
 			if err != nil {
-				m.errorMessage = "Failed to render gemini message: " + err.Error()
+				m.errorMessage = "Failed to render llm message: " + err.Error()
 				return m
 			}
-			coloredPrefix := formatText(gominiPrefixColor, "Gemini: ")
+			coloredPrefix := formatText(gominiPrefixColor, "Gomini: ")
 			boxedAiPrefix := gutterStyle.Render(coloredPrefix)
 			boxedAiMessage := messageStyle.Render(renderedGominiMessage)
 			s += lipgloss.JoinHorizontal(lipgloss.Top, boxedAiPrefix, boxedAiMessage) + "\n\n"
@@ -406,7 +406,7 @@ func (m Model) refreshViewportContent() Model {
 			m.errorMessage = "Failed to stream message: " + err.Error()
 			return m
 		}
-		coloredPrefix := formatText(gominiPrefixColor, "Gemini: ")
+		coloredPrefix := formatText(gominiPrefixColor, "Gomini: ")
 		boxedAiPrefix := gutterStyle.Render(coloredPrefix)
 		boxedAiMessage := messageStyle.Render(renderedGominiMessage)
 		s += lipgloss.JoinHorizontal(lipgloss.Top, boxedAiPrefix, boxedAiMessage) + "\n\n"
@@ -583,13 +583,13 @@ func (m Model) updateBrowse(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, browseCmd
 }
 
-func (m Model) startGeminiStream(ch chan tea.Msg, prompt string, client llm.ChatProvider, history []llm.Message) (Model, tea.Cmd) {
+func (m Model) startGominiStream(ch chan tea.Msg, prompt string, client llm.ChatProvider, history []llm.Message) (Model, tea.Cmd) {
 	ctx, cancel := context.WithCancel(context.Background())
 	m.cancel = cancel
 	return m, func() tea.Msg {
 		streamChan, err := client.GenerateChatResponse(ctx, history, prompt)
 		if err != nil {
-			return geminiStreamErrorMsg{err: err}
+			return llmStreamErrorMsg{err: err}
 		}
 
 		for text := range streamChan {

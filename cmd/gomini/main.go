@@ -25,17 +25,17 @@ func main() {
 		log.Fatalf("Could not find user config directory: %v", err)
 	}
 
-	//Define the app config directory and ensure it exists
+	//Define app config directory and ensure it exists
 	appConfigDir := filepath.Join(configDir, "gomini")
 	if err := os.MkdirAll(appConfigDir, 0755); err != nil {
 		log.Fatalf("Failed to create config directory: %v", err)
 	}
 
-	// 3. Construct path for the .env file and attempt to load it
+	//Construct path for the .env file and attempt to load it
 	envPath := filepath.Join(appConfigDir, ".env")
 	_ = godotenv.Load(envPath)
 
-	// 4. Now grab the key, whether it came from the .env file or the system environment
+	//Grab the key, whether it came from the .env file or the system environment
 	geminiKey := os.Getenv("GEMINI_API_KEY")
 	if geminiKey == "" {
 		log.Fatal("GEMINI_API_KEY missing. Please set it in your environment or ~/.config/gomini/.env")
