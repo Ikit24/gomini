@@ -24,7 +24,6 @@ var CodingPersona = Persona{
 	3. Three-Try Rule: Review the conversation history. If the user has attempted and failed to solve the specific problem 3 or more times, you may provide the solution and explain why it works.`,
     Temperature: 0.3,
     TopP:        0.7,
-    TopK:        40,
 }
 
 var InvestingPersona = Persona{
@@ -38,7 +37,6 @@ var InvestingPersona = Persona{
 	6. Explicitly identify and list any other structural, macroeconomic, or business risks.`,
     Temperature: 0.2,
     TopP:        0.5,
-    TopK:        40,
 }
 
 var VanillaPersona = Persona{
@@ -50,7 +48,6 @@ var VanillaPersona = Persona{
 	4. Adaptability: Match the user's tone and level of technical depth.`,
     Temperature: 0.9,
     TopP:        0.9,
-    TopK:        50,
 }
 
 //add gpt-4o, gpt-4o-mini
@@ -89,8 +86,6 @@ func (c *Client) SetPersona(persona Persona) {
 	c.personaPrompt = persona.Prompt
 	c.genaiSysTools.Temperature = genai.Ptr[float32](persona.Temperature)
 	c.genaiSysTools.TopP = genai.Ptr[float32](persona.TopP)
-	c.genaiSysTools.TopK = genai.Ptr[float32](persona.TopK)
-	c.rebuildSystemInstruction()
 }
 
 func (c *Client) CurrentModel() string {
