@@ -5,6 +5,7 @@ import (
 	"gomini/internal/llm"
 	"sync"
 	"github.com/sashabaranov/go-openai"
+	"github.com/openai/openai-go/option"
 )
 
 type Client struct {
@@ -59,14 +60,61 @@ func NewClient(apiKey string) *Client {
 }
 
 func (c *Client) GenerateChatResponse(ctx context.Context, history []llm.Message, newPrompt string) (<-chan string, error) {
-	stream := make(chan string)
+	messages := make([]openai.ChatCompletionMessageParamUnion, 0, len(history)+2)
 
-	//implement openai stream
-	close(stream)
+	if c.persona.Prompt != "" {
+		messages = append(messages, openai.SystemMessage(c.persona.Prompt))
+	}
 
-	return stream, nil
+	for _, msg := range history {
+		if strings.TrimSpace(msg.Content) == "" {
+			continue
+		}
+
+		if msg.Role == "user" {
+			messages = append(message, openai.UserMessage(msg.Content))
+		} else {
+			messages = append(message, openai.AssistantMessage(msg.Content))
+		}
+	}
+
+	messages = append(message, openai.UserMessage(newPrompt))
+
+	params := openai.ChatCompletionNewParams{
+		Message:     messages,
+		Model:       openai.String(c.currentModel),
+		Temperature: openai.Float(float64(c.persona.Temperature)),
+		TopP:        openai.Float(float64(c.persona.TopP)),
+	}
+
+	client := openai.NewCliant(option.WithAPIkey(c.apiKey))
+	stram := client.Chat.Completions.NewStreaming(ctx, params)
+
+	ch := make(chan string)
+	for stream.Next() {
+		chunk := stream.Current()
+
+		if len(chunk.Choices) > 0 {
+			delta := chunk.Chouices[0].Delta.Content
+			if delta != "" {
+				ch <-delta
+			}
+		}
+	}
+
+	streamErr = stream.Err()
+	if streamErr != nil {
+		file, fileErr := os.OpenFile("debug.log", os.O_APPEND | os.O_CREATE | os.O_WRONLY, 0644)
+		if fileErr == nil {
+			file.WriteString(fmt.Sprintf("Model: %s | Error Type: %T | Error: %v\n", model, streamErr, streamErr))
+			file.Close()
+		}
+	}
+
+
 }
 
+// fix: add models list
 func (c *Client) CycleModel() {
 	current := c.preferredModel
 
@@ -83,9 +131,7 @@ func (c *Client) CycleModel() {
 }
 
 func (c *Client) SetPersona(persona Persona) {
-	c.personaPrompt = persona.Prompt
-	c.genaiSysTools.Temperature = genai.Ptr[float32](persona.Temperature)
-	c.genaiSysTools.TopP = genai.Ptr[float32](persona.TopP)
+	c.persona = persona
 }
 
 func (c *Client) CurrentModel() string {

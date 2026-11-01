@@ -221,7 +221,6 @@ func (c *Client) GenerateChatResponse(ctx context.Context, history []llm.Message
 				if err != nil {
 					streamErr = err
 					file, fileErr := os.OpenFile("debug.log", os.O_APPEND | os.O_CREATE | os.O_WRONLY, 0644)
-					//check on this ferr
 					if fileErr == nil {
 						file.WriteString(fmt.Sprintf("Model: %s | Error Type: %T | Error: %v\n", model, streamErr, streamErr))
 						file.Close()
