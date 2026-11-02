@@ -72,46 +72,85 @@ func (c *Client) GenerateChatResponse(ctx context.Context, history []llm.Message
 		}
 
 		if msg.Role == "user" {
-			messages = append(message, openai.UserMessage(msg.Content))
+			messages = append(messages, openai.UserMessage(msg.Content))
 		} else {
-			messages = append(message, openai.AssistantMessage(msg.Content))
+			messages = append(messages, openai.AssistantMessage(msg.Content))
 		}
 	}
 
-	messages = append(message, openai.UserMessage(newPrompt))
+	messages = append(messages, openai.UserMessage(newPrompt))
 
 	params := openai.ChatCompletionNewParams{
-		Message:     messages,
+		Messages:     messages,
 		Model:       openai.String(c.currentModel),
 		Temperature: openai.Float(float64(c.persona.Temperature)),
 		TopP:        openai.Float(float64(c.persona.TopP)),
 	}
 
-	client := openai.NewCliant(option.WithAPIkey(c.apiKey))
-	stram := client.Chat.Completions.NewStreaming(ctx, params)
-
 	ch := make(chan string)
-	for stream.Next() {
-		chunk := stream.Current()
 
-		if len(chunk.Choices) > 0 {
-			delta := chunk.Chouices[0].Delta.Content
-			if delta != "" {
-				ch <-delta
+	go func() {
+		var streamErr error
+		var apiErr *openai.Error
+		order := c.attemptOrder()
+
+		for attempt := 0; attempt < len(order); attempt++ {
+			model := order[attempt]
+			streamErr = nil
+
+			params.Model = openai.String(model)
+			
+			client := openai.NewClient(option.WithAPIKey(c.apiKey))
+			stream := client.Chat.Completions.NewStreaming(ctx, params)
+
+			for stream.Next() {
+				chunk := stream.Current()
+				if len(chunk.Choices) > 0 {
+					delta := chunk.Choices[0].Delta.Content
+					if delta != "" {
+						ch <-delta
+					}
+				}
+			}
+
+			streamErr = stream.Err()
+
+			if streamErr != nil {
+				file, fileErr := os.OpenFile("debug.log", os.O_APPEND | os.O_CREATE | os.O_WRONLY, 0644)
+				if fileErr == nil {
+					file.WriteString(fmt.Sprintf("Model: %s | Error Type: %T | Error: %v\n", model, streamErr, streamErr))
+					file.Close()
+				}
+			}
+
+			//if no err whole response stream successfull
+			if streamErr == nil {
+				return
+			}
+
+			if errors.As(streamErr, &apiErr) && (apiErr.StatusCode == 429 || apiErr.StatusCode == 503 || apiErr.StatusCode == 404) {
+				select {
+				case <- ctx.Done():
+					return
+				case <- time.After(2 * time.Second):
+					if attempt+1 < len(order) {
+						fmt.Sprintf("falling back from %s to %s after error: %v", model, order[attempt+1], streamErr)
+				} else {
+					fmt.Sprintf("out of fallback models, giving up after error: %v", streamErr)
+					}
+				}
+			} else {
+				ch <- streamErr.Error()
+				return
 			}
 		}
-	}
-
-	streamErr = stream.Err()
-	if streamErr != nil {
-		file, fileErr := os.OpenFile("debug.log", os.O_APPEND | os.O_CREATE | os.O_WRONLY, 0644)
-		if fileErr == nil {
-			file.WriteString(fmt.Sprintf("Model: %s | Error Type: %T | Error: %v\n", model, streamErr, streamErr))
-			file.Close()
+		
+		if streamErr != nil {
+			ch <- streamErr.Error()
 		}
-	}
+	}()
 
-
+	return ch, nil
 }
 
 // fix: add models list
