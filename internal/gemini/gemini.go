@@ -98,12 +98,14 @@ func (c *Client) setModel(model string) {
 func (c *Client) CurrentModel() string {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
+
 	return c.preferredModel
 }
 
 func (c *Client) CycleModel() {
+	c.mu.RLock()
 	current := c.preferredModel
-	//defer c.mu.RUnlock()
+	c.mu.RUnlock()
 
 	currentIndex := -1
 	for i, m := range c.models {

@@ -59,6 +59,43 @@ func NewClient(apiKey string) *Client {
 	}
 }
 
+func (c *Client) CurrentModel() string {
+	c.mu.RLock()
+	defer c.mu.RUnlock()
+	return c.preferredModel
+}
+
+func (c *Client) CycleModel() {
+	c.mu.RLock()
+	current := c.preferredModel
+	c.mu.RUnlock()
+
+	currentIndex := -1
+	for i, m := range c.models {
+		if m == current {
+			currentIndex = i
+			break
+		}
+	}
+
+	nextIndex := (currentIndex + 1) % len(c.models)
+	c.setModel(c.models[nextIndex])
+}
+
+func (c *Client) attemptOrder() [] string {
+	c.mu.RLock()
+	preferred := c.preferredModel
+	c.mu.RUnlock()
+
+	order := []string{preferred}
+	for _, m := range c.models {
+		if m != preferred {
+			order = append(order, m)
+		}
+	}
+	return order
+}
+
 func (c *Client) GenerateChatResponse(ctx context.Context, history []llm.Message, newPrompt string) (<-chan string, error) {
 	messages := make([]openai.ChatCompletionMessageParamUnion, 0, len(history)+2)
 
@@ -82,7 +119,6 @@ func (c *Client) GenerateChatResponse(ctx context.Context, history []llm.Message
 
 	params := openai.ChatCompletionNewParams{
 		Messages:     messages,
-		Model:       openai.String(c.currentModel),
 		Temperature: openai.Float(float64(c.persona.Temperature)),
 		TopP:        openai.Float(float64(c.persona.TopP)),
 	}
