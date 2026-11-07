@@ -1,12 +1,16 @@
 package openai
 
 import (
+	"fmt"
+	"time"
+	"os"
+	"errors"
+	"strings"
 	"context"
-	"gomini/internal/llm"
 	"sync"
-	"github.com/sashabaranov/go-openai"
+	"github.com/Ikit24/gomini/internal/llm"
 	"github.com/openai/openai-go/option"
-	"github.com/openai/openai-go/v3/responses"
+	extopenai "github.com/openai/openai-go/v3"
 )
 
 type Client struct {
@@ -18,7 +22,7 @@ type Client struct {
 	persona        llm.Persona
 }
 
-var CodingPersona = Persona{
+var CodingPersona = llm.Persona{
     Prompt:      `You are a strict, Socratic coding tutor. Your primary goal is to make the user understand the concepts, not to write code for them. When asked a question, do not provide the immediate solution. Instead, point them to the correct documentation, explain the underlying theory, and ask a specific follow-up question to test their logic.
 	Rules for engagement:
 	1. Language Check: If the user does not specify a programming language in their prompt or recent context, you must explicitly ask them to clarify which language they are using before providing any code-specific guidance.
@@ -28,7 +32,7 @@ var CodingPersona = Persona{
     TopP:        0.7,
 }
 
-var InvestingPersona = Persona{
+var InvestingPersona = llm.Persona{
     Prompt:      `You are a strict, disciplined value investor adhering strictly to the principles of Benjamin Graham and Warren Buffett. You have zero tolerance for market optimism, hype, or speculation. Your analysis must be grounded exclusively in hard facts, fundamentals, and historical numbers. You must use your search tool to pull real-time financial data, recent insider filings, and current lawsuit news before providing an analysis. Do not guess the numbers.
 	When analyzing an asset:
 	1. Focus on intrinsic value, P/E, P/B, debt-to-equity, and free cash flow.
@@ -41,7 +45,7 @@ var InvestingPersona = Persona{
     TopP:        0.5,
 }
 
-var VanillaPersona = Persona{
+var VanillaPersona = llm.Persona{
 	Prompt:      `You are a helpful, versatile, and direct AI assistant. Your goal is to provide clear, accurate, and highly readable answers across a wide variety of topics.
 	Guidelines:
 	1. Be concise: Avoid unnecessary filler, preamble, or overly conversational meta-commentary. Answer the prompt directly.
@@ -53,12 +57,12 @@ var VanillaPersona = Persona{
 }
 
 func NewClient(apiKey string) *Client {
-	//client := openai.NewClient()
+	//client := extopenai.NewClient()
 
 	//response, err := client.Responses.New(context.Background(), responses.ResponseNewParams{
 	//	Model: "gpt-4o",
 	//	Input: responses.ResponseNewParamsInputUnion{
-	//		OfString: openai.String("You are a helpful and thorough assistant in a terminal UI.")
+	//		OfString: extopenai.String("You are a helpful and thorough assistant in a terminal UI.")
 	//	},
 	//})
 	//if err != nil {
@@ -68,7 +72,7 @@ func NewClient(apiKey string) *Client {
 	return &Client{
 		apiKey: apiKey,
 		preferredModel: "gpt-4o-mini",
-		models: []string{"gpt-4o", "gpt-4o-mini"}
+		models: []string{"gpt-4o", "gpt-4o-mini"},
 	}
 }
 
@@ -95,6 +99,12 @@ func (c *Client) CycleModel() {
 	c.setModel(c.models[nextIndex])
 }
 
+func (c *Client) setModel(model string) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	c.preferredModel = model
+}
+
 func (c *Client) attemptOrder() [] string {
 	c.mu.RLock()
 	preferred := c.preferredModel
@@ -110,10 +120,10 @@ func (c *Client) attemptOrder() [] string {
 }
 
 func (c *Client) GenerateChatResponse(ctx context.Context, history []llm.Message, newPrompt string) (<-chan string, error) {
-	messages := make([]openai.ChatCompletionMessageParamUnion, 0, len(history)+2)
+	messages := make([]extopenai.ChatCompletionMessageParamUnion, 0, len(history)+2)
 
 	if c.persona.Prompt != "" {
-		messages = append(messages, openai.SystemMessage(c.persona.Prompt))
+		messages = append(messages, extopenai.SystemMessage(c.persona.Prompt))
 	}
 
 	for _, msg := range history {
@@ -122,34 +132,34 @@ func (c *Client) GenerateChatResponse(ctx context.Context, history []llm.Message
 		}
 
 		if msg.Role == "user" {
-			messages = append(messages, openai.UserMessage(msg.Content))
+			messages = append(messages, extopenai.UserMessage(msg.Content))
 		} else {
-			messages = append(messages, openai.AssistantMessage(msg.Content))
+			messages = append(messages, extopenai.AssistantMessage(msg.Content))
 		}
 	}
 
-	messages = append(messages, openai.UserMessage(newPrompt))
+	messages = append(messages, extopenai.UserMessage(newPrompt))
 
-	params := openai.ChatCompletionNewParams{
+	params := extopenai.ChatCompletionNewParams{
 		Messages:     messages,
-		Temperature: openai.Float(float64(c.persona.Temperature)),
-		TopP:        openai.Float(float64(c.persona.TopP)),
+		Temperature: extopenai.Float(float64(c.persona.Temperature)),
+		TopP:        extopenai.Float(float64(c.persona.TopP)),
 	}
 
 	ch := make(chan string)
 
 	go func() {
 		var streamErr error
-		var apiErr *openai.Error
+		var apiErr *extopenai.Error
 		order := c.attemptOrder()
 
 		for attempt := 0; attempt < len(order); attempt++ {
 			model := order[attempt]
 			streamErr = nil
 
-			params.Model = openai.String(model)
+			params.Model = extopenai.String(model)
 			
-			client := openai.NewClient(option.WithAPIKey(c.apiKey))
+			client := extopenai.NewClient(option.WithAPIKey(c.apiKey))
 			stream := client.Chat.Completions.NewStreaming(ctx, params)
 
 			for stream.Next() {
@@ -202,28 +212,6 @@ func (c *Client) GenerateChatResponse(ctx context.Context, history []llm.Message
 	return ch, nil
 }
 
-// fix: add models list
-func (c *Client) CycleModel() {
-	current := c.preferredModel
-
-	currentIndex := -1
-	for i, m := range c.models {
-		if m == current {
-			currentIndex = i
-			break
-		}
-	}
-
-	nextIndex := (currentIndex + 1) % len(c.models)
-	c.setModel(c.models[nextIndex])
-}
-
-func (c *Client) SetPersona(persona Persona) {
+func (c *Client) SetPersona(persona llm.Persona) {
 	c.persona = persona
-}
-
-func (c *Client) CurrentModel() string {
-	c.mu.RLock()
-	defer c.mu.RUnlock()
-	return c.preferredModel
 }

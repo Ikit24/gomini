@@ -9,7 +9,7 @@ import (
 	"context"
 	"google.golang.org/genai"
 	"sync"
-	"https://github.com/Ikit24/gomini/internal/llm"
+	"github.com/Ikit24/gomini/internal/llm"
 )
 
 type Client struct {
@@ -23,7 +23,7 @@ type Client struct {
 	filePrompt      string
 }
 
-var CodingPersona = Persona{
+var CodingPersona = llm.Persona{
     Prompt:      `You are a strict, Socratic coding tutor. Your primary goal is to make the user understand the concepts, not to write code for them. When asked a question, do not provide the immediate solution. Instead, point them to the correct documentation, explain the underlying theory, and ask a specific follow-up question to test their logic.
 	Rules for engagement:
 	1. Language Check: If the user does not specify a programming language in their prompt or recent context, you must explicitly ask them to clarify which language they are using before providing any code-specific guidance.
@@ -34,7 +34,7 @@ var CodingPersona = Persona{
     TopK:        40,
 }
 
-var InvestingPersona = Persona{
+var InvestingPersona = llm.Persona{
     Prompt:      `You are a strict, disciplined value investor adhering strictly to the principles of Benjamin Graham and Warren Buffett. You have zero tolerance for market optimism, hype, or speculation. Your analysis must be grounded exclusively in hard facts, fundamentals, and historical numbers. You must use your search tool to pull real-time financial data, recent insider filings, and current lawsuit news before providing an analysis. Do not guess the numbers.
 	When analyzing an asset:
 	1. Focus on intrinsic value, P/E, P/B, debt-to-equity, and free cash flow.
@@ -48,7 +48,7 @@ var InvestingPersona = Persona{
     TopK:        40,
 }
 
-var VanillaPersona = Persona{
+var VanillaPersona = llm.Persona{
 	Prompt:      `You are a helpful, versatile, and direct AI assistant. Your goal is to provide clear, accurate, and highly readable answers across a wide variety of topics.
 	Guidelines:
 	1. Be concise: Avoid unnecessary filler, preamble, or overly conversational meta-commentary. Answer the prompt directly.
@@ -81,7 +81,7 @@ func(c *Client) rebuildSystemInstruction() {
 	}
 }
 
-func (c *Client) SetPersona(persona Persona) {
+func (c *Client) SetPersona(persona llm.Persona) {
 	c.personaPrompt = persona.Prompt
 	c.genaiSysTools.Temperature = genai.Ptr[float32](persona.Temperature)
 	c.genaiSysTools.TopP = genai.Ptr[float32](persona.TopP)
