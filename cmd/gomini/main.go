@@ -12,6 +12,8 @@ import (
 
 	"github.com/Ikit24/gomini/internal/database"
 	"github.com/Ikit24/gomini/internal/gemini"
+	"github.com/Ikit24/gomini/internal/llm"
+	"github.com/Ikit24/gomini/internal/openai"
 	"github.com/Ikit24/gomini/internal/handlers"
 	"github.com/Ikit24/gomini/internal/tui"
 	tea "github.com/charmbracelet/bubbletea"
@@ -35,15 +37,13 @@ func main() {
 	envPath := filepath.Join(appConfigDir, ".env")
 	_ = godotenv.Load(envPath)
 
-	//Grab the key, whether it came from the .env file or the system environment
-	geminiKey := os.Getenv("GEMINI_API_KEY")
-	if geminiKey == "" {
-		log.Fatal("GEMINI_API_KEY missing. Please set it in your environment or ~/.config/gomini/.env")
-	}
+	var aiClient llm.ChatProvider
 
 	ctx := context.Background()
 
 	var fileFlag = flag.String("file", "", "path to a file to attach as a context")
+	var providerFlag = flag.String("provider", "gemini", "which LLM prvider to use (gemini or openai)")
+
 	flag.Parse()
 
 	var fileContent string
@@ -55,9 +55,26 @@ func main() {
 		fileContent = string(data)
 	}
 
-	aiClient, err := gemini.NewClient(ctx, geminiKey, fileContent)
-	if err != nil {
-		log.Fatal("couldn't initialize gemini client", err)
+	//Grab apikey, whether it came from the .env file or the system environment
+	if *providerFlag == "openai" {
+		apiKey := os.Getenv("OPENAI_API_KEY")
+		if apiKey == "" {
+			log.Fatal("OPENAI_API_KEY missing. Please set it in your environment or ~/.config/gomini/.env")
+		}
+
+		aiClient = openai.NewClient(apiKey)
+
+	} else {
+		apiKey := os.Getenv("GEMINI_API_KEY")
+		if apiKey == "" {
+			log.Fatal("GEMINI_API_KEY missing. Please set it in your environment or ~/.config/gomini/.env")
+		}
+
+		var err error
+		aiClient, err = gemini.NewClient(ctx, apiKey, fileContent)
+		if err != nil {
+			log.Fatal("couldn't initialize gemini client", err)
+		}
 	}
 
 	dbPath := filepath.Join(appConfigDir, "gomini.db")
