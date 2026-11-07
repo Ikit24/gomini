@@ -6,6 +6,7 @@ import (
 	"sync"
 	"github.com/sashabaranov/go-openai"
 	"github.com/openai/openai-go/option"
+	"github.com/openai/openai-go/v3/responses"
 )
 
 type Client struct {
@@ -53,6 +54,18 @@ var VanillaPersona = Persona{
 
 //add gpt-4o, gpt-4o-mini
 func NewClient(apiKey string) *Client {
+	client := openai.NewClient()
+
+	response, err := client.Responses.New(context.Background(), responses.ResponseNewParams{
+		Model: "gpt-4o",
+		Input: responses.ResponseNewParamsInputUnion{
+			OfString: openai.String("You are a helpful and thorough assistant in a terminal UI.")
+		},
+	})
+	if err != nil {
+		return err
+	}
+
 	return &Client{
 		apiKey: apiKey,
 		currentModel: "gpt-4o",
