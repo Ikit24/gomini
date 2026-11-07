@@ -52,23 +52,23 @@ var VanillaPersona = Persona{
     TopP:        0.9,
 }
 
-//add gpt-4o, gpt-4o-mini
 func NewClient(apiKey string) *Client {
-	client := openai.NewClient()
+	//client := openai.NewClient()
 
-	response, err := client.Responses.New(context.Background(), responses.ResponseNewParams{
-		Model: "gpt-4o",
-		Input: responses.ResponseNewParamsInputUnion{
-			OfString: openai.String("You are a helpful and thorough assistant in a terminal UI.")
-		},
-	})
-	if err != nil {
-		return err
-	}
+	//response, err := client.Responses.New(context.Background(), responses.ResponseNewParams{
+	//	Model: "gpt-4o",
+	//	Input: responses.ResponseNewParamsInputUnion{
+	//		OfString: openai.String("You are a helpful and thorough assistant in a terminal UI.")
+	//	},
+	//})
+	//if err != nil {
+	//	return err
+	//}
 
 	return &Client{
 		apiKey: apiKey,
-		currentModel: "gpt-4o",
+		preferredModel: "gpt-4o-mini",
+		models: []string{"gpt-4o", "gpt-4o-mini", "gpt-4o-mini"}
 	}
 }
 
