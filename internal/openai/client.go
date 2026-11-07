@@ -68,7 +68,7 @@ func NewClient(apiKey string) *Client {
 	return &Client{
 		apiKey: apiKey,
 		preferredModel: "gpt-4o-mini",
-		models: []string{"gpt-4o", "gpt-4o-mini", "gpt-4o-mini"}
+		models: []string{"gpt-4o", "gpt-4o-mini"}
 	}
 }
 
