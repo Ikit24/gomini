@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Ikit24/gomini/internal/llm"
 	"github.com/Ikit24/gomini/internal/database"
-	"github.com/Ikit24/gomini/internal/gemini"
 	"github.com/google/uuid"
 )
 
@@ -58,9 +58,9 @@ func (s *Server) HandleCreateMessage(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	geminiMessages := make([]gemini.Message, 0, len(dbMessages))
+	geminiMessages := make([]llm.Message, 0, len(dbMessages))
 	for _, dbMsg := range dbMessages {
-		gMsg := gemini.Message{
+		gMsg := llm.Message{
 			Role:    string(dbMsg.Role),
 			Content: dbMsg.Content,
 		}
