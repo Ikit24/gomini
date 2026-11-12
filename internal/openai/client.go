@@ -9,7 +9,7 @@ import (
 	"context"
 	"sync"
 	"github.com/Ikit24/gomini/internal/llm"
-	"github.com/openai/openai-go/option"
+	"github.com/openai/openai-go/v3/option"
 	extopenai "github.com/openai/openai-go/v3"
 )
 
@@ -123,7 +123,7 @@ func (c *Client) GenerateChatResponse(ctx context.Context, history []llm.Message
 			model := order[attempt]
 			streamErr = nil
 
-			params.Model = extopenai.String(model)
+			params.Model = extopenai.ChatModel(model)
 			
 			client := extopenai.NewClient(option.WithAPIKey(c.apiKey))
 			stream := client.Chat.Completions.NewStreaming(ctx, params)

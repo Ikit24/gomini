@@ -5,16 +5,16 @@ import (
 	"net/http"
 
 	"github.com/Ikit24/gomini/internal/database"
-	"github.com/Ikit24/gomini/internal/gemini"
+	"github.com/Ikit24/gomini/internal/llm"
 )
 
 type Server struct {
 	DB         *database.DB
-	AI         *gemini.Client
+	AI         llm.ChatProvider
 	httpServer *http.Server
 }
 
-func NewServer(db *database.DB, ai *gemini.Client) *Server {
+func NewServer(db *database.DB, ai llm.ChatProvider) *Server {
 	return &Server{
 		DB: db,
 		AI: ai,
