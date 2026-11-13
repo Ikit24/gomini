@@ -19,26 +19,32 @@ Ever since I learned Go and SQL/SQLite, I became passionate about mastering them
 
 ### Usage
 
- Ensure you have your Gemini API key set in your environment variables, then run:
- ```bash
- export GEMINI_API_KEY="your_api_key_here"
- ```
  Setup your .env file based on your OS:
  - Linux:
  ```bash
- ~/.config/gomini/.env
+ touch ~/.config/gomini/.env
  ```
  - macOS:
  ```bash
- ~/Library/Application Support/gomini/.env
+ touch ~/Library/Application\ Support/gomini/.env
  ```
  - Windows:
  ```bash
- %APPDATA%\gomini\.env
+ echo. > %APPDATA%\gomini\.env
  ```
- - In the terminal type:
+ - Inside that `.env` file, add your API keys:
+ ```env
+ GEMINI_API_KEY="your_gemini_key_here"
+ OPENAI_API_KEY="your_openai_key_here"
+ ```
+
+ Run the application in your terminal. By default, it will use Gemini:
  ```bash
  gomini
+ ```
+ - To use OpenAI for the session, pass the provider flag:
+ ```bash
+ gomini --provider=openai
  ```
 
 ## 🚀 Features
@@ -46,9 +52,9 @@ Ever since I learned Go and SQL/SQLite, I became passionate about mastering them
  - **Terminal User Interface (TUI):** Fully interactive, state-driven command-line interface.
  - **Local Session Management:** Automatically saves and organizes all past chats in a local SQLite database.
  - **Interactive History Browser:** Scroll through past sessions and resume conversations instantly.
- - **Live AI Streaming:** Real-time streaming of Gemini AI responses directly to the terminal viewport.
+ - **Live AI Streaming:** Real-time streaming of LLM responses directly to the terminal viewport.
  - **Different Personas:** Choose from different personas: investing, coding & general use.
- - **File Context Attachment:** You can attach a local file as background context for Gemini when starting the application by using the `--file` flag:
+ - **File Context Attachment:** You can attach a local file as background context for Gomini when starting the application by using the `--file` flag:
  - **Dynamic Model Switching:** Cycle through Gemini models (`gemini-2.5-flash`, `gemini-2.5-pro`, etc.) on the fly during an active conversation without resetting chat history.
 
  ```bash
@@ -85,7 +91,7 @@ The project follows a modular Go layout to separate concerns:
 | **Chat** | `alt+0` | Switch to general-purpose persona, concise, highly readable answers |
 | **Chat** | `alt+1` | Switch to a Socratic coding tutor |
 | **Chat** | `alt+2` | Switch to value investor persona by the rules of Benjamin Graham and Warren Buffett |
-| **Chat** | `ctrl+t` | Cycle through available Gemini models |
+| **Chat** | `ctrl+t` | Cycle through available LLM models |
 
 ## 🛠️ Contributing
 
