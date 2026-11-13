@@ -55,11 +55,10 @@ Ever since I learned Go and SQL/SQLite, I became passionate about mastering them
  - **Live AI Streaming:** Real-time streaming of LLM responses directly to the terminal viewport.
  - **Different Personas:** Choose from different personas: investing, coding & general use.
  - **File Context Attachment:** You can attach a local file as background context for Gomini when starting the application by using the `--file` flag:
- - **Dynamic Model Switching:** Cycle through Gemini models (`gemini-2.5-flash`, `gemini-2.5-pro`, etc.) on the fly during an active conversation without resetting chat history.
-
  ```bash
- go run ./cmd/gomini --file path/to/your/document.txt
+ go run ./cmd/gomini --file path..
  ```
+ - **Dynamic Model Switching:** Cycle through Gemini models (`gemini-2.5-flash`, `gemini-2.5-pro`, etc.) on the fly during an active conversation without resetting chat history.
 
 ## 📁 Project Structure
 
@@ -93,10 +92,11 @@ The project follows a modular Go layout to separate concerns:
 | **Chat** | `alt+2` | Switch to value investor persona by the rules of Benjamin Graham and Warren Buffett |
 | **Chat** | `ctrl+t` | Cycle through available LLM models |
 
-## 🛠️ Contributing
+## 🛠️ Built with
 
 * [Go](https://go.dev/) - Core language
 * [Bubble Tea](https://github.com/charmbracelet/bubbletea) - TUI framework (Elm architecture)
 * [Lip Gloss](https://github.com/charmbracelet/lipgloss) - Terminal styling and layout engine
 * [Bubbles](https://github.com/charmbracelet/bubbles) - TUI components (viewport, text input, spinner)
 * [Google GenAI SDK](https://github.com/google/generative-ai-go) - Gemini API integration
+* [OpenAI Go SDK](https://github.com/openai/openai-go) - OpenAI API integration
