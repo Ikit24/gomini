@@ -1,8 +1,8 @@
 package database
 
 import (
-	"time"
 	"fmt"
+	"time"
 
 	"github.com/google/uuid"
 )
@@ -79,7 +79,7 @@ func (d *DB) CreateMessage(m *Message) error {
 	if err != nil {
 		return err
 	}
-	
+
 	return nil
 }
 

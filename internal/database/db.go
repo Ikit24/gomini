@@ -4,8 +4,8 @@ import (
 	"database/sql"
 	"embed"
 
-	_ "modernc.org/sqlite"
 	"github.com/pressly/goose/v3"
+	_ "modernc.org/sqlite"
 )
 
 type DB struct {
@@ -45,7 +45,7 @@ func Open(path string) (*DB, error) {
 	if err := goose.SetDialect("sqlite"); err != nil {
 		return nil, err
 	}
-	
+
 	if err := goose.Up(conn, "migrations"); err != nil {
 		return nil, err
 	}

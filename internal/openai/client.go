@@ -1,16 +1,16 @@
 package openai
 
 import (
-	"fmt"
-	"time"
-	"os"
-	"errors"
-	"strings"
 	"context"
-	"sync"
+	"errors"
+	"fmt"
 	"github.com/Ikit24/gomini/internal/llm"
-	"github.com/openai/openai-go/v3/option"
 	extopenai "github.com/openai/openai-go/v3"
+	"github.com/openai/openai-go/v3/option"
+	"os"
+	"strings"
+	"sync"
+	"time"
 )
 
 type Client struct {
@@ -36,9 +36,9 @@ func NewClient(apiKey string) *Client {
 	//}
 
 	return &Client{
-		apiKey: apiKey,
+		apiKey:         apiKey,
 		preferredModel: "gpt-4o-mini",
-		models: []string{"gpt-4o", "gpt-4o-mini"},
+		models:         []string{"gpt-4o", "gpt-4o-mini"},
 	}
 }
 
@@ -71,7 +71,7 @@ func (c *Client) setModel(model string) {
 	c.preferredModel = model
 }
 
-func (c *Client) attemptOrder() [] string {
+func (c *Client) attemptOrder() []string {
 	c.mu.RLock()
 	preferred := c.preferredModel
 	c.mu.RUnlock()
@@ -107,7 +107,7 @@ func (c *Client) GenerateChatResponse(ctx context.Context, history []llm.Message
 	messages = append(messages, extopenai.UserMessage(newPrompt))
 
 	params := extopenai.ChatCompletionNewParams{
-		Messages:     messages,
+		Messages:    messages,
 		Temperature: extopenai.Float(float64(c.persona.Temperature)),
 		TopP:        extopenai.Float(float64(c.persona.TopP)),
 	}
@@ -124,7 +124,7 @@ func (c *Client) GenerateChatResponse(ctx context.Context, history []llm.Message
 			streamErr = nil
 
 			params.Model = extopenai.ChatModel(model)
-			
+
 			client := extopenai.NewClient(option.WithAPIKey(c.apiKey))
 			stream := client.Chat.Completions.NewStreaming(ctx, params)
 
@@ -133,7 +133,7 @@ func (c *Client) GenerateChatResponse(ctx context.Context, history []llm.Message
 				if len(chunk.Choices) > 0 {
 					delta := chunk.Choices[0].Delta.Content
 					if delta != "" {
-						ch <-delta
+						ch <- delta
 					}
 				}
 			}
@@ -141,7 +141,7 @@ func (c *Client) GenerateChatResponse(ctx context.Context, history []llm.Message
 			streamErr = stream.Err()
 
 			if streamErr != nil {
-				file, fileErr := os.OpenFile("debug.log", os.O_APPEND | os.O_CREATE | os.O_WRONLY, 0644)
+				file, fileErr := os.OpenFile("debug.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 				if fileErr == nil {
 					file.WriteString(fmt.Sprintf("Model: %s | Error Type: %T | Error: %v\n", model, streamErr, streamErr))
 					file.Close()
@@ -155,13 +155,13 @@ func (c *Client) GenerateChatResponse(ctx context.Context, history []llm.Message
 
 			if errors.As(streamErr, &apiErr) && (apiErr.StatusCode == 429 || apiErr.StatusCode == 503 || apiErr.StatusCode == 404) {
 				select {
-				case <- ctx.Done():
+				case <-ctx.Done():
 					return
-				case <- time.After(2 * time.Second):
+				case <-time.After(2 * time.Second):
 					if attempt+1 < len(order) {
 						fmt.Sprintf("falling back from %s to %s after error: %v", model, order[attempt+1], streamErr)
-				} else {
-					fmt.Sprintf("out of fallback models, giving up after error: %v", streamErr)
+					} else {
+						fmt.Sprintf("out of fallback models, giving up after error: %v", streamErr)
 					}
 				}
 			} else {
@@ -169,7 +169,7 @@ func (c *Client) GenerateChatResponse(ctx context.Context, history []llm.Message
 				return
 			}
 		}
-		
+
 		if streamErr != nil {
 			ch <- streamErr.Error()
 		}

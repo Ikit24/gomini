@@ -1,19 +1,19 @@
 package tui
 
 import (
-	"fmt"
 	"context"
+	"fmt"
 	"github.com/Ikit24/gomini/internal/database"
+	"github.com/Ikit24/gomini/internal/llm"
+	"github.com/charmbracelet/bubbles/spinner"
 	"github.com/charmbracelet/bubbles/textarea"
 	"github.com/charmbracelet/bubbles/textinput"
 	"github.com/charmbracelet/bubbles/viewport"
+	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/glamour"
 	"github.com/charmbracelet/glamour/styles"
-	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/charmbracelet/bubbles/spinner"
 	"github.com/google/uuid"
-	"github.com/Ikit24/gomini/internal/llm"
 )
 
 type Model struct {
@@ -66,7 +66,7 @@ func InitialModel(db *database.DB, client llm.ChatProvider, userID uuid.UUID, se
 	ta.Prompt = ""
 	ta.SetHeight(3)
 
-	return Model {
+	return Model{
 		messageInput:    ta,
 		db:              db,
 		chatProvider:    client,
@@ -83,7 +83,7 @@ func InitialModel(db *database.DB, client llm.ChatProvider, userID uuid.UUID, se
 func createMarkdownRenderer(width int) *glamour.TermRenderer {
 	customStyle := styles.DarkStyleConfig
 	customStyle.Document.Margin = uintPtr(0)
-    customStyle.Paragraph.Margin = uintPtr(0)
+	customStyle.Paragraph.Margin = uintPtr(0)
 
 	renderer, err := glamour.NewTermRenderer(
 		glamour.WithWordWrap(width),

@@ -7,8 +7,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Ikit24/gomini/internal/llm"
 	"github.com/Ikit24/gomini/internal/database"
+	"github.com/Ikit24/gomini/internal/llm"
 	"github.com/google/uuid"
 )
 

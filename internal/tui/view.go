@@ -7,16 +7,16 @@ import (
 
 var (
 	selectedStyle = lipgloss.NewStyle().
-		Background(lipgloss.Color("#88C0D0")).
-		Foreground(lipgloss.Color("#1e1e2e")).Bold(true)
+			Background(lipgloss.Color("#88C0D0")).
+			Foreground(lipgloss.Color("#1e1e2e")).Bold(true)
 
 	unselectedStyle = lipgloss.NewStyle().
-        Foreground(lipgloss.Color("241"))
+			Foreground(lipgloss.Color("241"))
 
 	tooltipPrefix = lipgloss.NewStyle().Bold(true)
 
 	sessListPrefix = lipgloss.NewStyle().
-		Foreground(lipgloss.Color("#874BFD"))
+			Foreground(lipgloss.Color("#874BFD"))
 )
 
 func formatText(style lipgloss.Style, text string) string {
@@ -110,7 +110,7 @@ func (m Model) viewBrowse() string {
 		}
 	}
 
-	savedChats += formatText(chatQuitStyle,"\nPress [esc] to return")
+	savedChats += formatText(chatQuitStyle, "\nPress [esc] to return")
 	savedChats = chatInfoStyle.Render(savedChats)
 
 	return chatsBoxStyle.Render(chatsHeader + "\n" + savedChats)
@@ -131,12 +131,12 @@ func (m Model) viewWelcome() string {
 	title += formatText(tooltipPrefix, "Welcome to Gomini!\n")
 
 	s += formatText(tooltipPrefix,
-		"Press [ctrl+g] for help.\n\n" +
-		"Press [ctrl+n] to start new chat.\n\n" +
-		"Press [ctrl+b] to browse your history.\n\n")
+		"Press [ctrl+g] for help.\n\n"+
+			"Press [ctrl+n] to start new chat.\n\n"+
+			"Press [ctrl+b] to browse your history.\n\n")
 
 	if len(m.pastSessions) > 0 {
-		sessList += formatText(sessListPrefix,"You have " + fmt.Sprint(len(m.pastSessions)) + " previous conversations.")
+		sessList += formatText(sessListPrefix, "You have "+fmt.Sprint(len(m.pastSessions))+" previous conversations.")
 	}
 	s += formatText(tooltipPrefix, "\nPress [ctrl+c] to quit.")
 
@@ -152,35 +152,35 @@ func (m Model) viewChat() string {
 
 	if m.errorMessage != "" {
 		var errorStyle = lipgloss.NewStyle().
-		Foreground(lipgloss.Color("9")).
-		Bold(true)
-	UI += errorStyle.Render(m.errorMessage) + "\n"
+			Foreground(lipgloss.Color("9")).
+			Bold(true)
+		UI += errorStyle.Render(m.errorMessage) + "\n"
 	}
 
 	var chatInputStyle = lipgloss.NewStyle().
-        Width(m.terminalWidth).
-        Align(lipgloss.Center)
-    UI += chatInputStyle.Render(m.messageInput.View()) + "\n"
+		Width(m.terminalWidth).
+		Align(lipgloss.Center)
+	UI += chatInputStyle.Render(m.messageInput.View()) + "\n"
 
 	halfWidth := m.terminalWidth / 2
 
-    personaStyle := lipgloss.NewStyle().
-        Width(halfWidth - 10).
-        Align(lipgloss.Center).
-        Foreground(lipgloss.Color("#874BFD"))
+	personaStyle := lipgloss.NewStyle().
+		Width(halfWidth - 10).
+		Align(lipgloss.Center).
+		Foreground(lipgloss.Color("#874BFD"))
 
-    statusStyle := lipgloss.NewStyle().
-        Width(halfWidth).
-        Align(lipgloss.Left).
-        Foreground(lipgloss.Color("#18ffa2"))
+	statusStyle := lipgloss.NewStyle().
+		Width(halfWidth).
+		Align(lipgloss.Left).
+		Foreground(lipgloss.Color("#18ffa2"))
 
-    statusMsgText := statusStyle.Render(m.statusMessage)
+	statusMsgText := statusStyle.Render(m.statusMessage)
 	combinedLeft := fmt.Sprintf("%s | %s", m.activePersona, m.chatProvider.CurrentModel())
 	combinedLeftText := personaStyle.Render(combinedLeft)
 
-    statusBar := lipgloss.JoinHorizontal(lipgloss.Top, combinedLeftText, statusMsgText)
+	statusBar := lipgloss.JoinHorizontal(lipgloss.Top, combinedLeftText, statusMsgText)
 
-    UI += statusBar
+	UI += statusBar
 
-    return UI
+	return UI
 }

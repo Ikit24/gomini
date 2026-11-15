@@ -1,22 +1,22 @@
 package tui
 
 import (
-	"strings"
 	"context"
-	"github.com/atotto/clipboard"
-	"github.com/Ikit24/gomini/internal/llm"
 	"github.com/Ikit24/gomini/internal/database"
-	"github.com/charmbracelet/bubbles/textinput"
-	"github.com/charmbracelet/lipgloss"
+	"github.com/Ikit24/gomini/internal/llm"
+	"github.com/atotto/clipboard"
 	"github.com/charmbracelet/bubbles/spinner"
+	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 	"github.com/google/uuid"
-	"time"
 	"regexp"
+	"strings"
+	"time"
 )
 
 var (
-	userPrefixColor = lipgloss.NewStyle().Foreground(lipgloss.Color("205")).Bold(true)
+	userPrefixColor   = lipgloss.NewStyle().Foreground(lipgloss.Color("205")).Bold(true)
 	gominiPrefixColor = lipgloss.NewStyle().Foreground(lipgloss.Color("39")).Bold(true)
 )
 
@@ -24,7 +24,7 @@ type llmStreamErrorMsg struct {
 	err error
 }
 type clipboardErrorMsg struct {
-    err error
+	err error
 }
 type dbSaveErrorMsg struct {
 	err error
@@ -88,7 +88,7 @@ func (m *Model) copyMsgFromResponse(onlyCode bool) (tea.Model, tea.Cmd) {
 		}
 	}
 
-	if onlyCode  {
+	if onlyCode {
 		m.statusMessage = "Code to clipboard."
 	} else {
 		m.statusMessage = "Copied to clipboard."
@@ -176,8 +176,8 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.showHelp {
 				m.showHelp = false
 				m.messageInput.Focus()
-        	    return m, nil
-        	}
+				return m, nil
+			}
 		}
 	}
 
@@ -196,7 +196,7 @@ func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m Model) updateChat(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd, inputCmd, viewportCmd, llmCmd tea.Cmd
-	
+
 	contentChanged := false
 
 	switch msg := msg.(type) {
@@ -254,8 +254,8 @@ func (m Model) updateChat(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.showHelp {
 				m.showHelp = false
 				m.messageInput.Focus()
-        	    return m, nil
-        	}
+				return m, nil
+			}
 
 			m.currentState = StateWelcome
 			m.messageInput.Blur()
@@ -370,7 +370,7 @@ func (m Model) refreshViewportContent() Model {
 	gutterStyle := lipgloss.NewStyle().Width(gutterWidth)
 	messageWidth := m.viewport.Width - gutterWidth
 	messageStyle := lipgloss.NewStyle().Width(messageWidth)
-	
+
 	for _, msg := range m.messages {
 		if msg.Role == database.UserRole {
 			renderedMessage, err := m.renderer.Render(msg.Content)
@@ -381,7 +381,7 @@ func (m Model) refreshViewportContent() Model {
 			}
 			coloredPrefix := formatText(userPrefixColor, "You: ")
 			boxedPrefix := gutterStyle.Render(coloredPrefix)
-		    boxedMessage := messageStyle.Render(renderedMessage)
+			boxedMessage := messageStyle.Render(renderedMessage)
 			s += lipgloss.JoinHorizontal(lipgloss.Top, boxedPrefix, boxedMessage) + "\n\n"
 		}
 
@@ -525,16 +525,16 @@ func (m Model) updateBrowse(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.browseCursor < len(m.filteredSessions)-1 {
 				m.browseCursor++
 			}
-		
+
 		case "ctrl+d":
 			return m.deleteSelectedSession()
-		
+
 		case "esc":
 			if m.showHelp {
 				m.showHelp = false
 				m.messageInput.Focus()
-        	    return m, nil
-        	}
+				return m, nil
+			}
 
 			m.currentState = StateWelcome
 			m.messageInput.Blur()

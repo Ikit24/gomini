@@ -11,9 +11,9 @@ type Message struct {
 
 type Persona struct {
 	Prompt      string
-    Temperature float32
-    TopP        float32
-    TopK        float32
+	Temperature float32
+	TopP        float32
+	TopK        float32
 }
 
 type ChatProvider interface {

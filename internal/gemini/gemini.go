@@ -1,41 +1,41 @@
 package gemini
 
 import (
-	"os"
-	"fmt"
-	"errors"
-	"strings"
-	"time"
 	"context"
-	"google.golang.org/genai"
-	"sync"
+	"errors"
+	"fmt"
 	"github.com/Ikit24/gomini/internal/llm"
+	"google.golang.org/genai"
+	"os"
+	"strings"
+	"sync"
+	"time"
 )
 
 type Client struct {
-	genaiClient     *genai.Client
-	mu              sync.RWMutex
-	genaiSysTools   *genai.GenerateContentConfig
-	models          []string
-	preferredModel  string
-	basePrompt      string
-	personaPrompt   string
-	filePrompt      string
+	genaiClient    *genai.Client
+	mu             sync.RWMutex
+	genaiSysTools  *genai.GenerateContentConfig
+	models         []string
+	preferredModel string
+	basePrompt     string
+	personaPrompt  string
+	filePrompt     string
 }
 
 var CodingPersona = llm.Persona{
-    Prompt:      `You are a strict, Socratic coding tutor. Your primary goal is to make the user understand the concepts, not to write code for them. When asked a question, do not provide the immediate solution. Instead, point them to the correct documentation, explain the underlying theory, and ask a specific follow-up question to test their logic.
+	Prompt: `You are a strict, Socratic coding tutor. Your primary goal is to make the user understand the concepts, not to write code for them. When asked a question, do not provide the immediate solution. Instead, point them to the correct documentation, explain the underlying theory, and ask a specific follow-up question to test their logic.
 	Rules for engagement:
 	1. Language Check: If the user does not specify a programming language in their prompt or recent context, you must explicitly ask them to clarify which language they are using before providing any code-specific guidance.
 	2. No Instant Solutions: Only provide a complete code solution if the user explicitly requests it.
 	3. Three-Try Rule: Review the conversation history. If the user has attempted and failed to solve the specific problem 3 or more times, you may provide the solution and explain why it works.`,
-    Temperature: 0.3,
-    TopP:        0.7,
-    TopK:        40,
+	Temperature: 0.3,
+	TopP:        0.7,
+	TopK:        40,
 }
 
 var InvestingPersona = llm.Persona{
-    Prompt:      `You are a strict, disciplined value investor adhering strictly to the principles of Benjamin Graham and Warren Buffett. You have zero tolerance for market optimism, hype, or speculation. Your analysis must be grounded exclusively in hard facts, fundamentals, and historical numbers. You must use your search tool to pull real-time financial data, recent insider filings, and current lawsuit news before providing an analysis. Do not guess the numbers.
+	Prompt: `You are a strict, disciplined value investor adhering strictly to the principles of Benjamin Graham and Warren Buffett. You have zero tolerance for market optimism, hype, or speculation. Your analysis must be grounded exclusively in hard facts, fundamentals, and historical numbers. You must use your search tool to pull real-time financial data, recent insider filings, and current lawsuit news before providing an analysis. Do not guess the numbers.
 	When analyzing an asset:
 	1. Focus on intrinsic value, P/E, P/B, debt-to-equity, and free cash flow.
 	2. Investigate current or pending lawsuits and evaluate them purely as potential pricing opportunities.
@@ -43,24 +43,24 @@ var InvestingPersona = llm.Persona{
 	4. Identify institutional or fund buying and note if it is simply passive ETF sector exposure rather than active conviction.
 	5. Always outline the worst-case (bear), mid-case, and best-case (bull) scenarios based on the data.
 	6. Explicitly identify and list any other structural, macroeconomic, or business risks.`,
-    Temperature: 0.2,
-    TopP:        0.5,
-    TopK:        40,
+	Temperature: 0.2,
+	TopP:        0.5,
+	TopK:        40,
 }
 
 var VanillaPersona = llm.Persona{
-	Prompt:      `You are a helpful, versatile, and direct AI assistant. Your goal is to provide clear, accurate, and highly readable answers across a wide variety of topics.
+	Prompt: `You are a helpful, versatile, and direct AI assistant. Your goal is to provide clear, accurate, and highly readable answers across a wide variety of topics.
 	Guidelines:
 	1. Be concise: Avoid unnecessary filler, preamble, or overly conversational meta-commentary. Answer the prompt directly.
 	2. Formatting: Use Markdown (headers, bullet points, and code blocks) heavily to make your answers easily scannable.
 	3. Honesty: If you do not know the answer or lack access to real-time data, state it directly instead of guessing.
 	4. Adaptability: Match the user's tone and level of technical depth.`,
-    Temperature: 0.9,
-    TopP:        0.9,
-    TopK:        50,
+	Temperature: 0.9,
+	TopP:        0.9,
+	TopK:        50,
 }
 
-func(c *Client) rebuildSystemInstruction() {
+func (c *Client) rebuildSystemInstruction() {
 	c.genaiSysTools.SystemInstruction.Parts = []*genai.Part{}
 	if c.basePrompt != "" {
 		c.genaiSysTools.SystemInstruction.Parts = append(
@@ -142,47 +142,47 @@ func NewClient(ctx context.Context, apiKey string, fileContent string) (*Client,
 	}
 
 	// Uncomment to see what your API key can see
-    //resp, err := c.Models.List(ctx, nil)
-    //if err != nil {
-    //    return nil, fmt.Errorf("failed to list models: %w", err)
-    //}
-    //for _, m := range resp.Items {
-    //   fmt.Printf("Authorized Model -> Name: %s\n", m.Name)
-    //}
+	//resp, err := c.Models.List(ctx, nil)
+	//if err != nil {
+	//    return nil, fmt.Errorf("failed to list models: %w", err)
+	//}
+	//for _, m := range resp.Items {
+	//   fmt.Printf("Authorized Model -> Name: %s\n", m.Name)
+	//}
 
 	//date&time hallucination
 	currentDate := time.Now().Format("01-02-2006")
 
 	client := &Client{
-			genaiClient:    c,
-			preferredModel: "gemini-2.5-flash",
-			models:         []string{"gemini-3.8-flash", "gemini-3.1-flash-lite", "gemini-2.5-flash"},
-			genaiSysTools:  &genai.GenerateContentConfig{
-				SystemInstruction: &genai.Content{},
-				Temperature: genai.Ptr[float32](0.7),
-				TopP:        genai.Ptr[float32](0.95),
-				TopK:        genai.Ptr[float32](40),
-				Tools: []*genai.Tool{
-					{GoogleSearch: &genai.GoogleSearch{}},
-				},
+		genaiClient:    c,
+		preferredModel: "gemini-2.5-flash",
+		models:         []string{"gemini-3.8-flash", "gemini-3.1-flash-lite", "gemini-2.5-flash"},
+		genaiSysTools: &genai.GenerateContentConfig{
+			SystemInstruction: &genai.Content{},
+			Temperature:       genai.Ptr[float32](0.7),
+			TopP:              genai.Ptr[float32](0.95),
+			TopK:              genai.Ptr[float32](40),
+			Tools: []*genai.Tool{
+				{GoogleSearch: &genai.GoogleSearch{}},
 			},
-			basePrompt:  "You are a helpful and thorough assistant in a terminal UI. The current date is: " + currentDate,
-			filePrompt:  fileContent,
-		}
+		},
+		basePrompt: "You are a helpful and thorough assistant in a terminal UI. The current date is: " + currentDate,
+		filePrompt: fileContent,
+	}
 
 	client.rebuildSystemInstruction()
 
 	return client, nil
 }
 
-func processResponse (ch chan string, resp *genai.GenerateContentResponse) {
+func processResponse(ch chan string, resp *genai.GenerateContentResponse) {
 	if len(resp.Candidates) > 0 && resp.Candidates[0].Content != nil {
 		for _, part := range resp.Candidates[0].Content.Parts {
 			if part.Text != "" {
 				ch <- part.Text
 			}
 		}
-	} else if len(resp.Candidates) > 0 && resp.Candidates[0].Content == nil{
+	} else if len(resp.Candidates) > 0 && resp.Candidates[0].Content == nil {
 		ch <- fmt.Sprintf("%v", resp.Candidates[0].FinishReason)
 	}
 }
@@ -207,7 +207,7 @@ func (c *Client) GenerateChatResponse(ctx context.Context, history []llm.Message
 		Parts: []*genai.Part{{Text: newPrompt}},
 	}
 	sdkHistory = append(sdkHistory, newMsg)
-	
+
 	ch := make(chan string)
 	go func() {
 		defer close(ch)
@@ -218,11 +218,11 @@ func (c *Client) GenerateChatResponse(ctx context.Context, history []llm.Message
 			model := order[attempt]
 			streamErr = nil
 			iter := c.genaiClient.Models.GenerateContentStream(ctx, model, sdkHistory, c.genaiSysTools)
-	
+
 			for resp, err := range iter {
 				if err != nil {
 					streamErr = err
-					file, fileErr := os.OpenFile("debug.log", os.O_APPEND | os.O_CREATE | os.O_WRONLY, 0644)
+					file, fileErr := os.OpenFile("debug.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 					if fileErr == nil {
 						file.WriteString(fmt.Sprintf("Model: %s | Error Type: %T | Error: %v\n", model, streamErr, streamErr))
 						file.Close()
@@ -240,9 +240,9 @@ func (c *Client) GenerateChatResponse(ctx context.Context, history []llm.Message
 			//fallback model logic
 			if errors.As(streamErr, &apiErr) && (apiErr.Code == 429 || apiErr.Code == 503 || apiErr.Code == 404) {
 				select {
-				case <- ctx.Done():
+				case <-ctx.Done():
 					return
-				case <- time.After(2 * time.Second):
+				case <-time.After(2 * time.Second):
 					if attempt+1 < len(order) {
 						fmt.Sprintf("falling back from %s to %s after error: %v", model, order[attempt+1], streamErr)
 					} else {

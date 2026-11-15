@@ -2,19 +2,19 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
-	"time"
-	"flag"
 	"path/filepath"
+	"time"
 
 	"github.com/Ikit24/gomini/internal/database"
 	"github.com/Ikit24/gomini/internal/gemini"
+	"github.com/Ikit24/gomini/internal/handlers"
 	"github.com/Ikit24/gomini/internal/llm"
 	"github.com/Ikit24/gomini/internal/openai"
-	"github.com/Ikit24/gomini/internal/handlers"
 	"github.com/Ikit24/gomini/internal/tui"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/joho/godotenv"
