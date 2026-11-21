@@ -85,8 +85,8 @@ The project follows a modular Go layout to separate concerns:
 | **Chat** | `ctrl+s` | Submit message |
 | **Chat** | `ctrl+b` | Browse past chat sessions |
 | **Chat** | `ctrl+n` | Start new chat |
-| **Chat** | `ctrl+y` | Copy the latest whole LLM response |
-| **Chat** | `alt+y` | Copy the latest code block from LLM response |
+| **Chat** | `ctrl+y` | Copy the latest code block from LLM response |
+| **Chat** | `alt+y` | Copy the latest whole LLM response |
 | **Chat** | `alt+0` | Switch to general-purpose persona, concise, highly readable answers |
 | **Chat** | `alt+1` | Switch to a Socratic coding tutor |
 | **Chat** | `alt+2` | Switch to value investor persona by the rules of Benjamin Graham and Warren Buffett |
